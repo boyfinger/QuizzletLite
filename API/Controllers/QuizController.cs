@@ -1,4 +1,6 @@
-﻿using API.Dtos.Quiz.QuizSubmission;
+﻿using API.Dtos.Quiz;
+using API.Dtos;
+using API.Dtos.Quiz.QuizSubmission;
 using API.Helpers;
 using API.Mappers;
 using API.Repositories;
@@ -52,6 +54,67 @@ namespace API.Controllers
             }
             var quizDto = quiz.ToQuizDetailsDto();
             return Ok(quizDto);
+
         }
+
+        [HttpPost]
+        public async Task<ActionResult<QuizzesDto>> CreateQuiz([FromBody] CreateQuizDto createQuizDto)
+        {
+            if (createQuizDto == null) return BadRequest("Quiz data is required");
+            var quizDto = await _quizService.CreateQuizAsync(createQuizDto);
+            return CreatedAtAction(nameof(GetQuizById), new { id = quizDto.Id }, quizDto);
+        }
+
+        [HttpPut("{quizId}")]
+        public async Task<ActionResult<QuizzesDto>> UpdateQuiz(int quizId, [FromBody] UpdateQuizDto updateQuizDto)
+        {
+            if (updateQuizDto == null) return BadRequest("Quiz data is required");
+            try
+            {
+                var quizDto = await _quizService.UpdateQuizAsync(quizId, updateQuizDto);
+                return Ok(quizDto);
+            }
+            catch (Exception ex)
+            {
+                return NotFound(ex.Message);
+            }
+        }
+        [HttpPatch("{quizId}/deactivate")]
+        public async Task<IActionResult> DeactivateQuiz(int quizId)
+        {
+            var success = await _quizService.DeactivateQuizAsync(quizId);
+            if (!success) return NotFound("Quiz not found");
+            return NoContent();
+        }
+
+        [HttpGet("user/{userId}")]
+        public async Task<ActionResult<List<QuizzesDto>>> GetQuizzesByUser(int userId)
+        {
+            var quizzes = await _quizService.GetQuizzesByUserAsync(userId);
+            return Ok(quizzes);
+        }
+
+        [HttpPost("submit")]
+        public async Task<ActionResult<double>> SubmitQuiz([FromBody] QuizSubmissionDto submissionDto)
+        {
+            if (submissionDto == null || submissionDto.Answers == null) return BadRequest("Submission data is required");
+            var score = await _quizService.ProcessQuizAttempt(submissionDto);
+            return Ok(score);
+        }
+
+        [HttpGet("{id}")]
+        public async Task<ActionResult<QuizzesDto>> GetQuizById(int id)
+        {
+            try
+            {
+                var quiz = await _quizService.GetQuizByIdAsync(id);
+                return Ok(quiz);
+            }
+            catch (Exception ex)
+            {
+                return NotFound(ex.Message);
+            }
+        }
+
     }
 }

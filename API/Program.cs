@@ -10,7 +10,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddDbContext<QuizletLiteContext>(options =>
 {
-    options.UseSqlServer(builder.Configuration.GetConnectionString("MyCnn"));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("QuizletLite_DB"));
 });
 
 builder.Services.AddControllers().AddJsonOptions(options =>

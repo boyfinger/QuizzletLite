@@ -10,5 +10,10 @@ namespace API.Repositories
         Task<List<Question>> GetQuestionsOfQuiz(int quizId);
         Task<bool> SaveQuizAttempt(QuizSubmissionDto submissionDto, double score);
         Task<Quiz?> GetQuizById(int quizId);
+        Task<Quiz?> GetQuizByIdWithDetails(int quizId);
+        Task<List<Quiz>> GetQuizzesByUser(int userId);
+        Task<Quiz> CreateQuiz(Quiz quiz);
+        Task<Quiz> UpdateQuiz(Quiz quiz);
+        Task<bool> DeactivateQuiz(int quizId);
     }
 }

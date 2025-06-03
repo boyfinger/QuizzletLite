@@ -1,6 +1,9 @@
-﻿using API.Dtos.Quiz.QuizSubmission;
+﻿using API.Dtos;
+using API.Dtos.Quiz;
+using API.Dtos.Quiz.QuizSubmission;
 using API.Models;
 using API.Repositories;
+using System.Linq;
 
 namespace API.Services
 {
@@ -51,5 +54,61 @@ namespace API.Services
 
             return score;
         }
+
+        public async Task<QuizzesDto> CreateQuizAsync(CreateQuizDto createQuizDto)
+        {
+            var quiz = new Quiz
+            {
+                Name = createQuizDto.Name,
+                CreatedBy = createQuizDto.CreatedBy,
+                CreatedOn = DateTime.UtcNow,
+                IsActive = createQuizDto.IsActive
+            };
+
+            var createdQuiz = await _quizRepository.CreateQuiz(quiz);
+            return MapToDto(createdQuiz);
+        }
+
+        public async Task<QuizzesDto> UpdateQuizAsync(int quizId, UpdateQuizDto updateQuizDto)
+        {
+            var quiz = await _quizRepository.GetQuizByIdWithDetails(quizId);
+            if (quiz == null) throw new Exception("Quiz not found");
+
+            quiz.Name = updateQuizDto.Name;
+            quiz.IsActive = updateQuizDto.IsActive;
+
+            var updatedQuiz = await _quizRepository.UpdateQuiz(quiz);
+            return MapToDto(updatedQuiz);
+        }
+
+        public async Task<bool> DeactivateQuizAsync(int quizId)
+        {
+            return await _quizRepository.DeactivateQuiz(quizId);
+        }
+
+        public async Task<List<QuizzesDto>> GetQuizzesByUserAsync(int userId)
+        {
+            var quizzes = await _quizRepository.GetQuizzesByUser(userId);
+            return quizzes.Select(MapToDto).ToList();
+        }
+        public async Task<QuizzesDto> GetQuizByIdAsync(int quizId)
+        {
+            var quiz = await _quizRepository.GetQuizByIdWithDetails(quizId);
+            if (quiz == null) throw new Exception("Quiz not found");
+            return MapToDto(quiz);
+        }
+        private QuizzesDto MapToDto(Quiz quiz)
+        {
+            return new QuizzesDto
+            {
+                Id = quiz.Id,
+                Name = quiz.Name,
+                CreatedBy = quiz.CreatedBy,
+                CreatedOn = quiz.CreatedOn,
+                IsActive = quiz.IsActive
+            };
+        }
+
+        
     }
 }
