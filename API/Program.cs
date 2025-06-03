@@ -1,5 +1,8 @@
 using API.DAO;
+using API.Repositories;
+using API.Services;
 using Microsoft.EntityFrameworkCore;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,10 +13,21 @@ builder.Services.AddDbContext<QuizletLiteContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("MyCnn"));
 });
 
+builder.Services.AddControllers().AddJsonOptions(options =>
+{
+    options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+    options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.Never;
+});
+
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+builder.Services.AddScoped<IQuizRepository, QuizRepository>();
+builder.Services.AddScoped<IQuizService, QuizService>();
+builder.Services.AddScoped<IQuizResultService, QuizResultService>();
+builder.Services.AddScoped<IQuizResultRepository, QuizResultRepository>();
 
 var app = builder.Build();
 
