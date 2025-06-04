@@ -29,6 +29,15 @@ builder.Services.AddScoped<IQuizService, QuizService>();
 builder.Services.AddScoped<IQuizResultService, QuizResultService>();
 builder.Services.AddScoped<IQuizResultRepository, QuizResultRepository>();
 
+builder.Services.AddScoped<Admin_IQuizRepository, Admin_QuizRepository>();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<Admin_IQuizService, Admin_QuizService>();
+
+
+
+
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
