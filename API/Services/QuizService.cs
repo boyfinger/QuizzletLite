@@ -2,8 +2,9 @@
 using API.Dtos.Quiz;
 using API.Dtos.Quiz.QuizSubmission;
 using API.Models;
+using API.Models.Snapshots;
 using API.Repositories;
-using System.Linq;
+using Newtonsoft.Json;
 
 namespace API.Services
 {
@@ -22,24 +23,27 @@ namespace API.Services
 
             foreach (Question question in questionList)
             {
-                var subnmittedAnswers = submissionDto.Answers
+                var submittedAnswers = submissionDto.Answers
                     .Where(a => a.QuestionId == question.Id)
-                    .Select(a => a.AnswerId)
+                    .Select(a => a.AnswerId) // Sử dụng AnswerId thay vì Content
                     .ToList();
-                if (subnmittedAnswers != null && subnmittedAnswers.Count != 0)
+
+                if (submittedAnswers.Count != 0)
                 {
-                    var correctAnswers = question.Answers
+                    // Deserialize danh sách đáp án từ OptionsJson
+                    var correctAnswers = JsonConvert.DeserializeObject<List<QuestionOptionsSnapshot>>(question.OptionsJson)
                         .Where(a => a.IsCorrect)
-                        .Select(a => a.Id)
+                        .Select((a, index) => index) // Lấy vị trí trong danh sách làm AnswerId
                         .ToList();
-                    if (correctAnswers.OrderBy(id => id).SequenceEqual(subnmittedAnswers.OrderBy(id => id)))
+
+                    if (correctAnswers.OrderBy(id => id).SequenceEqual(submittedAnswers.OrderBy(id => id)))
                     {
                         correctAnswersCount++;
                     }
                 }
             }
 
-            return (correctAnswersCount / questionList.Count) * 10;
+            return (correctAnswersCount / (double)questionList.Count) * 10;
         }
 
         public async Task<double> ProcessQuizAttempt(QuizSubmissionDto submissionDto)
@@ -109,6 +113,6 @@ namespace API.Services
             };
         }
 
-        
+
     }
 }

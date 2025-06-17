@@ -3,7 +3,6 @@ using API.Dtos.User;
 using API.Helpers;
 using API.Mappers;
 using API.Models;
-using Humanizer;
 using Microsoft.EntityFrameworkCore;
 
 namespace API.Repositories
@@ -31,9 +30,9 @@ namespace API.Repositories
                 users = users.Where(u => u.Email.Contains(query.Email));
             }
 
-            if (query.RoleId.HasValue)
+            if (query.Role.HasValue)
             {
-                users = users.Where(u => u.RoleId == query.RoleId);
+                users = users.Where(u => u.Role == query.Role.Value);
             }
 
             return await users

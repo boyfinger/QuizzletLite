@@ -26,9 +26,8 @@ namespace API.Controllers
                 Id = userLogined.Id,
                 Username = userLogined.Username,
                 Email = userLogined.Email,
-                RoleId = userLogined.RoleId,
-                Avatar = userLogined.Avatar ?? null,
-                RoleName = userLogined.Role?.Role1 ?? "Unknown"
+                Role = userLogined.Role,
+                Avatar = userLogined.Avatar ?? null
             };
 
             return Ok(userDTO);

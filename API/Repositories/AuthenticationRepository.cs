@@ -15,8 +15,7 @@ namespace API.Repositories
         public async Task<User?> AuthenticateUser(string email)
         {
             return await _context.Users
-                .Include(u => u.Role)
-                .Include(qr => qr.QuizResults).Include(q => q.Quizzes)
+                .Include(u => u.Role).Include(q => q.Quizzes)
                 .FirstOrDefaultAsync(u => u.Email.Equals(email));
         }
 
@@ -47,7 +46,7 @@ namespace API.Repositories
             var user = await _context.Users.FindAsync(userId);
             if (user == null) return false;
 
-            user.Password = newPassword;
+            user.PasswordHash = newPassword;
             await _context.SaveChangesAsync();
             return true;
         }

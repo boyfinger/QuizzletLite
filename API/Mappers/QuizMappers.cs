@@ -1,6 +1,7 @@
 ﻿using API.Dtos.Quiz;
 using API.Dtos.Quiz.QuizDetails;
 using API.Models;
+using Newtonsoft.Json;
 
 namespace API.Mappers
 {
@@ -23,21 +24,13 @@ namespace API.Mappers
                 Id = quiz.Id,
                 Name = quiz.Name,
                 CreatedByUsername = quiz.CreatedByNavigation?.Username ?? "Unknown",
-                Questions = quiz.Questions.Select(
-                    q => new QuizQuestionsDto
-                    {
-                        Id = q.Id,
-                        Content = q.Content,
-                        QuestionTypeId = q.QuestionTypeId,
-                        Answers = q.Answers.Select(a => new QuestionOptionDto
-                        {
-                            Id = a.Id,
-                            Content = a.Content,
-                            IsCorrect = a.IsCorrect
-                        }).ToList()
-                    }
-                ).ToList()
+                Questions = quiz.Questions.Select(q => new QuizQuestionsDto
+                {
+                    Id = q.Id,
+                    Content = q.Content,
+                    Answers = JsonConvert.DeserializeObject<List<QuestionOptionDto>>(q.OptionsJson)
+                }).ToList()
             };
         }
-    } 
+    }
 }

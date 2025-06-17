@@ -10,10 +10,9 @@ namespace API.Mappers
             return new UserDto
             {
                 Id = user.Id,
-                RoleId = user.RoleId,
+                Role = user.Role,
                 Email = user.Email,
                 Username = user.Username,
-                RoleName = user.Role?.Role1 ?? "Unknown"
             };
         }
         public static User ToUser(this UserDto dto)
@@ -21,16 +20,16 @@ namespace API.Mappers
             return new User
             {
                 Id = dto.Id,
-                RoleId = dto.RoleId,
+                Role = dto.Role,
                 Email = dto.Email,
                 Username = dto.Username,
-                Password = "1" // default password when creating new user
+                PasswordHash = "1" // default password when creating new user
             };
         }
 
         public static void MapToExisting(this UserDto dto, User user)
         {
-            user.RoleId = dto.RoleId;
+            user.Role = dto.Role;
             user.Email = dto.Email;
             user.Username = dto.Username;
             // Password remains unchanged

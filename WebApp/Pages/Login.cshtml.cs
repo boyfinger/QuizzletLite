@@ -38,11 +38,10 @@ namespace WebApp.Pages
             var userSession = JsonConvert.DeserializeObject<UserDto>(responseData);
 
             HttpContext.Session.SetString("UserId", userSession.Id.ToString());
-            HttpContext.Session.SetString("UserRoleId", userSession.RoleId.ToString());
+            HttpContext.Session.SetString("UserRoleId", userSession.Role.ToString());
             HttpContext.Session.SetString("UserAvatar", userSession.Avatar);
             HttpContext.Session.SetString("UserName", userSession.Username);
             HttpContext.Session.SetString("UserEmail", userSession.Email);
-            HttpContext.Session.SetString("UserRoleName", userSession.RoleName ?? "");
 
             return RedirectToPage("/Index");
         }

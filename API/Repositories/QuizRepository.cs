@@ -3,6 +3,7 @@ using API.Dtos.Quiz.QuizSubmission;
 using API.Helpers;
 using API.Models;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
 
 namespace API.Repositories
 {
@@ -36,7 +37,6 @@ namespace API.Repositories
         {
             return await _context.Questions
                 .Where(q => q.QuizId == quizId)
-                .Include(q => q.Answers)
                 .ToListAsync();
         }
 
@@ -44,7 +44,6 @@ namespace API.Repositories
         {
             return await _context.Quizzes
                 .Include(q => q.Questions)
-                    .ThenInclude(q => q.Answers)
                 .Include(q => q.CreatedByNavigation)
                 .FirstOrDefaultAsync(q => q.Id == quizId);
         }
@@ -53,7 +52,6 @@ namespace API.Repositories
         {
             return await _context.Quizzes
                 .Include(q => q.Questions)
-                .Include(q => q.QuizResults)
                 .FirstOrDefaultAsync(q => q.Id == quizId);
         }
 
@@ -84,32 +82,28 @@ namespace API.Repositories
             using var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
-                var quizAttempt = new QuizResult
+                var quizAttempt = new QuizAttempt
                 {
                     UserId = submissionDto.UserId,
                     QuizId = submissionDto.QuizId,
                     Score = score,
-                    CompletedDate = DateTime.UtcNow
+                    CompletedDate = DateTime.UtcNow,
+                    QuizName = _context.Quizzes.Where(q => q.Id == submissionDto.QuizId)
+                                               .Select(q => q.Name)
+                                               .FirstOrDefault() ?? "Unknown",
+                    AnswersJson = JsonConvert.SerializeObject(submissionDto.Answers)
                 };
-                _context.QuizResults.Add(quizAttempt);
-                await _context.SaveChangesAsync();
-                foreach (var answer in submissionDto.Answers)
-                {
-                    var quizAnswer = new SelectedAnswer
-                    {
-                        QuizResultId = quizAttempt.Id,
-                        QuestionId = answer.QuestionId,
-                        AnswerId = answer.AnswerId
-                    };
-                    _context.SelectedAnswers.Add(quizAnswer);
-                }
+
+                _context.QuizAttempts.Add(quizAttempt);
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
+
                 return true;
             }
-            catch
+            catch (Exception ex)
             {
                 await transaction.RollbackAsync();
+                Console.WriteLine($"Lỗi khi lưu quiz attempt: {ex.Message}");
                 return false;
             }
         }

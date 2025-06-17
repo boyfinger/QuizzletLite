@@ -21,7 +21,7 @@ namespace API.Services
 
             if (user == null) return null;
 
-            if (!CheckHashed.checkBcrypt(loginDTO.Password, user.Password))
+            if (!CheckHashed.checkBcrypt(loginDTO.Password, user.PasswordHash))
                 return null;
 
             return user;
@@ -62,10 +62,10 @@ namespace API.Services
             var hashedImage = EncodedString.EncodeFileBase64(registerDto.Avatar);
             var newUser = new User
             {
-                RoleId = 2,
+                Role = Models.Enums.Role.User,
                 Username = registerDto.Username,
                 Email = registerDto.Email,
-                Password = hashedPassword,
+                PasswordHash = hashedPassword,
                 Avatar = hashedImage
             };
 
