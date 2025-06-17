@@ -1,14 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.ComponentModel.DataAnnotations;
-
-namespace API.Models;
+﻿namespace API.Models;
 
 public partial class Quiz
 {
-    [Key]
-    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public int Id { get; set; }
 
     public string Name { get; set; } = null!;
@@ -23,5 +16,5 @@ public partial class Quiz
 
     public virtual ICollection<Question> Questions { get; set; } = new List<Question>();
 
-    public virtual ICollection<QuizResult> QuizResults { get; set; } = new List<QuizResult>();
+    public virtual ICollection<QuizAttempt> QuizAttempts { get; set; } = new List<QuizAttempt>();
 }
