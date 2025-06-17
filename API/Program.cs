@@ -34,6 +34,8 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<Admin_IQuizService, Admin_QuizService>();
 
+builder.Services.AddScoped<IJsonConverterService, JsonConverterService>();
+
 
 
 
