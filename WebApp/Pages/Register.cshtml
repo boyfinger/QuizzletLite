@@ -1,0 +1,61 @@
+﻿@page
+@model WebApp.Pages.RegisterModel
+@{
+    ViewData["Title"] = "Register Page";
+}
+<div class="d-flex justify-content-center align-items-center vh-100 bg-light">
+    <div class="card shadow-lg p-4" style="min-width: 350px; max-width: 400px; width: 100%;">
+        <div class="card-header text-center bg-white border-0">
+            <h4 class="mb-0 text-success">Create an Account</h4>
+        </div>
+        <div class="card-body">
+            <form>
+                <div class="form-group mb-3">
+                    <label for="username" class="form-label text-muted">Username</label>
+                    <input type="text" class="form-control" id="username" placeholder="Enter username">
+                </div>
+                <div class="form-group mb-3">
+                    <label for="email" class="form-label text-muted">Email address</label>
+                    <input type="email" class="form-control" id="email" placeholder="Enter email">
+                </div>
+                <div class="form-group mb-3">
+                    <label for="password" class="form-label text-muted">Password</label>
+                    <input type="password" class="form-control" id="password" placeholder="Password">
+                </div>
+                <div class="form-group mb-3">
+                    <label for="confirmPassword" class="form-label text-muted">Confirm Password</label>
+                    <input type="password" class="form-control" id="confirmPassword" placeholder="Confirm password">
+                </div>
+                <div class="form-group mb-3">
+                    <label for="avatar" class="form-label text-muted">Avatar</label>
+                    <input type="file" class="form-control" id="avatar" accept="image/*" onchange="previewImage(event)">
+                </div>
+                <div class="text-center">
+                    <img id="avatarPreview" src="" class="img-thumbnail mt-2" style="max-width: 150px; display: none;">
+                </div>
+                <button type="submit" class="btn btn-success w-100">Register</button>
+                <a class="btn btn-danger w-100 mt-1" href=""><i class="bi bi-google"></i> Login With Google</a>
+            </form>
+        </div>
+        <div class="card-footer text-center bg-white border-0">
+            <small class="text-muted">Already have an account? <a href="/Login">Login</a></small>
+        </div>
+    </div>
+</div>
+
+<script>
+        function previewImage(event) {
+        var input = event.target;
+        var reader = new FileReader();
+
+        reader.onload = function(){
+            var img = document.getElementById("avatarPreview");
+            img.src = reader.result;
+            img.style.display = "block";
+        };
+
+        if (input.files && input.files[0]) {
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+</script>

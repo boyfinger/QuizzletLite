@@ -42,12 +42,17 @@ namespace API.Services
             return await _authRepository.GetUserById(userId);
         }
 
+        public async Task<User?> LoginGoogle()
+        {
+            return null;
+        }
+
         public async Task<bool> RegisterUser(RegisterDTO registerDto)
         {
             if (!registerDto.Password.Equals(registerDto.ConfirmPassword))
                 return false;
 
-            if(await CheckUsernameExists(registerDto.Username)) 
+            if (await CheckUsernameExists(registerDto.Username))
                 return false;
 
             if (await CheckEmailExists(registerDto.Email))
@@ -70,7 +75,7 @@ namespace API.Services
         public async Task<bool> UpdatePassword(int userId, string newPassword)
         {
             var user = await GetUserById(userId);
-            if (user == null) return false; 
+            if (user == null) return false;
 
             string newHashedPassword = EncodedString.HashPassword(newPassword);
 

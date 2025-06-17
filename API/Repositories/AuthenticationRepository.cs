@@ -7,7 +7,7 @@ namespace API.Repositories
     public class AuthenticationRepository : IAuthenticationRepository
     {
         private readonly QuizletLiteContext _context;
-        
+
         public AuthenticationRepository(QuizletLiteContext context)
         {
             _context = context;
@@ -15,6 +15,7 @@ namespace API.Repositories
         public async Task<User?> AuthenticateUser(string email)
         {
             return await _context.Users
+                .Include(u => u.Role)
                 .Include(qr => qr.QuizResults).Include(q => q.Quizzes)
                 .FirstOrDefaultAsync(u => u.Email.Equals(email));
         }

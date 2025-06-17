@@ -16,5 +16,7 @@ namespace API.Services
         Task<bool> UpdatePassword(int userId, string newPassword);
 
         Task<User?> GetUserById(int userId);
+
+        Task<User?> LoginGoogle();
     }
 }

@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace WebApp.Pages
@@ -12,9 +11,10 @@ namespace WebApp.Pages
             _logger = logger;
         }
 
+        public string Username { get; set; } = "Guest";
         public void OnGet()
         {
-
+            Username = HttpContext.Session.GetString("UserName") ?? "Guest";
         }
     }
 }

@@ -16,22 +16,27 @@ namespace API.Controllers
         }
 
         [HttpPost("login")]
-        public async Task<IActionResult> Login([FromQuery] LoginDTO loginDTO)
+        public async Task<IActionResult> Login([FromBody] LoginDTO loginDTO)
         {
             var userLogined = await _authenticationService.AuthenticateUser(loginDTO);
-            if (userLogined != null) {
-                return Ok("Logined");
-            } else
-            {
-                return BadRequest("Can't login");
-            }
+            if (userLogined == null) return Unauthorized("Invalid credentials");
 
-               
+            var userDTO = new UserDto
+            {
+                Id = userLogined.Id,
+                Username = userLogined.Username,
+                Email = userLogined.Email,
+                RoleId = userLogined.RoleId,
+                Avatar = userLogined.Avatar ?? null,
+                RoleName = userLogined.Role?.Role1 ?? "Unknown"
+            };
+
+            return Ok(userDTO);
         }
 
         [HttpPost("register")]
         [Consumes("multipart/form-data")]
-        public async Task<IActionResult> Register([FromForm] RegisterDTO registerDTO)
+        public async Task<IActionResult> Register([FromBody] RegisterDTO registerDTO)
         {
             bool registed = await _authenticationService.RegisterUser(registerDTO);
             return Ok(registed);
