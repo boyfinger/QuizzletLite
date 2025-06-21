@@ -7,7 +7,7 @@ namespace API.Services
 {
     public interface IQuizService
     {
-        Task<double> ProcessQuizAttempt(QuizSubmissionDto submissionDto);
+        Task<double> ProcessQuizAttempt(QuizSubmissionDto submissionDto, int userId);
         Task<QuizzesDto> CreateQuizAsync(CreateQuizDto createQuizDto);
         Task<QuizzesDto> UpdateQuizAsync(int quizId, UpdateQuizDto updateQuizDto);
         Task<bool> DeactivateQuizAsync(int quizId);

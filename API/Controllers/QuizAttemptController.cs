@@ -1,7 +1,9 @@
 ﻿using API.Repositories;
 using API.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace API.Controllers
 {
@@ -18,17 +20,27 @@ namespace API.Controllers
             _quizAttemptRepository = quizResultRepository;
         }
 
+        [Authorize]
         [HttpGet("{quizAttemptId}")]
         public async Task<IActionResult> GetResultById([FromRoute] int quizAttemptId)
         {
             try
             {
-                var result = await _quizAttemptService.GetQuizAttempt(quizAttemptId);
-                if (result == null)
+                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (userIdClaim == null)
+                {
+                    return Unauthorized("User not authenticated.");
+                }
+                var attempt = await _quizAttemptService.GetQuizAttempt(quizAttemptId);
+                if (attempt == null)
                 {
                     return NotFound("Quiz attempt not found.");
                 }
-                return Ok(result);
+                if (attempt.UserId != int.Parse(userIdClaim))
+                {
+                    return Forbid("You do not have permission to view this quiz attempt.");
+                }
+                return Ok(attempt);
             }
             catch (Exception ex)
             {
@@ -36,11 +48,13 @@ namespace API.Controllers
             }
         }
 
-        [HttpGet("user/{userId}")]
-        public async Task<IActionResult> GetResultsByUserId([FromRoute] int userId)
+        [Authorize]
+        [HttpGet("user")]
+        public async Task<IActionResult> GetResultsByUserId()
         {
             try
             {
+                var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
                 var resultsQuery = await _quizAttemptRepository.GetQuizAttemptsOfUser(userId);
                 if (resultsQuery == null || !resultsQuery.Any())
                 {

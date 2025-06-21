@@ -44,7 +44,7 @@ namespace API.Services
             return ((double)correctAnswersCount / questionList.Count) * 10;
         }
 
-        public async Task<double> ProcessQuizAttempt(QuizSubmissionDto submissionDto)
+        public async Task<double> ProcessQuizAttempt(QuizSubmissionDto submissionDto, int userId)
         {
             var quiz = await _quizRepository.GetQuizById(submissionDto.QuizId);
             double score = CalculateScore(submissionDto, quiz.Questions);
@@ -66,7 +66,7 @@ namespace API.Services
 
             var quizAttempt = new QuizAttempt
             {
-                UserId = submissionDto.UserId,
+                UserId = userId,
                 QuizId = submissionDto.QuizId,
                 CompletedDate = DateTime.UtcNow,
                 Score = score,
