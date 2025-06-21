@@ -7,6 +7,8 @@ using API.Repositories;
 using API.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 
 namespace API.Controllers
 {
@@ -23,6 +25,7 @@ namespace API.Controllers
             _quizService = quizService;
         }
 
+        [Authorize]
         [HttpGet]
         public async Task<IActionResult> GetQuizzes([FromQuery] QuizQuery query)
         {
@@ -31,19 +34,21 @@ namespace API.Controllers
             return Ok(list);
         }
 
+        [Authorize]
         [HttpPost("DoQuiz")]
         public async Task<IActionResult> DoQuiz([FromBody] QuizSubmissionDto submissionDto)
         {
             try
             {
-                return Ok(await _quizService.ProcessQuizAttempt(submissionDto));
+                int userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
+                return Ok(await _quizService.ProcessQuizAttempt(submissionDto, userId));
             }
             catch (Exception ex)
             {
                 return BadRequest(new { message = ex.Message });
             }
         }
-
+        [Authorize]
         [HttpGet("{quizId}/Questions")]
         public async Task<IActionResult> GetQuizDetails(int quizId)
         {
