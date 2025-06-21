@@ -1,5 +1,6 @@
 ﻿using API.Dtos.Quiz;
 using API.Dtos.Quiz.QuizDetails;
+using API.Helpers;
 using API.Models;
 
 namespace API.Mappers
@@ -23,20 +24,19 @@ namespace API.Mappers
                 Id = quiz.Id,
                 Name = quiz.Name,
                 CreatedByUsername = quiz.CreatedByNavigation?.Username ?? "Unknown",
-                Questions = quiz.Questions.Select(
-                    q => new QuizQuestionsDto
+                Questions = quiz.Questions
+                    .Select(q => new QuizQuestionsDto
                     {
                         Id = q.Id,
                         Content = q.Content,
-                        QuestionTypeId = q.QuestionTypeId,
-                        Answers = q.Answers.Select(a => new QuestionOptionDto
-                        {
-                            Id = a.Id,
-                            Content = a.Content,
-                            IsCorrect = a.IsCorrect
-                        }).ToList()
-                    }
-                ).ToList()
+                        QuestionType = q.QuestionType,
+                        Options = JsonConverter.ConvertFromAnswerJson(q.OptionsJson)
+                            .Select(a => new QuestionOptionDto
+                            {
+                                Content = a.Content,
+                                IsCorrect = a.IsCorrect
+                            }).ToList()
+                    }).ToList()
             };
         }
     } 

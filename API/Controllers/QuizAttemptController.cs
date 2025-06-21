@@ -7,26 +7,26 @@ namespace API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class QuizResultController : ControllerBase
+    public class QuizAttemptController : ControllerBase
     {
-        private readonly IQuizResultService _quizResultService;
-        private readonly IQuizResultRepository _quizResultRepository;
+        private readonly IQuizAttemptService _quizAttemptService;
+        private readonly IQuizAttemptRepository _quizAttemptRepository;
 
-        public QuizResultController(IQuizResultService quizResultService, IQuizResultRepository quizResultRepository)
+        public QuizAttemptController(IQuizAttemptService quizResultService, IQuizAttemptRepository quizResultRepository)
         {
-            _quizResultService = quizResultService;
-            _quizResultRepository = quizResultRepository;
+            _quizAttemptService = quizResultService;
+            _quizAttemptRepository = quizResultRepository;
         }
 
-        [HttpGet("{quizResultId}")]
-        public async Task<IActionResult> GetResultById([FromRoute] int quizResultId)
+        [HttpGet("{quizAttemptId}")]
+        public async Task<IActionResult> GetResultById([FromRoute] int quizAttemptId)
         {
             try
             {
-                var result = await _quizResultService.GetQuizResult(quizResultId);
+                var result = await _quizAttemptService.GetQuizAttempt(quizAttemptId);
                 if (result == null)
                 {
-                    return NotFound("Quiz result not found.");
+                    return NotFound("Quiz attempt not found.");
                 }
                 return Ok(result);
             }
@@ -41,7 +41,7 @@ namespace API.Controllers
         {
             try
             {
-                var resultsQuery = await _quizResultRepository.GetQuizResultsOfUser(userId);
+                var resultsQuery = await _quizAttemptRepository.GetQuizAttemptsOfUser(userId);
                 if (resultsQuery == null || !resultsQuery.Any())
                 {
                     return NotFound("No quiz results found for this user.");

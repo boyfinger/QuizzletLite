@@ -7,8 +7,7 @@ namespace API.Repositories
     public interface IQuizRepository
     {
         Task<List<Quiz>> GetQuizzes(QuizQuery query);
-        Task<List<Question>> GetQuestionsOfQuiz(int quizId);
-        Task<bool> SaveQuizAttempt(QuizSubmissionDto submissionDto, double score);
+        Task<bool> SaveQuizAttempt(QuizAttempt quizAttempt);
         Task<Quiz?> GetQuizById(int quizId);
         Task<Quiz?> GetQuizByIdWithDetails(int quizId);
         Task<List<Quiz>> GetQuizzesByUser(int userId);

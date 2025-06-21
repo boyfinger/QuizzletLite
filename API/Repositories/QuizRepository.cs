@@ -32,19 +32,10 @@ namespace API.Repositories
             return true;
         }
 
-        public async Task<List<Question>> GetQuestionsOfQuiz(int quizId)
-        {
-            return await _context.Questions
-                .Where(q => q.QuizId == quizId)
-                .Include(q => q.Answers)
-                .ToListAsync();
-        }
-
         public async Task<Quiz?> GetQuizById(int quizId)
         {
             return await _context.Quizzes
                 .Include(q => q.Questions)
-                    .ThenInclude(q => q.Answers)
                 .Include(q => q.CreatedByNavigation)
                 .FirstOrDefaultAsync(q => q.Id == quizId);
         }
@@ -79,37 +70,16 @@ namespace API.Repositories
                 .ToListAsync();
         }
 
-        public async Task<bool> SaveQuizAttempt(QuizSubmissionDto submissionDto, double score)
+        public async Task<bool> SaveQuizAttempt(QuizAttempt quizAttempt)
         {
-            using var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
-                var quizAttempt = new QuizResult
-                {
-                    UserId = submissionDto.UserId,
-                    QuizId = submissionDto.QuizId,
-                    Score = score,
-                    CompletedDate = DateTime.UtcNow
-                };
-                _context.QuizResults.Add(quizAttempt);
+                await _context.QuizAttempts.AddAsync(quizAttempt);
                 await _context.SaveChangesAsync();
-                foreach (var answer in submissionDto.Answers)
-                {
-                    var quizAnswer = new SelectedAnswer
-                    {
-                        QuizResultId = quizAttempt.Id,
-                        QuestionId = answer.QuestionId,
-                        AnswerId = answer.AnswerId
-                    };
-                    _context.SelectedAnswers.Add(quizAnswer);
-                }
-                await _context.SaveChangesAsync();
-                await transaction.CommitAsync();
                 return true;
             }
-            catch
+            catch (Exception)
             {
-                await transaction.RollbackAsync();
                 return false;
             }
         }
