@@ -47,14 +47,14 @@ namespace API.Controllers
         [HttpGet("{quizId}/Questions")]
         public async Task<IActionResult> GetQuizDetails(int quizId)
         {
-            var quiz = await _quizRepository.GetQuizById(quizId);
-            if (quiz == null)
+            try
             {
-                return NotFound();
+                return Ok(await _quizService.GetQuizDetailsAsync(quizId));
             }
-            var quizDto = quiz.ToQuizDetailsDto();
-            return Ok(quizDto);
-
+            catch (Exception ex)
+            {
+                return NotFound(ex.Message);
+            }
         }
 
         [HttpPost]

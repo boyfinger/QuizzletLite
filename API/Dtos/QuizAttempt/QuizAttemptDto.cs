@@ -1,13 +1,13 @@
-﻿namespace API.Dtos.QuizResult
+﻿namespace API.Dtos.QuizAttempt
 {
-    public class QuizResultDto
+    public class QuizAttemptDto
     {
         public int Id { get; set; }
         public int QuizId { get; set; }
         public string QuizName { get; set; }
         public int UserId { get; set; }
 
-        public List<ResultQuestionDto> Questions { get; set; }
+        public List<AttemptQuestionDto> Questions { get; set; }
         public double TotalScore { get; set; }
     }
 }

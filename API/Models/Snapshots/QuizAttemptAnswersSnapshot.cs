@@ -2,8 +2,8 @@
 {
     public class QuizAttemptAnswersSnapshot
     {
-        public string? Content { get; set; }
+        public string? QuestionContent { get; set; }
         public List<QuestionOptionsSnapshot> Options { get; set; } = new List<QuestionOptionsSnapshot>();
-        public List<string> Selected { get; set; } = new List<string>();
+        public List<string> SelectedAnswers { get; set; } = new List<string>();
     }
 }

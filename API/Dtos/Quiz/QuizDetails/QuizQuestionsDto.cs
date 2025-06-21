@@ -1,10 +1,12 @@
-﻿namespace API.Dtos.Quiz.QuizDetails
+﻿using API.Models.Enums;
+
+namespace API.Dtos.Quiz.QuizDetails
 {
     public class QuizQuestionsDto
     {
         public int Id { get; set; }
         public string Content { get; set; }
-        public int QuestionTypeId { get; set; }
-        public List<QuestionOptionDto> Answers { get; set; } = new List<QuestionOptionDto>();
+        public QuestionType QuestionType { get; set; }
+        public List<QuestionOptionDto> Options { get; set; } = new List<QuestionOptionDto>();
     }
 }
