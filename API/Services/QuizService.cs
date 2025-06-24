@@ -1,7 +1,10 @@
 ﻿using API.Dtos;
 using API.Dtos.Quiz;
+using API.Dtos.Quiz.QuizDetails;
 using API.Dtos.Quiz.QuizSubmission;
+using API.Helpers;
 using API.Models;
+using API.Models.Enums;
 using API.Models.Snapshots;
 using API.Repositories;
 using Newtonsoft.Json;
@@ -17,40 +20,60 @@ namespace API.Services
             _quizRepository = quizRepository;
         }
 
-        private double CalculateScore(QuizSubmissionDto submissionDto, List<Question> questionList)
+        private double CalculateScore(QuizSubmissionDto submissionDto, ICollection<Question> questionList)
         {
             int correctAnswersCount = 0;
 
-            foreach (Question question in questionList)
+            foreach (SubmissionAnswerDto answerDto in submissionDto.Answers)
             {
-                var submittedAnswers = submissionDto.Answers
-                    .Where(a => a.QuestionId == question.Id)
-                    .Select(a => a.AnswerId) // Sử dụng AnswerId thay vì Content
-                    .ToList();
-
-                if (submittedAnswers.Count != 0)
+                var question = questionList.FirstOrDefault(q => q.Id == answerDto.QuestionId);
+                if (question != null)
                 {
-                    // Deserialize danh sách đáp án từ OptionsJson
-                    var correctAnswers = JsonConvert.DeserializeObject<List<QuestionOptionsSnapshot>>(question.OptionsJson)
-                        .Where(a => a.IsCorrect)
-                        .Select((a, index) => index) // Lấy vị trí trong danh sách làm AnswerId
-                        .ToList();
+                    var questionOptions = JsonConverter.ConvertFromAnswerJson(question.OptionsJson);
+                    var correctAnswers = questionOptions.Where(o => o.IsCorrect).Select(o => o.Content).ToList();
 
-                    if (correctAnswers.OrderBy(id => id).SequenceEqual(submittedAnswers.OrderBy(id => id)))
+                    var selectedAnswers = answerDto.SelectedAnswers ?? new List<string>();
+                    if (selectedAnswers.Count == correctAnswers.Count && !selectedAnswers.Except(correctAnswers).Any())
                     {
                         correctAnswersCount++;
                     }
+
                 }
             }
 
-            return (correctAnswersCount / (double)questionList.Count) * 10;
+            return ((double)correctAnswersCount / questionList.Count) * 10;
         }
 
-        public async Task<double> ProcessQuizAttempt(QuizSubmissionDto submissionDto)
+        public async Task<double> ProcessQuizAttempt(QuizSubmissionDto submissionDto, int userId)
         {
-            var questionList = await _quizRepository.GetQuestionsOfQuiz(submissionDto.QuizId);
-            double score = CalculateScore(submissionDto, questionList);
-            bool isSaved = await _quizRepository.SaveQuizAttempt(submissionDto, score);
+            var quiz = await _quizRepository.GetQuizById(submissionDto.QuizId);
+            double score = CalculateScore(submissionDto, quiz.Questions);
+
+            var quizAttemptAnswers = new List<QuizAttemptAnswersSnapshot>();
+
+            foreach (var question in quiz.Questions)
+            {
+                var questionOptions = JsonConverter.ConvertFromAnswerJson(question.OptionsJson);
+                var attemptAnswers = new QuizAttemptAnswersSnapshot
+                {
+                    QuestionContent = question.Content,
+                    Options = questionOptions,
+                    SelectedAnswers = submissionDto.Answers
+                        .FirstOrDefault(a => a.QuestionId == question.Id)?.SelectedAnswers ?? new List<string>()
+                };
+                quizAttemptAnswers.Add(attemptAnswers);
+            }
+
+            var quizAttempt = new QuizAttempt
+            {
+                UserId = userId,
+                QuizId = submissionDto.QuizId,
+                CompletedDate = DateTime.UtcNow,
+                Score = score,
+                QuizName = quiz.Name,
+                AnswersJson = JsonConverter.ConvertToQuizAttemptQuestionsSnapshotJson(quizAttemptAnswers)
+            };
+            bool isSaved = await _quizRepository.SaveQuizAttempt(quizAttempt);
             if (!isSaved)
             {
                 throw new Exception("Failed to save quiz attempt.");
@@ -113,6 +136,30 @@ namespace API.Services
             };
         }
 
-
+        public async Task<QuizDetailsDto> GetQuizDetailsAsync(int quizId)
+        {
+            var quiz = await _quizRepository.GetQuizById(quizId);
+            if (quiz == null)
+            {
+                throw new Exception("Quiz not found");
+            }
+            return new QuizDetailsDto
+            {
+                Id = quiz.Id,
+                Name = quiz.Name,
+                CreatedByUsername = quiz.CreatedByNavigation.Username,
+                Questions = quiz.Questions.Select(q => new QuizQuestionsDto
+                {
+                    Id = q.Id,
+                    Content = q.Content,
+                    QuestionType = q.QuestionType,
+                    Options = JsonConverter.ConvertFromAnswerJson(q.OptionsJson).Select(o => new QuestionOptionDto
+                    {
+                        Content = o.Content,
+                        IsCorrect = o.IsCorrect
+                    }).ToList()
+                }).ToList()
+            };
+        }
     }
 }

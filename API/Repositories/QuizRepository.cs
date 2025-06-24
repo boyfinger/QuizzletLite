@@ -33,13 +33,6 @@ namespace API.Repositories
             return true;
         }
 
-        public async Task<List<Question>> GetQuestionsOfQuiz(int quizId)
-        {
-            return await _context.Questions
-                .Where(q => q.QuizId == quizId)
-                .ToListAsync();
-        }
-
         public async Task<Quiz?> GetQuizById(int quizId)
         {
             return await _context.Quizzes
@@ -77,33 +70,16 @@ namespace API.Repositories
                 .ToListAsync();
         }
 
-        public async Task<bool> SaveQuizAttempt(QuizSubmissionDto submissionDto, double score)
+        public async Task<bool> SaveQuizAttempt(QuizAttempt quizAttempt)
         {
-            using var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
-                var quizAttempt = new QuizAttempt
-                {
-                    UserId = submissionDto.UserId,
-                    QuizId = submissionDto.QuizId,
-                    Score = score,
-                    CompletedDate = DateTime.UtcNow,
-                    QuizName = _context.Quizzes.Where(q => q.Id == submissionDto.QuizId)
-                                               .Select(q => q.Name)
-                                               .FirstOrDefault() ?? "Unknown",
-                    AnswersJson = JsonConvert.SerializeObject(submissionDto.Answers)
-                };
-
-                _context.QuizAttempts.Add(quizAttempt);
+                await _context.QuizAttempts.AddAsync(quizAttempt);
                 await _context.SaveChangesAsync();
-                await transaction.CommitAsync();
-
                 return true;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                await transaction.RollbackAsync();
-                Console.WriteLine($"Lỗi khi lưu quiz attempt: {ex.Message}");
                 return false;
             }
         }
