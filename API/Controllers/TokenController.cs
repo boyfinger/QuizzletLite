@@ -18,7 +18,7 @@ namespace API.Controllers
         [HttpGet]
         public IActionResult GenerateToken(int userId, string role)
         {
-            return Ok(new { token = JWTHelper.GenerateToken(userId.ToString(), role, _configuration) });
+            return Ok(new { token = JWTHelper.GenerateToken(24 * 365, userId.ToString(), role, _configuration) });
         }
     }
 }
