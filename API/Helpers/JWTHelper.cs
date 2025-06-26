@@ -7,7 +7,7 @@ namespace API.Helpers
 {
     public class JWTHelper
     {
-        public static string GenerateToken(string userId, string role, IConfiguration configuration)
+        public static string GenerateToken(int hours, string userId, string role, IConfiguration configuration)
         {
             var claims = new[]
             {
@@ -20,7 +20,7 @@ namespace API.Helpers
                 issuer: configuration["JWT:Issuer"],
                 audience: configuration["JWT:Audience"],
                 claims: claims,
-                expires: DateTime.Now.AddHours(1),
+                expires: DateTime.Now.AddHours(hours),
                 signingCredentials: creds
             );
             return new JwtSecurityTokenHandler().WriteToken(token);
