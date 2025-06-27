@@ -13,10 +13,12 @@ namespace API.Services
     public class QuizService : IQuizService
     {
         private readonly IQuizRepository _quizRepository;
+        private readonly IQuizAttemptRepository _quizAttemptRepository;
 
-        public QuizService(IQuizRepository quizRepository)
+        public QuizService(IQuizRepository quizRepository, IQuizAttemptRepository quizAttemptRepository)
         {
             _quizRepository = quizRepository;
+            _quizAttemptRepository = quizAttemptRepository;
         }
 
         private double CalculateScore(QuizSubmissionDto submissionDto, ICollection<Question> questionList)
@@ -43,7 +45,7 @@ namespace API.Services
             return ((double)correctAnswersCount / questionList.Count) * 10;
         }
 
-        public async Task<double> ProcessQuizAttempt(QuizSubmissionDto submissionDto, int userId)
+        public async Task<QuizAttempt> ProcessQuizAttempt(QuizSubmissionDto submissionDto, int userId)
         {
             var quiz = await _quizRepository.GetQuizById(submissionDto.QuizId);
             double score = CalculateScore(submissionDto, quiz.Questions);
@@ -72,13 +74,7 @@ namespace API.Services
                 QuizName = quiz.Name,
                 AnswersJson = JsonConverter.ConvertToQuizAttemptQuestionsSnapshotJson(quizAttemptAnswers)
             };
-            bool isSaved = await _quizRepository.SaveQuizAttempt(quizAttempt);
-            if (!isSaved)
-            {
-                throw new Exception("Failed to save quiz attempt.");
-            }
-
-            return score;
+            return await _quizAttemptRepository.SaveQuizAttempt(quizAttempt);
         }
 
         public async Task<QuizzesDto> CreateQuizAsync(CreateQuizDto createQuizDto)

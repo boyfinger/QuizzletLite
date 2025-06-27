@@ -1,0 +1,146 @@
+﻿@page
+@model WebApp.Pages.Quiz.QuizListModel
+@{
+    Layout = null; // No layout for this page"
+}
+
+<link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+<link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+<link rel="stylesheet" href="~/WebApp.styles.css" asp-append-version="true" />
+
+<div class="container mt-5">
+    <h2>Quiz List</h2>
+    <form>
+        <div class="form-group mb-3">
+            <label for="searchString">Search by Quiz Name:</label>
+            <input type="text" id="searchString" class="form-control" placeholder="Enter quiz name" />
+        </div>
+    </form>
+    <div class="mb-3">
+        <a class="btn btn-primary" asp-page="./Create">Create New Quiz</a>
+    </div>
+    <table class="table table-striped" id="quizListTable">
+        <thead>
+            <tr>
+                <th>Quiz Name</th>
+                <th>Created By</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+</div>
+
+<div id="pagination">
+    <nav aria-label="Page navigation">
+        <ul class="pagination"></ul>
+    </nav>
+</div>
+
+<script>
+    let currentPage = 1;
+    let fullData = [];
+    let searchString = '';
+    let apiUrl = 'https://localhost:7245/api/Quiz';
+
+    (function() {
+        renderTable();
+    })();
+
+    async function getData(url){
+        try {
+            const response = await fetch(url, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            console.log('Status:', response.status);
+
+            if (!response.ok) {
+                throw new Error('HTTP error! Status: ' + response.status);
+            }
+
+            return await response.json();
+        } catch (error) {
+            console.error('Error:', error.message);
+        }
+    }
+
+    async function renderTable(){
+        let url = apiUrl + '?page=' + currentPage;
+        if (searchString) {
+            url += '&name=' + searchString;
+        }
+        let data = await getData(url);
+        const rows = data.map(q => `
+            <tr>
+                <td>${q.name}</td>
+                <td>${q.createdByUserName}</td>
+                <td>
+                    <a href="/quiz/quiztaking?quizId=${q.id}">Do quiz</a>
+                </td>
+            </tr>
+        `).join("");
+
+        document.querySelector("#quizListTable tbody").innerHTML = rows;
+
+        await renderPagination();
+    }
+
+    async function renderPagination(){
+        let url = apiUrl;
+        if (searchString) {
+            url += '?name=' + searchString;
+        }
+        let data = await getData(url);
+        let previousPagination = '',
+            nextPagination = '';
+        const totalPages = data.length;
+
+        if (totalPages > 1 && currentPage != 1){
+            previousPagination = `
+                <li class="page-item">
+                    <a class="page-link" href="#" onclick="changePage(${currentPage - 1})">
+                        <span aria-hidden="true">&laquo;</span>
+                    </a>
+                </li>
+            `;
+        }
+
+        const paginationItems = Array.from({ length: totalPages }, (_, i) => `
+            <li class="page-item ${i + 1 === currentPage ? 'active' : ''}">
+                <a class="page-link" href="#" onclick="changePage(${i + 1})">${i + 1}</a>
+            </li>
+        `).join("");
+
+        if (totalPages > 1 && currentPage != totalPages){
+            nextPagination = `
+                <li class="page-item">
+                    <a class="page-link" href="#" onclick="changePage(${currentPage + 1})">
+                        <span aria-hidden="true">&raquo;</span>
+                    </a>
+                </li>
+            `;
+        }
+        document.querySelector("#pagination nav ul").innerHTML = previousPagination + paginationItems + nextPagination;
+    }
+
+    function changePage(page) {
+        currentPage = page;
+        renderTable();
+    }
+
+    document.getElementById('searchString').addEventListener('input', function() {
+        const searchValue = this.value.toLowerCase();
+        searchString = searchValue;
+        currentPage = 1; // Reset to first page on new search
+        renderTable();
+    });
+</script>
+
+<script src="~/lib/jquery/dist/jquery.min.js"></script>
+<script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+<script src="~/js/site.js" asp-append-version="true"></script>

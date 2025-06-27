@@ -70,20 +70,6 @@ namespace API.Repositories
                 .ToListAsync();
         }
 
-        public async Task<bool> SaveQuizAttempt(QuizAttempt quizAttempt)
-        {
-            try
-            {
-                await _context.QuizAttempts.AddAsync(quizAttempt);
-                await _context.SaveChangesAsync();
-                return true;
-            }
-            catch (Exception)
-            {
-                return false;
-            }
-        }
-
         public async Task<Quiz> UpdateQuiz(Quiz quiz)
         {
             _context.Quizzes.Update(quiz);
