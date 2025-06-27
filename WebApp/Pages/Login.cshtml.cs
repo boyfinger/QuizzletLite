@@ -1,4 +1,5 @@
-using API.Dtos.User;
+﻿using API.Dtos.User;
+using API.Utils;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Newtonsoft.Json;
@@ -10,14 +11,21 @@ namespace WebApp.Pages
     {
 
         private readonly HttpClient _httpClient;
-        public LoginModel(HttpClient httpClient)
+        private readonly IHttpClientFactory _clientFactory;
+        public LoginModel(HttpClient httpClient, IHttpClientFactory clientFactory)
         {
             _httpClient = httpClient;
+            _clientFactory = clientFactory;
         }
         [BindProperty]
         public LoginDTO loginDTO { get; set; } = new LoginDTO();
-        public void OnGet()
+        public IActionResult OnGet()
         {
+            if (HttpContext.Session.Get<UserDto>("userSession") == null)
+            {
+                return Page();
+            }
+            return RedirectToPage("/Index");
         }
 
         public async Task<IActionResult> OnPostLoginAsync()
@@ -35,15 +43,18 @@ namespace WebApp.Pages
                 return Page();
             }
             var responseData = await response.Content.ReadAsStringAsync();
-            var userSession = JsonConvert.DeserializeObject<UserDto>(responseData);
+            var authResponse = JsonConvert.DeserializeObject<AuthResponseDto>(responseData);
 
-            HttpContext.Session.SetString("UserId", userSession.Id.ToString());
-            HttpContext.Session.SetString("UserRoleId", userSession.Role.ToString());
-            HttpContext.Session.SetString("UserAvatar", userSession.Avatar);
-            HttpContext.Session.SetString("UserName", userSession.Username);
-            HttpContext.Session.SetString("UserEmail", userSession.Email);
+            HttpContext.Session.Set<UserDto>("userSession", authResponse.UserDto);
+
+            HttpContext.Session.SetString("accessToken", authResponse.Token);
 
             return RedirectToPage("/Index");
         }
+
+        //public IActionResult OnGetGoogleLogin()
+        //{
+        //    return Redirect("https://localhost:7245/api/Authentication/login-google");
+        //}
     }
 }

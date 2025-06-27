@@ -1,9 +1,15 @@
-﻿<!DOCTYPE html>
+﻿@using API.Dtos.User
+@using API.Utils
+@inject IHttpContextAccessor HttpContextAccessor
+@{
+    var user = HttpContextAccessor.HttpContext?.Session.Get<UserDto>("userSession");
+}
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - WebApp</title>
+    <title>@ViewData["Title"] - Quizlet Lite</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/WebApp.styles.css" asp-append-version="true" />
@@ -14,7 +20,7 @@
         <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom shadow-sm">
             <div class="container">
                 <a class="navbar-brand fw-bold text-primary" asp-area="" asp-page="/Index">
-                    <img src="/images/logo.png" alt="WebApp Logo" width="40" class="me-2"> WebApp
+                    <img src="~/image_downloaded/icon of app quizlet .png" alt="WebApp Logo" width="40" class="me-2"> Quizlet Lite
                 </a>
 
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -35,18 +41,41 @@
                     </ul>
 
                     <!-- Dropdown cho tài khoản -->
-                    <ul class="navbar-nav ms-4">
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle text-primary" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
-                                👤 Account
-                            </a>
-                            <ul class="dropdown-menu dropdown-menu-end">
-                                <li><a class="dropdown-item" asp-page="/Login">Login</a></li>
-                                <li><a class="dropdown-item" asp-page="/Register">Register</a></li>
-                                <li><a class="dropdown-item" asp-page="/Profile">Profile</a></li>
-                            </ul>
-                        </li>
-                    </ul>
+                    @if (user != null)
+                    {
+                        <ul class="navbar-nav ms-4">
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
+                                    <img src="@user.Avatar" alt="Avatar" class="rounded-circle me-2" style="width: 32px; height: 32px; object-fit: cover;" />
+                                    <span class="text-primary">@user.Username</span>
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    <li><a class="dropdown-item" asp-page="/Profile">Profile</a></li>
+                                    <li>
+                                        <form method="post" asp-page="/Logout">
+                                            <button class="dropdown-item" type="submit">🚪 Logout</button>
+                                        </form>
+                                    </li>
+                                </ul>
+                            </li>
+                        </ul>
+
+
+                    }
+                    else
+                    {
+                        <ul class="navbar-nav ms-4">
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle text-primary" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
+                                    👤 Account
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    <li><a class="dropdown-item" asp-page="/Login">Login</a></li>
+                                    <li><a class="dropdown-item" asp-page="/Register">Register</a></li>
+                                </ul>
+                            </li>
+                        </ul>
+                    }
                 </div>
             </div>
         </nav>

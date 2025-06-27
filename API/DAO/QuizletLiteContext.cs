@@ -40,9 +40,9 @@ public partial class QuizletLiteContext : DbContext
             .OnDelete(DeleteBehavior.Restrict);
 
         modelBuilder.Entity<User>().HasData(//AnLT Đổi Tí Mật Khẩu, Mật Khẩu của chúng ta sẽ là mã hóa Bcrypt, cứ test là 123
-            new User { Id = 1, Role = Role.Admin, Email = "admin@email.com", Username = "admin", PasswordHash = "$2a$12$6GMyaacdt22VmPBouyUnB.e/4guoGG09ukoXkx/eb02bKcwokoy9C", Avatar = null },
-            new User { Id = 2, Role = Role.User, Email = "user1@email.com", Username = "user1", PasswordHash = "$2a$12$6GMyaacdt22VmPBouyUnB.e/4guoGG09ukoXkx/eb02bKcwokoy9C", Avatar = null },
-            new User { Id = 3, Role = Role.User, Email = "user2@email.com", Username = "user2", PasswordHash = "$2a$12$6GMyaacdt22VmPBouyUnB.e/4guoGG09ukoXkx/eb02bKcwokoy9C", Avatar = null }
+            new User { Id = 1, Role = Role.Admin, Email = "admin@email.com", Username = "admin", PasswordHash = "$2a$12$6GMyaacdt22VmPBouyUnB.e/4guoGG09ukoXkx/eb02bKcwokoy9C", Avatar = "https://api.dicebear.com/7.x/bottts/svg?seed=1750601570652" },
+            new User { Id = 2, Role = Role.User, Email = "user1@email.com", Username = "user1", PasswordHash = "$2a$12$6GMyaacdt22VmPBouyUnB.e/4guoGG09ukoXkx/eb02bKcwokoy9C", Avatar = "https://api.dicebear.com/7.x/bottts/svg?seed=1750601570652" },
+            new User { Id = 3, Role = Role.User, Email = "user2@email.com", Username = "user2", PasswordHash = "$2a$12$6GMyaacdt22VmPBouyUnB.e/4guoGG09ukoXkx/eb02bKcwokoy9C", Avatar = "https://api.dicebear.com/7.x/bottts/svg?seed=1750601570652" }
         );
 
         modelBuilder.Entity<Quiz>().HasData(

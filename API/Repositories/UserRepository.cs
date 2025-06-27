@@ -18,7 +18,7 @@ namespace API.Repositories
 
         public async Task<List<User>> GetUsers(UserQuery query)
         {
-            var users = _context.Users.Include(u => u.Role).AsQueryable();
+            var users = _context.Users.AsQueryable();
 
             if (!string.IsNullOrEmpty(query.Username))
             {
@@ -43,7 +43,7 @@ namespace API.Repositories
 
         public async Task<User?> GetUserById(int id)
         {
-            return await _context.Users.Include(u => u.Role).FirstOrDefaultAsync(u => u.Id == id);
+            return await _context.Users.FirstOrDefaultAsync(u => u.Id == id);
         }
 
         public async Task AddUser(User user)
@@ -74,6 +74,12 @@ namespace API.Repositories
         public async Task<bool> UserExists(int id)
         {
             return await _context.Users.AnyAsync(u => u.Id == id);
+        }
+
+        public async Task<User?> GetUserByEmail(string email)
+        {
+            return await _context.Users
+                .FirstOrDefaultAsync(u => u.Email == email);
         }
     }
 }

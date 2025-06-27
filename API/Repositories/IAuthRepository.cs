@@ -2,7 +2,7 @@
 
 namespace API.Repositories
 {
-    public interface IAuthenticationRepository
+    public interface IAuthRepository
     {
         Task<User?> AuthenticateUser(string email);
 

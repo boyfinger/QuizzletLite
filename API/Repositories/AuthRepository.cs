@@ -4,19 +4,20 @@ using Microsoft.EntityFrameworkCore;
 
 namespace API.Repositories
 {
-    public class AuthenticationRepository : IAuthenticationRepository
+    public class AuthRepository : IAuthRepository
     {
         private readonly QuizletLiteContext _context;
 
-        public AuthenticationRepository(QuizletLiteContext context)
+        public AuthRepository(QuizletLiteContext context)
         {
             _context = context;
         }
+
         public async Task<User?> AuthenticateUser(string email)
         {
             return await _context.Users
-                .Include(u => u.Role).Include(q => q.Quizzes)
-                .FirstOrDefaultAsync(u => u.Email.Equals(email));
+                .Include(u => u.Quizzes) // giữ lại nếu User có danh sách Quiz
+                .FirstOrDefaultAsync(u => u.Email == email);
         }
 
         public async Task<bool> CheckEmailExists(string email)
@@ -31,7 +32,9 @@ namespace API.Repositories
 
         public async Task<User?> GetUserById(int userId)
         {
-            return await _context.Users.FindAsync(userId);
+            return await _context.Users
+                .Include(u => u.Quizzes) // nếu muốn trả về cả quizzes
+                .FirstOrDefaultAsync(u => u.Id == userId);
         }
 
         public async Task<bool> RegisterUser(User user)

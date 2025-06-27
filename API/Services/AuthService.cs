@@ -2,14 +2,15 @@
 using API.Hash;
 using API.Models;
 using API.Repositories;
+using API.Utils;
 
 namespace API.Services
 {
-    public class AuthenticationService : IAuthenticationService
+    public class AuthService : IAuthService
     {
-        private readonly IAuthenticationRepository _authRepository;
+        private readonly IAuthRepository _authRepository;
 
-        public AuthenticationService(IAuthenticationRepository authRepository)
+        public AuthService(IAuthRepository authRepository)
         {
             _authRepository = authRepository;
         }
@@ -58,8 +59,17 @@ namespace API.Services
             if (await CheckEmailExists(registerDto.Email))
                 return false;
 
+            string hashedImage;
+            if (registerDto.Avatar == null)
+            {
+                hashedImage = RandomStringUtils.GenerateRandomAvatar();
+            }
+            else
+            {
+                hashedImage = EncodedString.EncodeFileBase64(registerDto.Avatar);
+            }
+
             var hashedPassword = EncodedString.HashPassword(registerDto.Password);
-            var hashedImage = EncodedString.EncodeFileBase64(registerDto.Avatar);
             var newUser = new User
             {
                 Role = Models.Enums.Role.User,

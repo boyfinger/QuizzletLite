@@ -8,6 +8,7 @@ namespace API.Repositories
     {
         Task<List<User>> GetUsers(UserQuery query);
         Task<User?> GetUserById(int id);
+        Task<User?> GetUserByEmail(string email);
         Task AddUser(User user);
         Task UpdateUser(UserDto dto);
         Task<bool> DeleteUser(int id);

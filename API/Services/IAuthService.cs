@@ -3,7 +3,7 @@ using API.Models;
 
 namespace API.Services
 {
-    public interface IAuthenticationService
+    public interface IAuthService
     {
         Task<User?> AuthenticateUser(LoginDTO loginDTO);
 
