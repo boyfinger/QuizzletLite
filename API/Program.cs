@@ -124,7 +124,7 @@ builder.Services
     });
 
 builder.Services.AddScoped<IQuizRepository, QuizRepository>();
-//builder.Services.AddScoped<IQuizService, QuizService>();
+builder.Services.AddScoped<IQuizService, QuizService>();
 builder.Services.AddScoped<IQuizAttemptService, QuizAttemptService>();
 builder.Services.AddScoped<IQuizAttemptRepository, QuizAttemptRepository>();
 builder.Services.AddScoped<IJwtService, JwtService>();
@@ -136,7 +136,7 @@ builder.Services.AddScoped<IAuthRepository, AuthRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IGoogleAuthService, GoogleAuthService>();
-//builder.Services.AddScoped<Admin_IQuizService, Admin_QuizService>();
+builder.Services.AddScoped<Admin_IQuizService, Admin_QuizService>();
 
 builder.Services.AddControllers().AddOData(options => options
     .Filter()
