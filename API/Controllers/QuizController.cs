@@ -25,7 +25,7 @@ namespace API.Controllers
             _quizService = quizService;
         }
 
-        [Authorize]
+        [AllowAnonymous]
         [HttpGet]
         public async Task<IActionResult> GetQuizzes([FromQuery] QuizQuery query)
         {
@@ -41,7 +41,12 @@ namespace API.Controllers
             try
             {
                 int userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
-                return Ok(await _quizService.ProcessQuizAttempt(submissionDto, userId));
+                var quizAttempt = await _quizService.ProcessQuizAttempt(submissionDto, userId);
+                return Ok(new
+                {
+                    Score = quizAttempt.Score,
+                    Id = quizAttempt.Id
+                });
             }
             catch (Exception ex)
             {

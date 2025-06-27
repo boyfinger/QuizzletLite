@@ -6,5 +6,6 @@ namespace API.Repositories
     {
         public Task<QuizAttempt?> GetQuizAttemptById(int quizAttemptId);
         Task<List<QuizAttempt>> GetQuizAttemptsOfUser(int userId);
+        Task<QuizAttempt> SaveQuizAttempt(QuizAttempt quizAttempt);
     }
 }
