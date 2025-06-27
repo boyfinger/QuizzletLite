@@ -1,0 +1,69 @@
+﻿@page
+@model WebApp.Pages.QuizAttempt.ListModel
+@{
+    Layout = null;
+}
+
+<link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+<link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+<link rel="stylesheet" href="~/WebApp.styles.css" asp-append-version="true" />
+
+<table class="table table-striped" id="listTable">
+    <thead>
+        <tr>
+            <th>Quiz Name</th>
+            <th>Score</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+    </tbody>
+</table>
+
+<script src="~/lib/jquery/dist/jquery.min.js"></script>
+<script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+<script src="~/js/site.js" asp-append-version="true"></script>
+
+<script>
+    window.onload = () => {
+        renderQuizAttemptList();
+    }
+
+    async function fetchData(url){
+        try {
+            const response = await fetch(url, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1laWRlbnRpZmllciI6IjEiLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJVc2VyIiwiZXhwIjoxNzgyNDQ5ODc1LCJpc3MiOiJRdWl6bGV0TGl0ZSIsImF1ZCI6InVzZXIifQ.6ckfIQGTFMBmW0mSeGdQ9Q930PEZ2egYWGE_zqgJuww`
+                }
+            });
+
+            console.log('Status:', response.status);
+
+            if (!response.ok) {
+                throw new Error('HTTP error! Status: ' + response.status);
+            }
+
+            return await response.json();
+        } catch (error) {
+            console.error('Error:', error.message);
+        }
+    }
+
+    async function renderQuizAttemptList(){
+        let url = "https://localhost:7245/api/QuizAttempt/user";
+        let data = await fetchData(url);
+        const tbody = document.querySelector('#listTable tbody');
+        const rows = data.map(attempt => `
+            <tr>
+                <td>${attempt.name}</td>
+                <td>${attempt.score}</td>
+                <td>
+                    <a href="/QuizAttempt/Details?id=${attempt.id}" class="btn btn-primary">View</a>
+                </td>
+            </tr>
+        `).join('');
+        tbody.innerHTML = rows;
+    }
+</script>

@@ -1,0 +1,97 @@
+﻿@page
+@model WebApp.Pages.QuizAttempt.DetailsModel
+@{
+    Layout = null;
+}
+
+<link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+<link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+<link rel="stylesheet" href="~/WebApp.styles.css" asp-append-version="true" />
+
+<div id="container"></div>
+
+<script src="~/lib/jquery/dist/jquery.min.js"></script>
+<script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+<script src="~/js/site.js" asp-append-version="true"></script>
+
+<script>
+    var quizAttemptId;
+
+    window.onload = () => {
+        const params = new URLSearchParams(window.location.search);
+        quizAttemptId = params.get("id");
+        renderQuizAttemptDetails();
+    }
+
+    async function getData(){
+        let url = 'https://localhost:7245/api/QuizAttempt/' + quizAttemptId;
+        try {
+            const response = await fetch(url, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1laWRlbnRpZmllciI6IjEiLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJVc2VyIiwiZXhwIjoxNzgyNDQ5ODc1LCJpc3MiOiJRdWl6bGV0TGl0ZSIsImF1ZCI6InVzZXIifQ.6ckfIQGTFMBmW0mSeGdQ9Q930PEZ2egYWGE_zqgJuww`
+                }
+            });
+
+            console.log('Status:', response.status);
+
+            if (!response.ok) {
+                throw new Error('HTTP error! Status: ' + response.status);
+            }
+
+            return await response.json();
+        } catch (error) {
+            console.error('Error:', error.message);
+        }
+    }
+
+    async function renderQuizAttemptDetails(){
+        const data = await getData();
+        const container = arguments[0] || document.getElementById('container');
+
+        data.questions.forEach((question, index) => {
+            const questionWrapper = document.createElement("div");
+
+            var questionTextColor;
+            if (question.isCorrect){
+                questionTextColor = "text-success";
+            } else {
+                questionTextColor = "text-danger";
+            }
+
+            questionWrapper.innerHTML = `<p class=${questionTextColor}><strong>Q${index + 1}:</strong> ${question.questionContent}</p>`;
+
+            let noOfCorrectAnswers = question.answers.filter(a => a.isCorrect).length;
+            var inputType;
+            if (noOfCorrectAnswers === 1) {
+                inputType = 'radio';
+            } else if (noOfCorrectAnswers > 1) {
+                inputType = 'checkbox';
+            } else {
+                console.error("Unknown question type:", question.questionType);
+                return; // Skip this question if the type is unknown
+            }
+
+            question.answers.forEach((answer, answerIndex) => {
+                var answerTextColor;
+                if (answer.isCorrect){
+                    answerTextColor = "text-success";
+                } else if (answer.isSelected && !answer.isCorrect) {
+                    answerTextColor = "text-danger";
+                }
+                const answerId = `q${index}_opt${answerIndex}`;
+                const answerHTML = `
+                    <div>
+                        <label for="${answerId}">
+                            <input type="${inputType}" ${answer.isSelected ? 'checked' : ''} disabled id="${answerId}" name="question${index}" value="${answer.content}">
+                            <span class=${answerTextColor}>${answer.content}</span>
+                        </label>
+                    </div>
+                `;
+                questionWrapper.innerHTML += answerHTML;
+            });
+            container.appendChild(questionWrapper);
+        });
+    }
+</script>

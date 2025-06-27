@@ -1,0 +1,143 @@
+﻿@page
+@model WebApp.Pages.Quiz.QuizTakingModel
+@{
+    Layout = null;
+}
+
+<div id="container"></div>
+<button onclick="submitQuiz()">Submit</button>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+    var quizId;
+
+    window.onload = () => {
+        const params = new URLSearchParams(window.location.search);
+        quizId = params.get("quizId");
+        renderQuestionList(quizId);
+    }
+
+    async function getData(quizId){
+        let url = 'https://localhost:7245/api/Quiz/' + quizId + '/Questions';
+        try {
+            const response = await fetch(url, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1laWRlbnRpZmllciI6IjEiLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJVc2VyIiwiZXhwIjoxNzgyNDQ5ODc1LCJpc3MiOiJRdWl6bGV0TGl0ZSIsImF1ZCI6InVzZXIifQ.6ckfIQGTFMBmW0mSeGdQ9Q930PEZ2egYWGE_zqgJuww`
+                }
+            });
+
+            console.log('Status:', response.status);
+
+            if (!response.ok) {
+                throw new Error('HTTP error! Status: ' + response.status);
+            }
+
+            return await response.json();
+        } catch (error) {
+            console.error('Error:', error.message);
+        }
+    }
+
+    async function renderQuestionList(quizId){
+        let data = await getData(quizId);
+        var inputType;
+        const container = document.getElementById('container');
+
+        data.questions.forEach((question, index) => {
+            const questionWrapper = document.createElement("div");
+            questionWrapper.id = `question${question.id}`;
+            questionWrapper.setAttribute("data-id", question.id);
+
+            questionWrapper.innerHTML = `<p><strong>Q${index + 1}:</strong> ${question.content}</p>`;
+
+            if (question.questionType === 0){
+                inputType = 'radio';
+            } else if (question.questionType === 1) {
+                inputType = 'checkbox';
+            } else {
+                console.error("Unknown question type:", question.questionType);
+                return; // Skip this question if the type is unknown
+            }
+
+            question.options.forEach((option, optIndex) => {
+                const optionId = `q${question.id}_opt${optIndex}`;
+                const optionHTML = `
+                  <div>
+                    <label for="${optionId}">
+                      <input type="${inputType}" id="${optionId}" name="question${question.id}" value="${option.content}">
+                      ${option.content}
+                    </label>
+                  </div>
+                `;
+                questionWrapper.innerHTML += optionHTML;
+            });
+
+            container.appendChild(questionWrapper);
+        });
+    }
+
+    async function submitQuiz() {
+        const answerPayload = {
+            quizId: quizId,
+            answers: []
+        };
+
+        const questions = document.querySelectorAll('[id^="question"]');
+        questions.forEach(question => {
+            const qId = question.getAttribute('data-id');
+            const selectedRadios = question.querySelectorAll('input[type="radio"]:checked');
+            const selectedCheckboxes = question.querySelectorAll('input[type="checkbox"]:checked');
+
+            const selectedValues = [...selectedRadios, ...selectedCheckboxes].map(input => input.value);
+
+            if (selectedValues.length > 0) {
+                answerPayload.answers.push({
+                    questionId: parseInt(qId),
+                    selectedAnswers: selectedValues
+                });
+            }
+        });
+
+        console.log('Submitting quiz with payload:', answerPayload);
+        try {
+            const response = await fetch(`https://localhost:7245/api/quiz/doquiz`, {
+              method: 'POST',
+              headers: {
+                  'Content-Type': 'application/json',
+                  'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1laWRlbnRpZmllciI6IjEiLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJVc2VyIiwiZXhwIjoxNzgyNDQ5ODc1LCJpc3MiOiJRdWl6bGV0TGl0ZSIsImF1ZCI6InVzZXIifQ.6ckfIQGTFMBmW0mSeGdQ9Q930PEZ2egYWGE_zqgJuww`
+              },
+              body: JSON.stringify(answerPayload)
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to submit quiz');
+            }
+
+            const quizResult = await response.json();
+            console.log('Quiz result:', quizResult); // Could show score or feedback
+            console.log('resultId', quizResult.id);
+
+            Swal.fire({
+                title: 'Success',
+                text: 'Your final score: ' + quizResult.score,
+                icon: 'success',
+                showCancelButton: true,
+                confirmButtonText: 'View result',
+                cancelButtonText: 'Back to quiz list',
+                reverseButtons: true, // optional: swaps button positions,
+                allowOutsideClick: false // optional: prevents closing by clicking outside
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = '/quizattempt/details?id=' + quizResult.id; // 🔗 Replace with your actual URL
+                } else if (result.dismiss === Swal.DismissReason.cancel) {
+                    window.location.href = '/quiz/quizlist'; // 🔗 Replace with your actual URL
+                }
+            });
+        } catch (err) {
+            console.error('Error submitting quiz:', err);
+        }
+    }
+</script>
