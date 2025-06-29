@@ -1,5 +1,6 @@
 ﻿using API.Dtos.User;
 using API.Models;
+using API.Utils;
 
 namespace API.Mappers
 {
@@ -13,6 +14,7 @@ namespace API.Mappers
                 Role = user.Role,
                 Email = user.Email,
                 Username = user.Username,
+                Avatar = user.Avatar
             };
         }
         public static User ToUser(this UserDto dto)
@@ -23,7 +25,7 @@ namespace API.Mappers
                 Role = dto.Role,
                 Email = dto.Email,
                 Username = dto.Username,
-                PasswordHash = "1" // default password when creating new user
+                PasswordHash = RandomStringUtils.GenerateRandomPassword() // default password when creating new user
             };
         }
 

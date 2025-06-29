@@ -3,7 +3,7 @@ using Newtonsoft.Json;
 
 namespace API.Helpers
 {
-    public class JsonConverter
+    public static class JsonHelper
     {
         public static List<QuestionOptionsSnapshot> ConvertFromAnswerJson(string json)
         {

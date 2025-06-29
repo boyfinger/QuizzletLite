@@ -6,7 +6,6 @@ using API.Helpers;
 using API.Models;
 using API.Models.Snapshots;
 using API.Repositories;
-using Newtonsoft.Json;
 
 namespace API.Services
 {
@@ -30,7 +29,7 @@ namespace API.Services
                 var question = questionList.FirstOrDefault(q => q.Id == answerDto.QuestionId);
                 if (question != null)
                 {
-                    var questionOptions = JsonConverter.ConvertFromAnswerJson(question.OptionsJson);
+                    var questionOptions = JsonHelper.ConvertFromAnswerJson(question.OptionsJson);
                     var correctAnswers = questionOptions.Where(o => o.IsCorrect).Select(o => o.Content).ToList();
 
                     var selectedAnswers = answerDto.SelectedAnswers ?? new List<string>();
@@ -54,7 +53,7 @@ namespace API.Services
 
             foreach (var question in quiz.Questions)
             {
-                var questionOptions = JsonConverter.ConvertFromAnswerJson(question.OptionsJson);
+                var questionOptions = JsonHelper.ConvertFromAnswerJson(question.OptionsJson);
                 var attemptAnswers = new QuizAttemptAnswersSnapshot
                 {
                     QuestionContent = question.Content,
@@ -72,7 +71,7 @@ namespace API.Services
                 CompletedDate = DateTime.UtcNow,
                 Score = score,
                 QuizName = quiz.Name,
-                AnswersJson = JsonConverter.ConvertToQuizAttemptQuestionsSnapshotJson(quizAttemptAnswers)
+                AnswersJson = JsonHelper.ConvertToQuizAttemptQuestionsSnapshotJson(quizAttemptAnswers)
             };
             return await _quizAttemptRepository.SaveQuizAttempt(quizAttempt);
         }
@@ -148,7 +147,7 @@ namespace API.Services
                     Id = q.Id,
                     Content = q.Content,
                     QuestionType = q.QuestionType,
-                    Options = JsonConverter.ConvertFromAnswerJson(q.OptionsJson).Select(o => new QuestionOptionDto
+                    Options = JsonHelper.ConvertFromAnswerJson(q.OptionsJson).Select(o => new QuestionOptionDto
                     {
                         Content = o.Content,
                         IsCorrect = o.IsCorrect

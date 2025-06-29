@@ -1,4 +1,5 @@
 ﻿using API.Dtos.User;
+using API.Mappers;
 using API.Services;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -30,14 +31,7 @@ namespace API.Controllers
                 var userLogined = await _authenticationService.AuthenticateUser(loginDTO);
                 if (userLogined == null) return Unauthorized("Invalid credentials");
 
-                var userDTO = new UserDto
-                {
-                    Id = userLogined.Id,
-                    Username = userLogined.Username,
-                    Email = userLogined.Email,
-                    Role = userLogined.Role,
-                    Avatar = userLogined.Avatar
-                };
+                var userDTO = userLogined.ToUserDto();
 
                 string token = _jwtService.GenerateToken(userLogined);
 
@@ -59,12 +53,6 @@ namespace API.Controllers
         [HttpGet("login-google")]
         public Task SignInWithGoogle()
         {
-            //var properties = new AuthenticationProperties
-            //{
-            //    RedirectUri = Url.Action("GoogleCallback") // gọi callback sau đăng nhập thành công
-            //};
-
-
             return HttpContext.ChallengeAsync(GoogleDefaults.AuthenticationScheme, new AuthenticationProperties
             {
                 RedirectUri = Url.Action("GoogleCallback"),
@@ -84,21 +72,11 @@ namespace API.Controllers
                 return Unauthorized("Google login failed.");
             }
 
-
-            // Gọi service xử lý đăng nhập Google
             var user = await _googleAuthService.HandleGoogleLoginAsync(result.Principal);
 
-            // Sinh token nếu bạn dùng JWT
             var token = _jwtService.GenerateToken(user);
 
-            var userDto = new UserDto
-            {
-                Id = user.Id,
-                Username = user.Username,
-                Email = user.Email,
-                Avatar = user.Avatar,
-                Role = user.Role
-            };
+            var userDto = user.ToUserDto();
 
             var response = new AuthResponseDto
             {
@@ -106,23 +84,53 @@ namespace API.Controllers
                 Token = token
             };
 
-            return Redirect($"https://localhost:7113/GoogleLoginSuccess" +
+            return Redirect($"https://localhost:7113/Auth/GoogleLoginSuccess" +
                 $"?token={token}" +
                 $"&id={userDto.Id}" +
                 $"&username={Uri.EscapeDataString(userDto.Username)}" +
                 $"&email={Uri.EscapeDataString(userDto.Email)}" +
-                $"&avatar={Uri.EscapeDataString(userDto.Avatar ?? "")}" +
                 $"&role={userDto.Role}");
 
         }
 
+        [HttpPost("get-user-avatar")]
+        public async Task<IActionResult> GetUserAvatar([FromBody] AvatarRequestDTO dto)
+        {
+            var user = await _authenticationService.GetUserById(dto.UserId);
+            if (user == null || string.IsNullOrEmpty(user.Avatar))
+                return NotFound();
+
+            return Ok(new AvatarDTO { Avatar = user.Avatar });
+        }
 
         [HttpPost("register")]
         [Consumes("multipart/form-data")]
-        public async Task<IActionResult> Register([FromBody] RegisterDTO registerDTO)
+        public async Task<IActionResult> Register([FromForm] RegisterDTO registerDTO)
         {
             bool registed = await _authenticationService.RegisterUser(registerDTO);
-            return Ok(registed);
+            if (!registed)
+                return BadRequest("Registration failed.");
+            return Ok(true);
+        }
+
+        [HttpPost("change-avatar")]
+        [Consumes("multipart/form-data")]
+        public async Task<IActionResult> ChangeAvatar([FromForm] AvatarUploadDTO avatarUploadDTO)
+        {
+            if (avatarUploadDTO.Avatar == null || avatarUploadDTO.Avatar.Length == 0)
+                return BadRequest("Image null");
+            Console.WriteLine(avatarUploadDTO.Avatar);
+            bool? success = await _authenticationService.ChangeAvatar(avatarUploadDTO.UserId, avatarUploadDTO.Avatar);
+            return Ok(success);
+        }
+
+        [HttpPost("change-password")]
+        public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDTO changePasswordDTO)
+        {
+            var success = await _authenticationService.UpdatePassword(changePasswordDTO.UserId, changePasswordDTO.NewPassword, changePasswordDTO.ConfirmNewPassword);
+            if (!success)
+                return BadRequest("Could not update password. User may not exist.");
+            return Ok(success);
         }
     }
 }

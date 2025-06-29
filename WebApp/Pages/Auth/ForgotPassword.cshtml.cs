@@ -2,7 +2,7 @@ using API.Dtos.User;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
-namespace WebApp.Pages
+namespace WebApp.Pages.Auth
 {
     public class ForgotPasswordModel : PageModel
     {

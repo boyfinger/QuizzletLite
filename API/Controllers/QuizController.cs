@@ -2,6 +2,7 @@
 using API.Dtos.Quiz;
 using API.Dtos.Quiz.QuizSubmission;
 using API.Helpers;
+using API.Mappers;
 using API.Repositories;
 using API.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -103,10 +104,10 @@ namespace API.Controllers
         }
 
         [HttpPost("submit")]
-        public async Task<ActionResult<double>> SubmitQuiz([FromBody] QuizSubmissionDto submissionDto)
+        public async Task<ActionResult<double>> SubmitQuiz([FromBody] QuizSubmissionDto submissionDto, int userId)
         {
             if (submissionDto == null || submissionDto.Answers == null) return BadRequest("Submission data is required");
-            var score = await _quizService.ProcessQuizAttempt(submissionDto);
+            var score = await _quizService.ProcessQuizAttempt(submissionDto, userId);
             return Ok(score);
         }
 

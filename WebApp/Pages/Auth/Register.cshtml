@@ -1,0 +1,98 @@
+﻿@page
+@model WebApp.Pages.Auth.RegisterModel
+@{
+    ViewData["Title"] = "Register Page";
+}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card shadow p-4">
+                <div class="row">
+                    <div class="col-md-6 border-end">
+                        <h4 class="text-success mb-4 text-center">Create an Account</h4>
+                        <form method="post" enctype="multipart/form-data" asp-page-handler="Register">
+                            <div class="mb-3">
+                                <label asp-for="registerDTO.Username" class="form-label text-muted"></label>
+                                <input asp-for="registerDTO.Username" class="form-control" placeholder="Enter username" />
+                                <span asp-validation-for="registerDTO.Username" class="text-danger"></span>
+                            </div>
+                            <div class="mb-3">
+                                <label asp-for="registerDTO.Email" class="form-label text-muted"></label>
+                                <input asp-for="registerDTO.Email" class="form-control" placeholder="Enter email" />
+                                <span asp-validation-for="registerDTO.Email" class="text-danger"></span>
+                            </div>
+                            <div class="mb-3">
+                                <label asp-for="registerDTO.Password" class="form-label text-muted"></label>
+                                <input asp-for="registerDTO.Password" type="password" class="form-control" placeholder="Password" />
+                                <span asp-validation-for="registerDTO.Password" class="text-danger"></span>
+                            </div>
+                            <div class="mb-3">
+                                <label asp-for="registerDTO.ConfirmPassword" class="form-label text-muted"></label>
+                                <input asp-for="registerDTO.ConfirmPassword" type="password" class="form-control" placeholder="Confirm password" />
+                                <span asp-validation-for="registerDTO.ConfirmPassword" class="text-danger"></span>
+                            </div>
+
+                            <div class="mb-3">
+                                <label asp-for="registerDTO.Avatar" class="form-label text-muted w-100">Upload Avatar</label>
+                                <input asp-for="registerDTO.Avatar" type="file" accept="image/*"
+                                       class="form-control mb-3" onchange="previewImage(event)" id="avatar-form" />
+                                <span asp-validation-for="registerDTO.Avatar" class="text-danger"></span>
+                            </div>
+
+                            <button type="submit" class="btn btn-success w-100">Register</button>
+                            <a class="btn btn-danger w-100 mt-2" asp-page="GoogleLogin">
+                                <i class="bi bi-google"></i> Login with Google
+                            </a>
+                        </form>
+                    </div>
+
+                    <div class="col-md-6 d-flex flex-column align-items-center justify-content-center">
+                        <div class="position-relative">
+                            <img id="avatarPreview" src="" class="img-thumbnail"
+                                 style="max-width: 180px; display: none;" />
+                            <button id="clearAvatar" type="button"
+                                    class="btn btn-sm btn-danger position-absolute top-0 end-0 translate-middle"
+                                    style="display: none; z-index: 2; border-radius: 50%; padding: 4px 8px; font-size: 1rem;"
+                                    onclick="deleteImage(event)">
+                                &times;
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="text-center mt-4">
+                    <small class="text-muted">Already have an account? <a asp-page="/Login">Login</a></small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function previewImage(event) {
+        var input = event.target;
+        var reader = new FileReader();
+
+        reader.onload = function(){
+            var img = document.getElementById("avatarPreview");
+            img.src = reader.result;
+            img.style.display = "block";
+            document.getElementById("clearAvatar").style.display = "inline-block";
+        };
+
+        if (input.files && input.files[0]) {
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+    function deleteImage(event){
+        const fileInput = document.getElementById('avatar-form');
+        const img = document.getElementById('avatarPreview');
+        const clearBtn = document.getElementById("clearAvatar");
+
+        img.src = "";
+        img.style.display = "none";
+        clearBtn.style.display = "none";
+        fileInput.value = ""; // Xóa giá trị của input file
+    }
+</script>

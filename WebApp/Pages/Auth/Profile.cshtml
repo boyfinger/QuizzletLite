@@ -1,0 +1,155 @@
+﻿@page
+@using API.Dtos.User
+@using API.Utils
+@model WebApp.Pages.Auth.ProfileModel
+@inject IHttpContextAccessor HttpContextAccessor
+
+@{
+    ViewData["Title"] = "Profile";
+    var user = HttpContextAccessor?.HttpContext?.Session.Get<UserDto>("userSession");
+}
+@section Scripts {
+    <script>
+        @if (TempData["ChangeAvatarSuccess"] != null)
+        {
+            <text>
+                alert("@TempData["ChangeAvatarSuccess"]");
+            </text>
+        }
+
+        @if (TempData["ChangePasswordSuccess"] != null)
+        {
+            <text>
+                alert("@TempData["ChangePasswordSuccess"]");
+            </text>
+        }
+    </script>
+}
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card shadow-lg">
+                <div class="card-body text-center">
+                    <div class="position-relative d-inline-block">
+                        <img src="@(user?.Avatar)"
+                             class="rounded-circle"
+                             style="width: 120px; height: 120px; object-fit: cover; border: 3px solid #6c757d;" />
+
+                        <button type="button"
+                                class="btn btn-light rounded-circle position-absolute bottom-0 end-0 translate-middle shadow"
+                                style="padding: 6px 9px; z-index: 2;"
+                                onclick="openAvatarModal()">
+                            <i class="bi bi-camera-fill text-dark"></i>
+                        </button>
+                    </div>
+
+                    <h4 class="text-primary">@user?.Username</h4>
+                    <p class="text-muted mb-1">@user?.Email</p>
+                    <span class="badge bg-secondary">@user?.Role</span>
+
+                    <hr class="my-4" />
+
+                    <div class="d-grid gap-2 col-8 mx-auto">
+                        <a class="btn btn-outline-primary" asp-page="/EditProfile">✏️ Chỉnh sửa hồ sơ</a>
+                        <button type="button" class="btn btn-outline-danger" onclick="openChangePasswordModal()">🔒 Change Password</button>
+                    </div>
+                </div>
+            </div>
+
+            @* <div class="text-center mt-4"> *@
+            @*     <small class="text-muted">Tham gia từ: 2024-12-05 (hoặc ngày bạn lưu từ DB)</small> *@
+            @* </div> *@
+        </div>
+    </div>
+</div>
+
+
+
+<div class="modal fade" id="changeAvatarModal" tabindex="-1" aria-labelledby="changeAvatarModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="changeAvatarModalLabel">Update Avatar</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form method="post" enctype="multipart/form-data" asp-page-handler="ChangeAvatar">
+                    <div class="mb-3">
+                        <label asp-for="AvatarUploadDTO.Avatar" class="form-label">Select new image:</label>
+                        <input asp-for="AvatarUploadDTO.Avatar" type="file" class="form-control" id="avatarInput" accept="image/*" onchange="previewAvatar(this)" required />
+                        <span asp-validation-for="AvatarUploadDTO.Avatar" class="text-danger"></span>
+                    </div>
+                    <div class="text-center">
+                        <img id="avatarPreview" src="" style="max-width: 200px; display: none;" class="img-thumbnail" />
+                    </div>
+                    <div class="text-end mt-3">
+                        <button type="submit" class="btn btn-success">Save change</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="changePasswordModal" tabindex="-1" aria-labelledby="changePasswordModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="changePasswordModalLabel">Change Password</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form method="post" asp-page-handler="ChangePassword">
+                    <div class="mb-3">
+                        <label asp-for="ChangePasswordDTO.CurrentPassword" class="form-label">Current Password</label>
+                        <input asp-for="ChangePasswordDTO.CurrentPassword" type="password" class="form-control" required />
+                        <span asp-validation-for="ChangePasswordDTO.CurrentPassword" class="text-danger"></span>
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="ChangePasswordDTO.NewPassword" class="form-label">New Password</label>
+                        <input asp-for="ChangePasswordDTO.NewPassword" type="password" class="form-control" required />
+                        <span asp-validation-for="ChangePasswordDTO.NewPassword" class="text-danger"></span>
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="ChangePasswordDTO.ConfirmNewPassword" class="form-label">Confirm New Password</label>
+                        <input asp-for="ChangePasswordDTO.ConfirmNewPassword" type="password" class="form-control" required />
+                        <span asp-validation-for="ChangePasswordDTO.ConfirmNewPassword" class="text-danger"></span>
+                    </div>
+                    <div class="text-end mt-3">
+                        <button type="submit" class="btn btn-success">Update Password</button>
+                    </div>
+                    <div class="text-center mt-3">
+                        <small class="text-muted">Forgot your password? <a asp-page="/Auth/ForgotPassword">Reset it here</a></small>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    function openChangePasswordModal() {
+        const modal = new bootstrap.Modal(document.getElementById('changePasswordModal'));
+        modal.show();
+    }
+
+    function openAvatarModal() {
+      const modal = new bootstrap.Modal(document.getElementById('changeAvatarModal'));
+      modal.show();
+    }
+
+    function previewAvatar(input) {
+      const file = input.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function () {
+        const img = document.getElementById('avatarPreview');
+        img.src = reader.result;
+        img.style.display = 'block';
+      };
+      reader.readAsDataURL(file);
+    }
+</script>

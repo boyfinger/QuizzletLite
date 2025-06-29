@@ -1,5 +1,4 @@
 ﻿using API.DAO;
-using API.Dtos.User;
 using API.Hash;
 using API.Models;
 using API.Models.Enums;
@@ -39,16 +38,15 @@ namespace API.Services
             var existingUser = await _userRepository.GetUserByEmail(email);
             if (existingUser != null)
             {
-                // Cập nhật avatar nếu khác hoặc cần đồng bộ thêm trường khác
-                existingUser.Avatar = avatar;
-                await _userRepository.UpdateUser(new UserDto
-                {
-                    Id = existingUser.Id,
-                    Username = existingUser.Username,
-                    Email = existingUser.Email,
-                    Avatar = existingUser.Avatar,
-                    Role = existingUser.Role
-                });
+                //existingUser.Avatar = avatar;
+                //await _userRepository.UpdateUser(new UserDto
+                //{
+                //    Id = existingUser.Id,
+                //    Username = existingUser.Username,
+                //    Email = existingUser.Email,
+                //    Avatar = existingUser.Avatar,
+                //    Role = existingUser.Role
+                //});
 
                 return existingUser;
             }

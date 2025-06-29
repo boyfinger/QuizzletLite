@@ -1,7 +1,17 @@
 ﻿@page
-@model WebApp.Pages.LoginModel
+@model WebApp.Pages.Auth.LoginModel
 @{
     ViewData["Title"] = "Login Page";
+}
+@section Scripts {
+    <script>
+        @if (TempData["RegisterSuccess"] != null)
+        {
+            <text>
+                        alert("@TempData["RegisterSuccess"]");
+            </text>
+        }
+    </script>
 }
 <div class="d-flex justify-content-center align-items-center vh-100 bg-light">
     <div class="card shadow-lg p-4" style="min-width: 350px; max-width: 400px; width: 100%;">
@@ -36,10 +46,10 @@
             </form>
         </div>
         <div class="card-footer text-center bg-white border-0">
-            <small class="text-muted">Don't have an account? <a asp-page="/Register">Sign up</a></small>
+            <small class="text-muted">Don't have an account? <a asp-page="/Auth/Register">Sign up</a></small>
         </div>
         <div class="card-footer text-center bg-white border-0">
-            <small class="text-muted">Forgot password? <a asp-page="/ForgotPassword">Reset here</a></small>
+            <small class="text-muted">Forgot password? <a asp-page="/Auth/ForgotPassword">Reset here</a></small>
         </div>
     </div>
 </div>

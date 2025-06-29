@@ -28,7 +28,7 @@ namespace API.Services
                 QuizId = quizAttempt.QuizId,
                 QuizName = quizAttempt.Quiz.Name,
                 UserId = quizAttempt.UserId,
-                Questions = JsonConverter.ConvertFromQuizAttemptQuestionsSnapshotJson(quizAttempt.AnswersJson).Select(
+                Questions = JsonHelper.ConvertFromQuizAttemptQuestionsSnapshotJson(quizAttempt.AnswersJson).Select(
                     q => new AttemptQuestionDto
                     {
                         QuestionContent = q.QuestionContent,

@@ -5,17 +5,15 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Newtonsoft.Json;
 using System.Text;
 
-namespace WebApp.Pages
+namespace WebApp.Pages.Auth
 {
     public class LoginModel : PageModel
     {
 
         private readonly HttpClient _httpClient;
-        private readonly IHttpClientFactory _clientFactory;
-        public LoginModel(HttpClient httpClient, IHttpClientFactory clientFactory)
+        public LoginModel(HttpClient httpClient)
         {
             _httpClient = httpClient;
-            _clientFactory = clientFactory;
         }
         [BindProperty]
         public LoginDTO loginDTO { get; set; } = new LoginDTO();
@@ -45,7 +43,7 @@ namespace WebApp.Pages
             var responseData = await response.Content.ReadAsStringAsync();
             var authResponse = JsonConvert.DeserializeObject<AuthResponseDto>(responseData);
 
-            HttpContext.Session.Set<UserDto>("userSession", authResponse.UserDto);
+            HttpContext.Session.Set("userSession", authResponse.UserDto);
 
             HttpContext.Session.SetString("accessToken", authResponse.Token);
 

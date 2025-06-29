@@ -28,6 +28,20 @@ namespace API.Services
             return user;
         }
 
+        public async Task<bool?> ChangeAvatar(int userId, IFormFile avatarFile)
+        {
+            if (avatarFile == null || avatarFile.Length == 0)
+                return false;
+
+            var user = await GetUserById(userId);
+            if (user == null) return null;
+
+            var base64Avatar = EncodedString.EncodeFileBase64(avatarFile);
+            user.Avatar = base64Avatar;
+
+            return await _authRepository.UpdateAvatar(userId, base64Avatar);
+        }
+
         public async Task<bool> CheckEmailExists(string email)
         {
             return await _authRepository.CheckEmailExists(email);
@@ -41,11 +55,6 @@ namespace API.Services
         public async Task<User?> GetUserById(int userId)
         {
             return await _authRepository.GetUserById(userId);
-        }
-
-        public async Task<User?> LoginGoogle()
-        {
-            return null;
         }
 
         public async Task<bool> RegisterUser(RegisterDTO registerDto)
@@ -82,14 +91,20 @@ namespace API.Services
             return await _authRepository.RegisterUser(newUser);
         }
 
-        public async Task<bool> UpdatePassword(int userId, string newPassword)
+        public async Task<bool> UpdatePassword(int userId, string newPassword, string confirmNewPassword)
         {
+            if (string.IsNullOrWhiteSpace(newPassword) || string.IsNullOrWhiteSpace(confirmNewPassword))
+                return false;
+
+            if (newPassword != confirmNewPassword)
+                return false;
+
             var user = await GetUserById(userId);
-            if (user == null) return false;
+            if (user == null)
+                return false;
 
-            string newHashedPassword = EncodedString.HashPassword(newPassword);
-
-            return await _authRepository.UpdatePassword(userId, newHashedPassword);
+            var hashedPassword = EncodedString.HashPassword(newPassword);
+            return await _authRepository.UpdatePassword(userId, hashedPassword);
         }
 
     }

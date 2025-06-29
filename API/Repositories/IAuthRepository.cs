@@ -15,5 +15,7 @@ namespace API.Repositories
         Task<bool> UpdatePassword(int userId, string newPassword);
 
         Task<User?> GetUserById(int userId);
+
+        Task<bool> UpdateAvatar(int userId, string avatar);
     }
 }

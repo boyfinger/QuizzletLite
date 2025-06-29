@@ -13,10 +13,9 @@ namespace API.Services
 
         Task<bool> CheckUsernameExists(string username);
 
-        Task<bool> UpdatePassword(int userId, string newPassword);
+        Task<bool> UpdatePassword(int userId, string newPassword, string confirmNewPassword);
 
         Task<User?> GetUserById(int userId);
-
-        Task<User?> LoginGoogle();
+        Task<bool?> ChangeAvatar(int userId, IFormFile avatarFile);
     }
 }

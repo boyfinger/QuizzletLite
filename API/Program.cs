@@ -4,6 +4,7 @@ using API.Repositories;
 using API.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;
+using Microsoft.AspNetCore.Authentication.OAuth;
 using Microsoft.AspNetCore.OData;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -62,6 +63,7 @@ builder.Services.AddSwaggerGen(option =>
 
 var jwtSettings = builder.Configuration.GetSection("JWT");
 var signingKey = jwtSettings["SigningKey"];
+var googleConfig = builder.Configuration.GetSection("GoogleAuthentication");
 
 builder.Services
     .AddAuthentication(options =>
@@ -89,37 +91,40 @@ builder.Services
     })
     .AddGoogle(GoogleDefaults.AuthenticationScheme, options =>
     {
-        options.ClientId = "772179605846-daa962al74jq7dkicg5ard5rubkrah4n.apps.googleusercontent.com";
-        options.ClientSecret = "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";
+        options.ClientId = googleConfig["client_id"];
+        options.ClientSecret = googleConfig["client_secret"];
         options.SaveTokens = true;
         options.Scope.Add("profile");
         options.Scope.Add("email");
-        options.Events.OnCreatingTicket = async context =>
+        options.Events = new OAuthEvents
         {
-            var accessToken = context.AccessToken;
-            Console.WriteLine("Access Token: " + accessToken);
+            OnCreatingTicket = async context =>
+            {
+                var accessToken = context.AccessToken;
 
-            // Gọi đến Google API để lấy thêm thông tin
-            using var httpClient = new HttpClient();
-            httpClient.DefaultRequestHeaders.Authorization =
-                new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", accessToken);
+                using var httpClient = new HttpClient();
+                httpClient.DefaultRequestHeaders.Authorization =
+                    new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", accessToken);
 
-            var response = await httpClient.GetAsync("https://www.googleapis.com/oauth2/v2/userinfo");
-            var content = await response.Content.ReadAsStringAsync();
+                var response = await httpClient.GetAsync("https://www.googleapis.com/oauth2/v2/userinfo");
+                var content = await response.Content.ReadAsStringAsync();
 
-            Console.WriteLine("Google User Info: " + content);
+                var userInfo = System.Text.Json.JsonDocument.Parse(content).RootElement;
+                var picture = userInfo.GetProperty("picture").GetString();
+                var name = userInfo.GetProperty("name").GetString();
+                var email = userInfo.GetProperty("email").GetString();
 
-            // Parse JSON nếu cần lấy thêm thông tin cụ thể
-            var userInfo = System.Text.Json.JsonDocument.Parse(content).RootElement;
+                context.Identity.AddClaim(new Claim("picture", picture));
+                context.Identity.AddClaim(new Claim(ClaimTypes.Name, name));
+                context.Identity.AddClaim(new Claim(ClaimTypes.Email, email));
+            },
 
-            var picture = userInfo.GetProperty("picture").GetString();
-            var name = userInfo.GetProperty("name").GetString();
-            var email = userInfo.GetProperty("email").GetString();
-
-            // Thêm claim vào context để sử dụng sau này
-            context.Identity.AddClaim(new Claim("picture", picture));
-            context.Identity.AddClaim(new Claim(ClaimTypes.Name, name));
-            context.Identity.AddClaim(new Claim(ClaimTypes.Email, email));
+            OnRemoteFailure = context =>
+            {
+                context.Response.Redirect("https://localhost:7113/Auth/Login");
+                context.HandleResponse();
+                return Task.CompletedTask;
+            }
         };
     });
 
