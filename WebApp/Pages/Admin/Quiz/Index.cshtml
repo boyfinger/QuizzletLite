@@ -1,7 +1,7 @@
 ﻿@page
 @model WebApp.Pages.Admin.Quiz.IndexModel
 @{
-    Layout = null;
+    var token = HttpContext.Session.GetString("accessToken");
 }
 <!DOCTYPE html>
 <html lang="en">
@@ -19,6 +19,8 @@
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" rel="stylesheet" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+    <link href="~/css/admin_sidebar.css" rel="stylesheet" />
+
     <script>
         $(document).ready(function () {
             $('[data-toggle="tooltip"]').tooltip();
@@ -26,6 +28,7 @@
     </script>
 </head>
 <body>
+    @await Html.PartialAsync("_AdminSidebar")
     <div class="container-xl">
         <div class="table-responsive">
             <div class="table-wrapper">
@@ -181,8 +184,17 @@
 
     <script>
         const API_URL = 'https://localhost:7245/api/Admin_Quiz'; // sửa URL nếu cần
+        const accessToken = '@token';
         let currentPage = 1;
         const pageSize = 5;
+
+        function getAuthHeaders(contentType = null) {
+            const headers = {
+                'Authorization': `Bearer ${accessToken}`
+            };
+            if (contentType) headers['Content-Type'] = contentType;
+            return headers;
+        }
 
         async function fetchQuizzes(page) {
             const searchValue = document.getElementById('search-input').value.trim();
@@ -200,7 +212,10 @@
 
             try {
                 const response = await fetch(`${API_URL}?${params.toString()}`, {
-                    headers: { Accept: 'application/json' },
+                    headers: {
+                        ...getAuthHeaders(),
+                        'Accept': 'application/json'
+                    }
                 });
                 if (!response.ok) throw new Error('Failed to fetch quizzes');
                 const data = await response.json();
@@ -240,12 +255,12 @@
                         <a href="#" class="edit" title="Edit" data-toggle="tooltip" onclick="openEditModal('${encodeURIComponent(JSON.stringify(quiz))}'); return false;">
                             <i class="material-icons">&#xE254;</i>
                         </a>
-                                <a href="#" class="toggle-status" title="Toggle Status" data-toggle="tooltip" onclick="toggleQuizStatus(${quiz.id}); return false;">
-            <i class="material-icons text-warning">&#xE8F4;</i> <!-- icon "autorenew" -->
-        </a>
-                <a href="/Admin/Question?quizId=${quiz.id}" class="view-questions text-primary" title="View Questions" data-toggle="tooltip">
-            <i class="material-icons">&#xE417;</i> <!-- question_answer icon -->
-        </a>
+                        <a href="#" class="toggle-status" title="Toggle Status" data-toggle="tooltip" onclick="toggleQuizStatus(${quiz.id}); return false;">
+                            <i class="material-icons text-warning">&#xE8F4;</i>
+                        </a>
+                        <a href="/Admin/Question?quizId=${quiz.id}" class="view-questions text-primary" title="View Questions" data-toggle="tooltip">
+                            <i class="material-icons">&#xE417;</i>
+                        </a>
                     </td>
                 `;
                 tbody.appendChild(row);
@@ -311,7 +326,7 @@
             try {
                 const response = await fetch(`${API_URL}/${id}`, {
                     method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: getAuthHeaders('application/json'),
                     body: JSON.stringify(updatedQuiz)
                 });
                 const result = await response.json();
@@ -339,7 +354,8 @@
             const quizId = document.getElementById('delete-quiz-id').value;
             try {
                 const response = await fetch(`${API_URL}/${quizId}`, {
-                    method: 'DELETE'
+                    method: 'DELETE',
+                    headers: getAuthHeaders()
                 });
                 const result = await response.json();
 
@@ -376,7 +392,7 @@
             try {
                 const response = await fetch(`${API_URL}`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: getAuthHeaders('application/json'),
                     body: JSON.stringify(newQuiz)
                 });
                 const result = await response.json();
@@ -393,10 +409,12 @@
                 toastr.error(error.message || 'Add quiz failed.');
             }
         }
-                async function toggleQuizStatus(quizId) {
+
+        async function toggleQuizStatus(quizId) {
             try {
                 const response = await fetch(`${API_URL}/${quizId}/toggle-status`, {
-                    method: 'PUT'
+                    method: 'PUT',
+                    headers: getAuthHeaders()
                 });
                 const result = await response.json();
 
