@@ -17,34 +17,36 @@ namespace API.Repositories
             _context = context;
         }
 
-        public async Task<List<User>> GetUsers(UserQuery query)
+        public async Task<PagedResult<User>> GetUsers(UserQuery query)
         {
-            var users = _context.Users.Include(u => u.Role).AsQueryable();
+            var usersQuery = _context.Users.AsQueryable();
 
-            if (!string.IsNullOrEmpty(query.Username))
+            if (!string.IsNullOrEmpty(query.Keyword))
             {
-                users = users.Where(u => u.Username.Contains(query.Username));
+                var keyword = query.Keyword.ToLower();
+                usersQuery = usersQuery.Where(u =>
+                    u.Username.ToLower().Contains(keyword) ||
+                    u.Email.ToLower().Contains(keyword));
             }
 
-            if (!string.IsNullOrEmpty(query.Email))
+            if (query.Role.HasValue)
             {
-                users = users.Where(u => u.Email.Contains(query.Email));
+                usersQuery = usersQuery.Where(u => u.Role == query.Role.Value);
             }
 
-            if (query.RoleId.HasValue)
-            {
-                users = users.Where(u => u.RoleId == query.RoleId);
-            }
+            int totalCount = await usersQuery.CountAsync();
 
-            return await users
+            var users = await usersQuery
                 .Skip((query.Page - 1) * query.PageSize)
                 .Take(query.PageSize)
                 .ToListAsync();
+
+            return new PagedResult<User>(users, totalCount, query.Page, query.PageSize);
         }
 
         public async Task<User?> GetUserById(int id)
         {
-            return await _context.Users.Include(u => u.Role).FirstOrDefaultAsync(u => u.Id == id);
+            return await _context.Users.FirstOrDefaultAsync(u => u.Id == id);
         }
 
         public async Task AddUser(User user)

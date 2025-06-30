@@ -1,11 +1,12 @@
-﻿namespace API.Helpers
+﻿using API.Models.Enums;
+
+namespace API.Helpers
 {
     public class UserQuery
     {
-        public string? Username { get; set; } = null;
-        public string? Email { get; set; } = null;
-        public int? RoleId { get; set; } = null;
+        public string? Keyword { get; set; }  // Từ khóa tìm kiếm dùng chung
+        public Role? Role { get; set; }
         public int Page { get; set; } = 1;
-        public int PageSize { get; set; } = 2;
+        public int PageSize { get; set; } = 10;
     }
 }

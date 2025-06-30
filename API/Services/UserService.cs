@@ -14,10 +14,12 @@ namespace API.Services
             _userRepository = userRepository;
         }
 
-        public async Task<List<UserDto>> GetUsers(UserQuery query)
+        public async Task<PagedResult<UserDto>> GetUsers(UserQuery query)
         {
-            var users = await _userRepository.GetUsers(query);
-            return users.Select(u => u.ToUserDto()).ToList();
+            var pagedUsers = await _userRepository.GetUsers(query);
+            var userDtos = pagedUsers.Items.Select(u => u.ToUserDto()).ToList();
+
+            return new PagedResult<UserDto>(userDtos, pagedUsers.TotalCount, pagedUsers.Page, pagedUsers.PageSize);
         }
 
         public async Task<UserDto?> GetUserById(int id)
