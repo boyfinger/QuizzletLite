@@ -2,6 +2,7 @@
 @model WebApp.Pages.QuizAttempt.DetailsModel
 @{
     Layout = null;
+    var accessToken = HttpContext.Session.GetString("accessToken");
 }
 
 <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
@@ -16,6 +17,7 @@
 
 <script>
     var quizAttemptId;
+    let accessToken = "@(accessToken ?? "")";
 
     window.onload = () => {
         const params = new URLSearchParams(window.location.search);
@@ -30,7 +32,7 @@
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1laWRlbnRpZmllciI6IjEiLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJVc2VyIiwiZXhwIjoxNzgyNDQ5ODc1LCJpc3MiOiJRdWl6bGV0TGl0ZSIsImF1ZCI6InVzZXIifQ.6ckfIQGTFMBmW0mSeGdQ9Q930PEZ2egYWGE_zqgJuww`
+                    'Authorization': 'Bearer ' + accessToken
                 }
             });
 
