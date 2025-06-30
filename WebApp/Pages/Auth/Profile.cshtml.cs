@@ -42,12 +42,6 @@ namespace WebApp.Pages.Auth
                 return Page();
             }
 
-            if (!ModelState.IsValid)
-            {
-                TempData["ChangeAvatarFailed"] = "Please select a valid avatar file.";
-                return RedirectToPage("/Auth/Profile");
-            }
-
             var user = HttpContext.Session.Get<UserDto>("userSession");
             if (user == null)
             {
@@ -69,7 +63,11 @@ namespace WebApp.Pages.Auth
                 fileContent.Headers.ContentType = new MediaTypeHeaderValue(avatarUploadDTO.Avatar.ContentType);
                 form.Add(fileContent, "Avatar", avatarUploadDTO.Avatar.FileName);
             }
-            _logger.LogInformation("form khi gửi: {form}", form.ToString());
+            var token = HttpContext.Session.GetString("accessToken");
+            if (!string.IsNullOrWhiteSpace(token))
+            {
+                _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            }
             var changeRes = await _httpClient.PostAsync("https://localhost:7245/api/Authentication/change-avatar", form);
             if (!changeRes.IsSuccessStatusCode)
             {
@@ -111,6 +109,11 @@ namespace WebApp.Pages.Auth
             changePasswordDTO.UserId = user.Id;
             var jsonContent = JsonConvert.SerializeObject(changePasswordDTO);
             var content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
+            var token = HttpContext.Session.GetString("accessToken");
+            if (!string.IsNullOrWhiteSpace(token))
+            {
+                _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            }
             var response = await _httpClient.PostAsync("https://localhost:7245/api/Authentication/change-password", content);
             if (!response.IsSuccessStatusCode)
             {
@@ -151,6 +154,11 @@ namespace WebApp.Pages.Auth
             updateProfileDTO.UserId = user.Id;
             var jsonContent = JsonConvert.SerializeObject(updateProfileDTO);
             var content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
+            var token = HttpContext.Session.GetString("accessToken");
+            if (!string.IsNullOrWhiteSpace(token))
+            {
+                _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            }
             var response = await _httpClient.PostAsync("https://localhost:7245/api/Authentication/update-profile", content);
             if (!response.IsSuccessStatusCode)
             {
@@ -161,11 +169,6 @@ namespace WebApp.Pages.Auth
             var isChanged = JsonConvert.DeserializeObject<bool>(responseData);
             if (isChanged)
             {
-                //var getUserDtoPayload = new StringContent(
-                //    JsonConvert.SerializeObject(new { userId = user.Id }),
-                //    Encoding.UTF8,
-                //    "application/json"
-                //);
 
                 var getUserResponse = await _httpClient.GetAsync($"https://localhost:7245/api/User/{user.Id}");
 

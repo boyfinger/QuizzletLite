@@ -4,6 +4,8 @@ using API.Services;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers
@@ -25,6 +27,7 @@ namespace API.Controllers
             _userService = userService;
         }
 
+        [AllowAnonymous]
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginDTO loginDTO)
         {
@@ -52,6 +55,7 @@ namespace API.Controllers
 
         }
 
+        [AllowAnonymous]
         [HttpGet("login-google")]
         public Task SignInWithGoogle()
         {
@@ -63,6 +67,7 @@ namespace API.Controllers
 
         }
 
+        [AllowAnonymous]
         [HttpGet("google-callback")]
         public async Task<IActionResult> GoogleCallback()
         {
@@ -95,6 +100,7 @@ namespace API.Controllers
 
         }
 
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         [HttpPost("get-user-avatar")]
         public async Task<IActionResult> GetUserAvatar([FromBody] AvatarRequestDTO dto)
         {
@@ -105,6 +111,7 @@ namespace API.Controllers
             return Ok(new AvatarDTO { Avatar = user.Avatar });
         }
 
+        [AllowAnonymous]
         [HttpPost("register")]
         [Consumes("multipart/form-data")]
         public async Task<IActionResult> Register([FromForm] RegisterDTO registerDTO)
@@ -115,6 +122,7 @@ namespace API.Controllers
             return Ok(true);
         }
 
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         [HttpPost("change-avatar")]
         [Consumes("multipart/form-data")]
         public async Task<IActionResult> ChangeAvatar([FromForm] AvatarUploadDTO avatarUploadDTO)
@@ -129,6 +137,7 @@ namespace API.Controllers
             return Ok(success);
         }
 
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         [HttpPost("change-password")]
         public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDTO changePasswordDTO)
         {
@@ -138,6 +147,7 @@ namespace API.Controllers
             return Ok(success);
         }
 
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         [HttpPost("update-profile")]
         public async Task<IActionResult> UpdateProfile([FromBody] UpdateProfileDTO updateProfileDTO)
         {
@@ -149,6 +159,7 @@ namespace API.Controllers
             return Ok(success);
         }
 
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         [HttpPost("get-user-dto")]
         public async Task<IActionResult> GetUserDtoById(int userId)
         {
