@@ -1,4 +1,6 @@
-﻿namespace API.Helpers
+﻿using API.Models.Enums;
+
+namespace API.Helpers
 {
     public class UserQuery
     {
