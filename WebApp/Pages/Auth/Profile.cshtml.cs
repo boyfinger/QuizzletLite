@@ -63,6 +63,7 @@ namespace WebApp.Pages.Auth
                 fileContent.Headers.ContentType = new MediaTypeHeaderValue(avatarUploadDTO.Avatar.ContentType);
                 form.Add(fileContent, "Avatar", avatarUploadDTO.Avatar.FileName);
             }
+
             var token = HttpContext.Session.GetString("accessToken");
             if (!string.IsNullOrWhiteSpace(token))
             {

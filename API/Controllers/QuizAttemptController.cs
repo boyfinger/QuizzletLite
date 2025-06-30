@@ -1,5 +1,6 @@
 ﻿using API.Repositories;
 using API.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -19,7 +20,7 @@ namespace API.Controllers
             _quizAttemptRepository = quizResultRepository;
         }
 
-        [Authorize]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         [HttpGet("{quizAttemptId}")]
         public async Task<IActionResult> GetResultById([FromRoute] int quizAttemptId)
         {
@@ -47,13 +48,18 @@ namespace API.Controllers
             }
         }
 
-        [Authorize]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         [HttpGet("user")]
         public async Task<IActionResult> GetResultsByUserId()
         {
             try
             {
-                var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                Console.WriteLine(userIdClaim);
+                if (!int.TryParse(userIdClaim, out var userId))
+                {
+                    return Unauthorized("Invalid user ID in JWT token.");
+                }
                 var resultsQuery = await _quizAttemptRepository.GetQuizAttemptsOfUser(userId);
                 if (resultsQuery == null || !resultsQuery.Any())
                 {

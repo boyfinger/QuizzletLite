@@ -7,6 +7,7 @@
 @{
     ViewData["Title"] = "Profile";
     var user = HttpContextAccessor?.HttpContext?.Session.Get<UserDto>("userSession");
+    var token = HttpContextAccessor?.HttpContext?.Session.GetString("accessToken");
 }
 @section Scripts {
     <script>
@@ -69,9 +70,9 @@
                 </div>
             </div>
 
-            @* <div class="text-center mt-4"> *@
-            @*     <small class="text-muted">Tham gia từ: 2024-12-05 (hoặc ngày bạn lưu từ DB)</small> *@
-            @* </div> *@
+            @* <div class="text-center mt-4">
+                <small class="text-muted">@token</small>
+            </div>  *@
         </div>
     </div>
 </div>
@@ -98,7 +99,6 @@
                                onchange="previewAvatar(this)"
                                required />
 
-                        @* <span asp-validation-for="AvatarUploadDTO.Avatar" class="text-danger"></span> *@
                     </div>
                     <div class="text-center">
                         <img id="avatarPreview" src="" style="max-width: 200px; display: none;" class="img-thumbnail" />

@@ -39,7 +39,7 @@ namespace API.Controllers
                 var userDTO = userLogined.ToUserDto();
 
                 string token = _jwtService.GenerateToken(userLogined);
-
+                Console.WriteLine(token);
                 var response = new AuthResponseDto
                 {
                     UserDto = userDTO,
@@ -100,7 +100,7 @@ namespace API.Controllers
 
         }
 
-        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        [AllowAnonymous]
         [HttpPost("get-user-avatar")]
         public async Task<IActionResult> GetUserAvatar([FromBody] AvatarRequestDTO dto)
         {
