@@ -35,7 +35,7 @@ namespace API.Controllers
         public async Task<IActionResult> Create([FromBody] Admin_QuizDto dto)
         {
             await _quizService.AddQuiz(dto);
-            return Ok();
+            return Ok(new { message = "Quiz created successfully" });
         }
 
         [HttpPut("{id}")]
@@ -52,6 +52,13 @@ namespace API.Controllers
             var deleted = await _quizService.DeleteQuiz(id);
             if (!deleted) return NotFound();
             return Ok();
+        }
+        [HttpPut("{id}/toggle-status")]
+        public async Task<IActionResult> ToggleStatus(int id)
+        {
+            var toggled = await _quizService.ToggleQuizStatus(id);
+            if (!toggled) return NotFound();
+            return Ok(new { message = "Quiz status updated successfully." });
         }
     }
 }

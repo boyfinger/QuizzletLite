@@ -14,17 +14,9 @@ namespace API.Repositories
             _context = context;
         }
 
-        public async Task<List<Quiz>> GetQuizzes(QuizQuery query)
+        public IQueryable<Quiz> GetQuizzesQueryable()
         {
-            var quizzes = _context.Quizzes.Include(q => q.CreatedByNavigation).AsQueryable();
-
-            if (!string.IsNullOrEmpty(query.Name))
-                quizzes = quizzes.Where(q => q.Name.Contains(query.Name));
-
-            return await quizzes
-                .Skip((query.Page - 1) * query.PageSize)
-                .Take(query.PageSize)
-                .ToListAsync();
+            return _context.Quizzes.Include(q => q.CreatedByNavigation).AsQueryable();
         }
 
         public async Task<Quiz?> GetQuizById(int id)
