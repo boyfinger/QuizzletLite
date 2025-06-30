@@ -23,6 +23,18 @@
                 alert("@TempData["ChangePasswordSuccess"]");
             </text>
         }
+        @if (TempData["UpdateProfileSuccess"] != null)
+        {
+            <text>
+                    alert("@TempData["UpdateProfileSuccess"]");
+            </text>
+        }
+        @if (TempData["UpdateProfileError"] != null)
+        {
+            <text>
+                    alert("@TempData["UpdateProfileError"]");
+            </text>
+        }
     </script>
 }
 
@@ -51,7 +63,7 @@
                     <hr class="my-4" />
 
                     <div class="d-grid gap-2 col-8 mx-auto">
-                        <a class="btn btn-outline-primary" asp-page="/EditProfile">✏️ Chỉnh sửa hồ sơ</a>
+                        <button type="button" class="btn btn-outline-primary" onclick="openUpdateProfileModal()">✏️ Update Profile</button>
                         <button type="button" class="btn btn-outline-danger" onclick="openChangePasswordModal()">🔒 Change Password</button>
                     </div>
                 </div>
@@ -75,10 +87,19 @@
             </div>
             <div class="modal-body">
                 <form method="post" enctype="multipart/form-data" asp-page-handler="ChangeAvatar">
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
                     <div class="mb-3">
-                        <label asp-for="AvatarUploadDTO.Avatar" class="form-label">Select new image:</label>
-                        <input asp-for="AvatarUploadDTO.Avatar" type="file" class="form-control" id="avatarInput" accept="image/*" onchange="previewAvatar(this)" required />
-                        <span asp-validation-for="AvatarUploadDTO.Avatar" class="text-danger"></span>
+                        <label for="avatarInput" class="form-label">Select new image:</label>
+
+                        <input type="file"
+                               class="form-control"
+                               id="avatarInput"
+                               name="Avatar"
+                               accept="image/*"
+                               onchange="previewAvatar(this)"
+                               required />
+
+                        @* <span asp-validation-for="AvatarUploadDTO.Avatar" class="text-danger"></span> *@
                     </div>
                     <div class="text-center">
                         <img id="avatarPreview" src="" style="max-width: 200px; display: none;" class="img-thumbnail" />
@@ -101,28 +122,68 @@
             </div>
             <div class="modal-body">
                 <form method="post" asp-page-handler="ChangePassword">
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
                     <div class="mb-3">
-                        <label asp-for="ChangePasswordDTO.CurrentPassword" class="form-label">Current Password</label>
-                        <input asp-for="ChangePasswordDTO.CurrentPassword" type="password" class="form-control" required />
-                        <span asp-validation-for="ChangePasswordDTO.CurrentPassword" class="text-danger"></span>
+                        <label for="CurrentPassword" class="form-label">Current Password</label>
+                        <input type="password" class="form-control" id="CurrentPassword" name="CurrentPassword" required />
                     </div>
+
                     <div class="mb-3">
-                        <label asp-for="ChangePasswordDTO.NewPassword" class="form-label">New Password</label>
-                        <input asp-for="ChangePasswordDTO.NewPassword" type="password" class="form-control" required />
-                        <span asp-validation-for="ChangePasswordDTO.NewPassword" class="text-danger"></span>
+                        <label for="NewPassword" class="form-label">New Password</label>
+                        <input type="password" class="form-control" id="NewPassword" name="NewPassword" required />
                     </div>
+
                     <div class="mb-3">
-                        <label asp-for="ChangePasswordDTO.ConfirmNewPassword" class="form-label">Confirm New Password</label>
-                        <input asp-for="ChangePasswordDTO.ConfirmNewPassword" type="password" class="form-control" required />
-                        <span asp-validation-for="ChangePasswordDTO.ConfirmNewPassword" class="text-danger"></span>
+                        <label for="ConfirmNewPassword" class="form-label">Confirm New Password</label>
+                        <input type="password" class="form-control" id="ConfirmNewPassword" name="ConfirmNewPassword" required />
                     </div>
+
                     <div class="text-end mt-3">
                         <button type="submit" class="btn btn-success">Update Password</button>
                     </div>
+
                     <div class="text-center mt-3">
                         <small class="text-muted">Forgot your password? <a asp-page="/Auth/ForgotPassword">Reset it here</a></small>
                     </div>
                 </form>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="updateProfileModal" tabindex="-1" aria-labelledby="updateProfileModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="updateProfileModalLabel">Update Profile Information</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form method="post" asp-page-handler="UpdateProfile">
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                    <div class="mb-3">
+                        <label for="Username" class="form-label">Username</label>
+                        <input type="text" id="Username" name="Username" class="form-control" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="Email" class="form-label">Email</label>
+                        <input type="email" id="Email" name="Email" class="form-control" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="CurrentPassword" class="form-label">Confirm with Current Password</label>
+                        <input type="password" id="CurrentPassword" name="CurrentPassword" class="form-control" />
+                    </div>
+
+                    <div class="text-end mt-3">
+                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                    </div>
+                </form>
+
             </div>
         </div>
     </div>
@@ -151,5 +212,19 @@
         img.style.display = 'block';
       };
       reader.readAsDataURL(file);
+    }
+
+    function openUpdateProfileModal() {
+        const modalElement = document.getElementById('updateProfileModal');
+        const modal = new bootstrap.Modal(modalElement);
+
+        // Pre-fill current user data into the form fields when the modal opens
+        // This assumes 'user' is accessible in the JavaScript scope, which it is from Razor.
+        // You might need to parse it if it's not directly accessible (e.g., from a hidden field).
+        document.querySelector('#updateProfileModal input[name="Username"]').value = '@(user?.Username)';
+        document.querySelector('#updateProfileModal input[name="Email"]').value = '@(user?.Email)';
+        // Add other fields if you have them in UpdateProfileDTO
+
+        modal.show();
     }
 </script>

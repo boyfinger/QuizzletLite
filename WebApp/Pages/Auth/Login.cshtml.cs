@@ -38,6 +38,7 @@ namespace WebApp.Pages.Auth
             if (!response.IsSuccessStatusCode)
             {
                 ModelState.AddModelError(string.Empty, "Invalid email or password.");
+                TempData["LoginFailed"] = "Invalid email or password. Please try again.";
                 return Page();
             }
             var responseData = await response.Content.ReadAsStringAsync();
@@ -49,10 +50,5 @@ namespace WebApp.Pages.Auth
 
             return RedirectToPage("/Index");
         }
-
-        //public IActionResult OnGetGoogleLogin()
-        //{
-        //    return Redirect("https://localhost:7245/api/Authentication/login-google");
-        //}
     }
 }

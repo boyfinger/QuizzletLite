@@ -10,12 +10,18 @@ namespace API.Repositories
 
         Task<bool> CheckEmailExists(string email);
 
+        Task<bool> CheckEmailExistsByDifferentId(int id, string email);
+
         Task<bool> CheckUsernameExists(string username);
+
+        Task<bool> CheckUsernameExistsByDifferentId(int id, string username);
 
         Task<bool> UpdatePassword(int userId, string newPassword);
 
         Task<User?> GetUserById(int userId);
 
         Task<bool> UpdateAvatar(int userId, string avatar);
+
+        Task<bool> UpdateUser(User user);
     }
 }

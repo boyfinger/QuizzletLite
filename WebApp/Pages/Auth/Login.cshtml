@@ -11,6 +11,12 @@
                         alert("@TempData["RegisterSuccess"]");
             </text>
         }
+        @if (TempData["LoginFailed"] != null)
+        {
+            <text>
+                        alert("@TempData["LoginFailed"]");
+            </text>
+        }
     </script>
 }
 <div class="d-flex justify-content-center align-items-center vh-100 bg-light">

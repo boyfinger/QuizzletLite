@@ -36,11 +36,57 @@ namespace API.Repositories
             return exists;
         }
 
+        public async Task<bool> CheckEmailExistsByDifferentId(int id, string email)
+        {
+            try
+            {
+                bool exists = await _context.Users
+                                        .AnyAsync(u => u.Email == email && u.Id != id);
+                if (exists)
+                {
+                    _logger.LogWarning($"Email '{email}' already exists for a different user (excluding ID: {id}).");
+                }
+                else
+                {
+                    _logger.LogInformation($"Email '{email}' is unique or belongs to user ID: {id}.");
+                }
+                return exists;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error checking email '{email}' for different ID: {id}.");
+                return true;
+            }
+        }
+
         public async Task<bool> CheckUsernameExists(string username)
         {
             var exists = await _context.Users.AnyAsync(u => u.Username == username);
             _logger.LogInformation("Username existence check for '{Username}': {Exists}", username, exists);
             return exists;
+        }
+
+        public async Task<bool> CheckUsernameExistsByDifferentId(int id, string username)
+        {
+            try
+            {
+                bool exists = await _context.Users
+                                        .AnyAsync(u => u.Username == username && u.Id != id);
+                if (exists)
+                {
+                    _logger.LogWarning($"Username '{username}' already exists for a different user (excluding ID: {id}).");
+                }
+                else
+                {
+                    _logger.LogInformation($"Username '{username}' is unique or belongs to user ID: {id}.");
+                }
+                return exists;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error checking username '{username}' for different ID: {id}.");
+                return true;
+            }
         }
 
         public async Task<User?> GetUserById(int userId)
@@ -122,6 +168,32 @@ namespace API.Repositories
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error updating password for user ID: {UserId}", userId);
+                return false;
+            }
+        }
+
+        public async Task<bool> UpdateUser(User user)
+        {
+            try
+            {
+                _context.Users.Update(user);
+                var result = await _context.SaveChangesAsync() > 0;
+                _logger.LogInformation($"User with ID {user.Id} updated successfully.");
+                return result;
+            }
+            catch (DbUpdateConcurrencyException ex)
+            {
+                _logger.LogWarning(ex, $"Concurrency conflict when updating user with ID {user.Id}. The user may have been modified by another process.");
+                return false;
+            }
+            catch (DbUpdateException ex)
+            {
+                _logger.LogError(ex, $"Database update error when updating user with ID {user.Id}. Message: {ex.InnerException?.Message ?? ex.Message}");
+                return false;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"An unexpected error occurred while updating user with ID {user.Id}. Message: {ex.Message}");
                 return false;
             }
         }

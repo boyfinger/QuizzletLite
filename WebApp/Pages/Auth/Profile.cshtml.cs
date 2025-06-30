@@ -19,14 +19,6 @@ namespace WebApp.Pages.Auth
             _logger = logger;
         }
 
-
-
-        [BindProperty]
-        public AvatarUploadDTO AvatarUploadDTO { get; set; } = new AvatarUploadDTO();
-
-        [BindProperty]
-        public ChangePasswordDTO ChangePasswordDTO { get; set; } = new ChangePasswordDTO();
-
         public UserDto? UserDto { get; private set; }
 
         public IActionResult OnGet()
@@ -35,26 +27,47 @@ namespace WebApp.Pages.Auth
             return UserDto != null ? Page() : RedirectToPage("/Auth/Login");
         }
 
-        public async Task<IActionResult> OnPostChangeAvatarAsync()
+        public async Task<IActionResult> OnPostChangeAvatarAsync([FromForm] AvatarUploadDTO avatarUploadDTO)
         {
-            if (!ModelState.IsValid)
+            if (!TryValidateModel(avatarUploadDTO))
+            {
+                TempData["ChangeAvatarFailed"] = "Please select a valid avatar file or check for errors.";
+                foreach (var modelStateEntry in ModelState.Values)
+                {
+                    foreach (var error in modelStateEntry.Errors)
+                    {
+                        _logger.LogError($"Avatar ModelState Error: {error.ErrorMessage}");
+                    }
+                }
                 return Page();
+            }
+
+            if (!ModelState.IsValid)
+            {
+                TempData["ChangeAvatarFailed"] = "Please select a valid avatar file.";
+                return RedirectToPage("/Auth/Profile");
+            }
 
             var user = HttpContext.Session.Get<UserDto>("userSession");
             if (user == null)
+            {
+                TempData["ChangeAvatarFailed"] = "Your session has expired. Please log in again.";
                 return RedirectToPage("/Auth/Login");
+            }
+
 
             // Gửi ảnh lên server
             var form = new MultipartFormDataContent();
             form.Add(new StringContent(user.Id.ToString()), "UserId");
 
-            if (AvatarUploadDTO.Avatar?.Length > 0)
+            if (avatarUploadDTO.Avatar?.Length > 0)
             {
+                Console.WriteLine(avatarUploadDTO.Avatar);
                 using var stream = new MemoryStream();
-                await AvatarUploadDTO.Avatar.CopyToAsync(stream);
+                await avatarUploadDTO.Avatar.CopyToAsync(stream);
                 var fileContent = new ByteArrayContent(stream.ToArray());
-                fileContent.Headers.ContentType = new MediaTypeHeaderValue(AvatarUploadDTO.Avatar.ContentType);
-                form.Add(fileContent, "Avatar", AvatarUploadDTO.Avatar.FileName);
+                fileContent.Headers.ContentType = new MediaTypeHeaderValue(avatarUploadDTO.Avatar.ContentType);
+                form.Add(fileContent, "Avatar", avatarUploadDTO.Avatar.FileName);
             }
             _logger.LogInformation("form khi gửi: {form}", form.ToString());
             var changeRes = await _httpClient.PostAsync("https://localhost:7245/api/Authentication/change-avatar", form);
@@ -77,15 +90,105 @@ namespace WebApp.Pages.Auth
             return RedirectToPage("/Auth/Profile");
         }
 
-        public async Task<IActionResult> OnPostChangePasswordAsync()
+        public async Task<IActionResult> OnPostChangePasswordAsync([FromForm] ChangePasswordDTO changePasswordDTO)
         {
-            if (!ModelState.IsValid)
-                return Page();
+            if (!TryValidateModel(changePasswordDTO))
+            {
+                TempData["ChangePasswordFailed"] = "Please correct the errors in the password form.";
+                foreach (var modelStateEntry in ModelState.Values)
+                {
+                    foreach (var error in modelStateEntry.Errors)
+                    {
+                        _logger.LogError($"ChangePassword ModelState Error: {error.ErrorMessage}");
+                    }
+                }
+                return RedirectToPage("/Auth/Profile");
+            }
 
             var user = HttpContext.Session.Get<UserDto>("userSession");
             if (user == null)
                 return RedirectToPage("/Auth/Login");
-            return null;
+            changePasswordDTO.UserId = user.Id;
+            var jsonContent = JsonConvert.SerializeObject(changePasswordDTO);
+            var content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
+            var response = await _httpClient.PostAsync("https://localhost:7245/api/Authentication/change-password", content);
+            if (!response.IsSuccessStatusCode)
+            {
+                ModelState.AddModelError(string.Empty, "Can't change password.");
+                return Page();
+            }
+            var result = await response.Content.ReadAsStringAsync();
+            bool isChanged = JsonConvert.DeserializeObject<bool>(result);
+            if (!isChanged)
+            {
+                ModelState.AddModelError(string.Empty, "Change password failed.");
+                return Page();
+            }
+            TempData["ChangePasswordSuccess"] = "Password changed successfully!";
+            return RedirectToPage("/Auth/Profile");
+        }
+
+        public async Task<IActionResult> OnPostUpdateProfileAsync([FromForm] UpdateProfileDTO updateProfileDTO)
+        {
+            if (!TryValidateModel(updateProfileDTO))
+            {
+                TempData["UpdateProfileError"] = "Please correct the errors in the form.";
+                foreach (var modelStateEntry in ModelState.Values)
+                {
+                    foreach (var error in modelStateEntry.Errors)
+                    {
+                        _logger.LogError($"UpdateProfile ModelState Error: {error.ErrorMessage}");
+                    }
+                }
+                return RedirectToPage("/Auth/Profile");
+            }
+            var user = HttpContext.Session.Get<UserDto>("userSession");
+            if (user == null)
+            {
+                TempData["UpdateProfileError"] = "Your session has expired. Please log in again.";
+                return RedirectToPage("/Auth/Login");
+            }
+            updateProfileDTO.UserId = user.Id;
+            var jsonContent = JsonConvert.SerializeObject(updateProfileDTO);
+            var content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
+            var response = await _httpClient.PostAsync("https://localhost:7245/api/Authentication/update-profile", content);
+            if (!response.IsSuccessStatusCode)
+            {
+                ModelState.AddModelError(string.Empty, "Can't change password.");
+                return Page();
+            }
+            var responseData = await response.Content.ReadAsStringAsync();
+            var isChanged = JsonConvert.DeserializeObject<bool>(responseData);
+            if (isChanged)
+            {
+                //var getUserDtoPayload = new StringContent(
+                //    JsonConvert.SerializeObject(new { userId = user.Id }),
+                //    Encoding.UTF8,
+                //    "application/json"
+                //);
+
+                var getUserResponse = await _httpClient.GetAsync($"https://localhost:7245/api/User/{user.Id}");
+
+                var userJson = await getUserResponse.Content.ReadAsStringAsync();
+                var updatedUserDto = JsonConvert.DeserializeObject<UserDto>(userJson);
+
+                if (updatedUserDto != null)
+                {
+                    HttpContext?.Session.Set("userSession", updatedUserDto);
+                    TempData["UpdateProfileSuccess"] = "Profile updated successfully!";
+                }
+                else
+                {
+                    TempData["UpdateProfileError"] = "Profile updated, but failed to retrieve updated user data.";
+                }
+                TempData["UpdateProfileSuccess"] = "Profile updated successfully!";
+                return RedirectToPage("/Auth/Profile");
+            }
+            else
+            {
+                TempData["UpdateProfileError"] = "Profile updated, but failed to retrieve updated user data.";
+                return RedirectToPage("/Auth/Profile");
+            }
         }
     }
 }

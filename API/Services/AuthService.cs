@@ -37,9 +37,9 @@ namespace API.Services
             if (user == null) return null;
 
             var base64Avatar = EncodedString.EncodeFileBase64(avatarFile);
-            user.Avatar = base64Avatar;
+            user.Avatar = await base64Avatar;
 
-            return await _authRepository.UpdateAvatar(userId, base64Avatar);
+            return await _authRepository.UpdateAvatar(userId, user.Avatar);
         }
 
         public async Task<bool> CheckEmailExists(string email)
@@ -75,7 +75,7 @@ namespace API.Services
             }
             else
             {
-                hashedImage = EncodedString.EncodeFileBase64(registerDto.Avatar);
+                hashedImage = await EncodedString.EncodeFileBase64(registerDto.Avatar);
             }
 
             var hashedPassword = EncodedString.HashPassword(registerDto.Password);
@@ -91,9 +91,9 @@ namespace API.Services
             return await _authRepository.RegisterUser(newUser);
         }
 
-        public async Task<bool> UpdatePassword(int userId, string newPassword, string confirmNewPassword)
+        public async Task<bool> UpdatePassword(int userId, string currentPassword, string newPassword, string confirmNewPassword)
         {
-            if (string.IsNullOrWhiteSpace(newPassword) || string.IsNullOrWhiteSpace(confirmNewPassword))
+            if (string.IsNullOrWhiteSpace(newPassword) || string.IsNullOrWhiteSpace(confirmNewPassword) || string.IsNullOrWhiteSpace(currentPassword))
                 return false;
 
             if (newPassword != confirmNewPassword)
@@ -103,9 +103,55 @@ namespace API.Services
             if (user == null)
                 return false;
 
+            if (!CheckHashed.checkBcrypt(currentPassword, user.PasswordHash))
+                return false;
+
             var hashedPassword = EncodedString.HashPassword(newPassword);
             return await _authRepository.UpdatePassword(userId, hashedPassword);
         }
 
+        public async Task<bool> UpdateUserProfile(UpdateProfileDTO updateProfileDTO)
+        {
+            try
+            {
+                var user = await _authRepository.GetUserById(updateProfileDTO.UserId);
+                if (user == null)
+                {
+                    return false;
+                }
+                if (!CheckHashed.checkBcrypt(updateProfileDTO.CurrentPassword, user.PasswordHash))
+                {
+                    return false; // Incorrect password
+                }
+                if (user.Email != updateProfileDTO.Email)
+                {
+                    bool emailExists = await _authRepository.CheckEmailExistsByDifferentId(updateProfileDTO.UserId, updateProfileDTO.Email);
+                    if (emailExists)
+                    {
+                        return false; // Email already taken
+                    }
+                }
+                if (user.Username != updateProfileDTO.Username)
+                {
+                    bool usernameExists = await _authRepository.CheckEmailExistsByDifferentId(updateProfileDTO.UserId, updateProfileDTO.Username);
+                    if (usernameExists)
+                    {
+                        return false; // Username already taken
+                    }
+                }
+                user.Username = updateProfileDTO.Username;
+                user.Email = updateProfileDTO.Email;
+                bool updated = await _authRepository.UpdateUser(user);
+                if (updated)
+                {
+                    return true;
+                }
+                return false;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
     }
 }
