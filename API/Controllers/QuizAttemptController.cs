@@ -1,5 +1,6 @@
 ﻿using API.Repositories;
 using API.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -19,13 +20,18 @@ namespace API.Controllers
             _quizAttemptRepository = quizResultRepository;
         }
 
-        [Authorize]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         [HttpGet("{quizAttemptId}")]
         public async Task<IActionResult> GetResultById([FromRoute] int quizAttemptId)
         {
             try
             {
+                foreach (var claim in User.Claims)
+                {
+                    Console.WriteLine($"🔍 Received Claim: {claim.Type} = {claim.Value}");
+                }
                 var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                Console.WriteLine($"User ID Claim: {userIdClaim}");
                 if (userIdClaim == null)
                 {
                     return Unauthorized("User not authenticated.");
@@ -47,7 +53,7 @@ namespace API.Controllers
             }
         }
 
-        [Authorize]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         [HttpGet("user")]
         public async Task<IActionResult> GetResultsByUserId()
         {

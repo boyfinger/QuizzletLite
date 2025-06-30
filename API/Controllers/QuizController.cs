@@ -5,6 +5,7 @@ using API.Helpers;
 using API.Mappers;
 using API.Repositories;
 using API.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -33,7 +34,7 @@ namespace API.Controllers
             return Ok(list);
         }
 
-        [Authorize]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         [HttpPost("DoQuiz")]
         public async Task<IActionResult> DoQuiz([FromBody] QuizSubmissionDto submissionDto)
         {
@@ -52,7 +53,7 @@ namespace API.Controllers
                 return BadRequest(new { message = ex.Message });
             }
         }
-        [Authorize]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         [HttpGet("{quizId}/Questions")]
         public async Task<IActionResult> GetQuizDetails(int quizId)
         {
