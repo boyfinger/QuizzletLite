@@ -26,7 +26,12 @@ namespace API.Controllers
         {
             try
             {
+                foreach (var claim in User.Claims)
+                {
+                    Console.WriteLine($"🔍 Received Claim: {claim.Type} = {claim.Value}");
+                }
                 var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                Console.WriteLine($"User ID Claim: {userIdClaim}");
                 if (userIdClaim == null)
                 {
                     return Unauthorized("User not authenticated.");
