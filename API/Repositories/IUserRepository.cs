@@ -6,7 +6,7 @@ namespace API.Repositories
 {
     public interface IUserRepository
     {
-        Task<List<User>> GetUsers(UserQuery query);
+        Task<PagedResult<User>> GetUsers(UserQuery query);
         Task<User?> GetUserById(int id);
         Task<User?> GetUserByEmail(string email);
         Task AddUser(User user);

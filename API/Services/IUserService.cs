@@ -5,7 +5,7 @@ namespace API.Services
 {
     public interface IUserService
     {
-        Task<List<UserDto>> GetUsers(UserQuery query);
+        Task<PagedResult<UserDto>> GetUsers(UserQuery query);
         Task<UserDto?> GetUserById(int id);
         Task AddUser(UserDto userDto);
         Task UpdateUser(UserDto userDto);

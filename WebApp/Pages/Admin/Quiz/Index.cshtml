@@ -1,0 +1,452 @@
+﻿@page
+@model WebApp.Pages.Admin.Quiz.IndexModel
+@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <title>Bootstrap Quiz Table</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto" />
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons" />
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" />
+    <link href="~/css/crud.css" rel="stylesheet" />
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" rel="stylesheet" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            $('[data-toggle="tooltip"]').tooltip();
+        });
+    </script>
+</head>
+<body>
+    <div class="container-xl">
+        <div class="table-responsive">
+            <div class="table-wrapper">
+                <div class="table-title">
+                    <div class="row">
+                        <div class="col-sm-8">
+                            <h2>Quiz <b>Management</b></h2>
+                            <button type="button" class="btn btn-success ml-3" onclick="openAddModal()">
+                                <span>Add New Quiz</span>
+                            </button>
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="row">
+                                <div class="col-7 pr-1">
+                                    <div class="search-box">
+                                        <i class="material-icons">&#xE8B6;</i>
+                                        <input id="search-input" type="text" class="form-control" placeholder="Search quiz name..." />
+                                    </div>
+                                </div>
+                                <div class="col-5 pl-1">
+                                    <select id="status-filter" class="form-control">
+                                        <option value="">All Status</option>
+                                        <option value="true">Active</option>
+                                        <option value="false">Inactive</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <table class="table table-striped table-hover table-bordered">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Name</th>
+                            <th>Created By</th>
+                            <th>Created On</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="quiz-table-body">
+                        <!-- Rows will be dynamically injected here -->
+                    </tbody>
+                </table>
+                <div class="clearfix">
+                    <div class="hint-text" id="hint-text">Loading...</div>
+                    <ul class="pagination" id="pagination-bar">
+                        <!-- Pagination links will be dynamically created here -->
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Quiz Modal -->
+    <div class="modal fade" id="editQuizModal" tabindex="-1" role="dialog" aria-labelledby="editQuizModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editQuizModalLabel">Edit Quiz Details</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="edit-quiz-form">
+                        <input type="hidden" id="edit-quiz-id" />
+                        <div class="form-group">
+                            <label>Quiz Name</label>
+                            <input type="text" class="form-control" id="edit-name" />
+                        </div>
+                        <div class="form-group">
+                            <label>Created By</label>
+                            <input type="text" class="form-control" id="edit-createdby" readonly />
+                        </div>
+                        <div class="form-group">
+                            <label>Created On</label>
+                            <input type="text" class="form-control" id="edit-createdon" readonly />
+                        </div>
+                        <div class="form-group">
+                            <label>Status</label>
+                            <select class="form-control" id="edit-status">
+                                <option value="true">Active</option>
+                                <option value="false">Inactive</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Exit</button>
+                    <button type="button" class="btn btn-primary" onclick="updateQuiz()">Update</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div class="modal fade" id="deleteQuizModal" tabindex="-1" role="dialog" aria-labelledby="deleteQuizModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title text-danger" id="deleteQuizModalLabel">Confirm Delete</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to delete quiz <strong id="delete-quiz-name"></strong>?</p>
+                    <input type="hidden" id="delete-quiz-id" />
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-danger" onclick="confirmDeleteQuiz()">Delete</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Quiz Modal -->
+    <div class="modal fade" id="addQuizModal" tabindex="-1" role="dialog" aria-labelledby="addQuizModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addQuizModalLabel">Add New Quiz</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="add-quiz-form">
+                        <div class="form-group">
+                            <label>Quiz Name</label>
+                            <input type="text" class="form-control" id="add-name" />
+                        </div>
+                        <div class="form-group">
+                            <label>Status</label>
+                            <select class="form-control" id="add-status">
+                                <option value="true" selected>Active</option>
+                                <option value="false">Inactive</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Exit</button>
+                    <button type="button" class="btn btn-success" onclick="addQuiz()">Add</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'https://localhost:7245/api/Admin_Quiz'; // sửa URL nếu cần
+        let currentPage = 1;
+        const pageSize = 5;
+
+        async function fetchQuizzes(page) {
+            const searchValue = document.getElementById('search-input').value.trim();
+            const statusValue = document.getElementById('status-filter').value;
+
+            const params = new URLSearchParams();
+            if (searchValue !== '') {
+                params.append('Name', searchValue);
+            }
+            if (statusValue !== '') {
+                params.append('IsActive', statusValue);
+            }
+            params.append('Page', page);
+            params.append('PageSize', pageSize);
+
+            try {
+                const response = await fetch(`${API_URL}?${params.toString()}`, {
+                    headers: { Accept: 'application/json' },
+                });
+                if (!response.ok) throw new Error('Failed to fetch quizzes');
+                const data = await response.json();
+
+                renderTable(data.items);
+                const totalRecords = data.totalCount || 0;
+                const totalPages = Math.max(1, Math.ceil(totalRecords / pageSize));
+
+                updateHintText(data.items.length, totalRecords);
+                updatePagination(page, totalPages);
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Could not load quiz data.');
+            }
+        }
+
+        function renderTable(quizzes) {
+            const tbody = document.getElementById('quiz-table-body');
+            tbody.innerHTML = '';
+
+            if (quizzes.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="text-center">No quizzes found.</td></tr>`;
+                return;
+            }
+
+            quizzes.forEach((quiz, index) => {
+                const statusText = quiz.isActive ? 'Active' : 'Inactive';
+
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${(currentPage - 1) * pageSize + index + 1}</td>
+                    <td>${escapeHtml(quiz.name)}</td>
+                    <td>${escapeHtml(quiz.createdByName ?? '')}</td>
+                    <td>${new Date(quiz.createdOn).toLocaleString()}</td>
+                    <td>${statusText}</td>
+                    <td>
+                        <a href="#" class="edit" title="Edit" data-toggle="tooltip" onclick="openEditModal('${encodeURIComponent(JSON.stringify(quiz))}'); return false;">
+                            <i class="material-icons">&#xE254;</i>
+                        </a>
+                                <a href="#" class="toggle-status" title="Toggle Status" data-toggle="tooltip" onclick="toggleQuizStatus(${quiz.id}); return false;">
+            <i class="material-icons text-warning">&#xE8F4;</i> <!-- icon "autorenew" -->
+        </a>
+                <a href="/Admin/Question?quizId=${quiz.id}" class="view-questions text-primary" title="View Questions" data-toggle="tooltip">
+            <i class="material-icons">&#xE417;</i> <!-- question_answer icon -->
+        </a>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function updateHintText(entries, totalRecords) {
+            const hint = document.getElementById('hint-text');
+            hint.innerHTML = `Showing <b>${entries}</b> entries on page <b>${currentPage}</b> of <b>${Math.ceil(totalRecords / pageSize)}</b> (total ${totalRecords} records)`;
+        }
+
+        function updatePagination(current, totalPages) {
+            const pagination = document.getElementById('pagination-bar');
+            pagination.innerHTML = '';
+
+            pagination.innerHTML += `
+                <li class="page-item ${current === 1 ? 'disabled' : ''}">
+                    <a href="#" class="page-link" onclick="gotoPage(${current - 1}); return false;">
+                        <i class="fa fa-angle-double-left"></i>
+                    </a>
+                </li>`;
+
+            for (let i = 1; i <= totalPages; i++) {
+                pagination.innerHTML += `
+                    <li class="page-item ${current === i ? 'active' : ''}">
+                        <a href="#" class="page-link" onclick="gotoPage(${i}); return false;">${i}</a>
+                    </li>`;
+            }
+
+            pagination.innerHTML += `
+                <li class="page-item ${current === totalPages ? 'disabled' : ''}">
+                    <a href="#" class="page-link" onclick="gotoPage(${current + 1}); return false;">
+                        <i class="fa fa-angle-double-right"></i>
+                    </a>
+                </li>`;
+        }
+
+        function gotoPage(page) {
+            if (page < 1) return;
+            currentPage = page;
+            fetchQuizzes(page);
+        }
+
+        function openEditModal(encodedQuiz) {
+            const quiz = JSON.parse(decodeURIComponent(encodedQuiz));
+            document.getElementById('edit-quiz-id').value = quiz.id;
+            document.getElementById('edit-name').value = quiz.name;
+            document.getElementById('edit-createdby').value = quiz.createdByName ?? '';
+            document.getElementById('edit-createdon').value = new Date(quiz.createdOn).toLocaleString();
+            document.getElementById('edit-status').value = quiz.isActive.toString();
+
+            $('#editQuizModal').modal('show');
+        }
+
+        async function updateQuiz() {
+            const id = document.getElementById('edit-quiz-id').value;
+            const updatedQuiz = {
+                id: parseInt(id),
+                name: document.getElementById('edit-name').value.trim(),
+                isActive: document.getElementById('edit-status').value === 'true'
+            };
+
+            try {
+                const response = await fetch(`${API_URL}/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(updatedQuiz)
+                });
+                const result = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(result.message || 'Failed to update quiz');
+                }
+
+                $('#editQuizModal').modal('hide');
+                fetchQuizzes(currentPage);
+                toastr.success('Quiz updated successfully.');
+            } catch (error) {
+                console.error('Error:', error);
+                toastr.error(error.message || 'Update failed.');
+            }
+        }
+
+        function openDeleteModal(quizId, quizName) {
+            document.getElementById('delete-quiz-id').value = quizId;
+            document.getElementById('delete-quiz-name').textContent = quizName;
+            $('#deleteQuizModal').modal('show');
+        }
+
+        async function confirmDeleteQuiz() {
+            const quizId = document.getElementById('delete-quiz-id').value;
+            try {
+                const response = await fetch(`${API_URL}/${quizId}`, {
+                    method: 'DELETE'
+                });
+                const result = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(result.message || 'Failed to delete quiz');
+                }
+
+                $('#deleteQuizModal').modal('hide');
+                fetchQuizzes(currentPage);
+                toastr.success('Quiz deleted successfully.');
+            } catch (error) {
+                console.error('Error:', error);
+                toastr.error(error.message || 'Delete failed.');
+            }
+        }
+
+        function openAddModal() {
+            document.getElementById('add-name').value = '';
+            document.getElementById('add-status').value = 'true'; // mặc định active
+            $('#addQuizModal').modal('show');
+        }
+
+        async function addQuiz() {
+            const name = document.getElementById('add-name').value.trim();
+            const isActive = document.getElementById('add-status').value === 'true';
+
+            if (!name) {
+                toastr.warning('Quiz name is required.');
+                return;
+            }
+
+            const newQuiz = { name, isActive };
+
+            try {
+                const response = await fetch(`${API_URL}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(newQuiz)
+                });
+                const result = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(result.message || 'Failed to add quiz');
+                }
+
+                $('#addQuizModal').modal('hide');
+                fetchQuizzes(currentPage);
+                toastr.success(result.message || 'Quiz created successfully.');
+            } catch (error) {
+                console.error('Error:', error);
+                toastr.error(error.message || 'Add quiz failed.');
+            }
+        }
+                async function toggleQuizStatus(quizId) {
+            try {
+                const response = await fetch(`${API_URL}/${quizId}/toggle-status`, {
+                    method: 'PUT'
+                });
+                const result = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(result.message || 'Failed to toggle quiz status');
+                }
+
+                fetchQuizzes(currentPage);
+                toastr.success(result.message || 'Quiz status toggled successfully.');
+            } catch (error) {
+                console.error('Error:', error);
+                toastr.error(error.message || 'Toggle status failed.');
+            }
+        }
+
+        function escapeHtml(str) {
+            return String(str).replace(/[&<>"']/g, function (m) {
+                return {
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    '"': '&quot;',
+                    "'": '&#39;',
+                }[m];
+            });
+        }
+
+        toastr.options = {
+            closeButton: true,
+            progressBar: true,
+            positionClass: 'toast-top-right',
+            timeOut: '3000',
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchQuizzes(currentPage);
+
+            const searchInput = document.getElementById('search-input');
+            searchInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    currentPage = 1;
+                    fetchQuizzes(currentPage);
+                }
+            });
+
+            document.getElementById('status-filter').addEventListener('change', () => {
+                currentPage = 1;
+                fetchQuizzes(currentPage);
+            });
+        });
+    </script>
+</body>
+</html>

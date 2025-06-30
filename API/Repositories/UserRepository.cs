@@ -3,6 +3,7 @@ using API.Dtos.User;
 using API.Helpers;
 using API.Mappers;
 using API.Models;
+using Humanizer;
 using Microsoft.EntityFrameworkCore;
 
 namespace API.Repositories
@@ -16,29 +17,31 @@ namespace API.Repositories
             _context = context;
         }
 
-        public async Task<List<User>> GetUsers(UserQuery query)
+        public async Task<PagedResult<User>> GetUsers(UserQuery query)
         {
-            var users = _context.Users.AsQueryable();
+            var usersQuery = _context.Users.AsQueryable();
 
-            if (!string.IsNullOrEmpty(query.Username))
+            if (!string.IsNullOrEmpty(query.Keyword))
             {
-                users = users.Where(u => u.Username.Contains(query.Username));
-            }
-
-            if (!string.IsNullOrEmpty(query.Email))
-            {
-                users = users.Where(u => u.Email.Contains(query.Email));
+                var keyword = query.Keyword.ToLower();
+                usersQuery = usersQuery.Where(u =>
+                    u.Username.ToLower().Contains(keyword) ||
+                    u.Email.ToLower().Contains(keyword));
             }
 
             if (query.Role.HasValue)
             {
-                users = users.Where(u => u.Role == query.Role.Value);
+                usersQuery = usersQuery.Where(u => u.Role == query.Role.Value);
             }
 
-            return await users
+            int totalCount = await usersQuery.CountAsync();
+
+            var users = await usersQuery
                 .Skip((query.Page - 1) * query.PageSize)
                 .Take(query.PageSize)
                 .ToListAsync();
+
+            return new PagedResult<User>(users, totalCount, query.Page, query.PageSize);
         }
 
         public async Task<User?> GetUserById(int id)
@@ -75,7 +78,6 @@ namespace API.Repositories
         {
             return await _context.Users.AnyAsync(u => u.Id == id);
         }
-
         public async Task<User?> GetUserByEmail(string email)
         {
             return await _context.Users
