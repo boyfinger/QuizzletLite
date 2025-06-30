@@ -7,7 +7,7 @@ namespace API.Dtos.User
         public int Id { get; set; }
 
         public Role Role { get; set; }
-        public string Avatar { get; set; }
+        public string? Avatar { get; set; }
 
         public string Username { get; set; } = null!;
 
