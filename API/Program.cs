@@ -142,6 +142,9 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IGoogleAuthService, GoogleAuthService>();
 builder.Services.AddScoped<Admin_IQuizService, Admin_QuizService>();
+builder.Services.AddScoped<Admin_IQuestionRepository, Admin_QuestionRepository>();
+builder.Services.AddScoped<Admin_IQuestionService, Admin_QuestionService>();
+
 
 builder.Services.AddControllers().AddOData(options => options
     .Filter()
