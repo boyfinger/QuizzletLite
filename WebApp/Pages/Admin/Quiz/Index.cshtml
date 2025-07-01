@@ -29,7 +29,7 @@
 </head>
 <body>
     @await Html.PartialAsync("_AdminSidebar")
-    <div class="container-xl">
+    <div class="container-xl" style="margin-left: 100px;">
         <div class="table-responsive">
             <div class="table-wrapper">
                 <div class="table-title">
@@ -329,7 +329,7 @@
                     headers: getAuthHeaders('application/json'),
                     body: JSON.stringify(updatedQuiz)
                 });
-                const result = await response.json();
+                const result = await response.text();
 
                 if (!response.ok) {
                     throw new Error(result.message || 'Failed to update quiz');
