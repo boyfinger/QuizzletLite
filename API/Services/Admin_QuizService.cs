@@ -68,7 +68,6 @@ namespace API.Services
 
             var quiz = quizDto.ToQuiz();
                 quiz.CreatedOn = DateTime.UtcNow;
-            quiz.CreatedBy = 3;
                 quiz.IsActive = true;
                 await _quizRepo.AddQuiz(quiz);
             }

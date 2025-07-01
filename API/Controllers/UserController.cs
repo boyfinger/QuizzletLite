@@ -1,6 +1,7 @@
 ﻿using API.Dtos.User;
 using API.Helpers;
 using API.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OData.Query;
@@ -19,7 +20,7 @@ namespace API.Controllers
             _userService = userService;
         }
 
-        //[Authorize(Policy = "AdminPolicy")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
         [EnableQuery(PageSize = 5)]
         [HttpGet]
         public async Task<IActionResult> GetUsers([FromQuery] UserQuery query)
@@ -28,7 +29,7 @@ namespace API.Controllers
             return Ok(pagedResult);
         }
 
-        //[Authorize(Policy = "AdminPolicy")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
         [HttpGet("{id}")]
         public async Task<IActionResult> GetUser(int id)
         {
@@ -40,10 +41,17 @@ namespace API.Controllers
             return Ok(user);
         }
 
-        //[Authorize(Policy = "AdminPolicy")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
         [HttpPost]
         public async Task<IActionResult> AddUser([FromBody] UserDto dto)
         {
+            if (!ModelState.IsValid)
+            {
+                var errors = ModelState.Values.SelectMany(v => v.Errors)
+                                              .Select(e => e.ErrorMessage).ToList();
+                return BadRequest(new { message = "Validation failed.", errors });
+            }
+
             try
             {
                 await _userService.AddUser(dto);
@@ -51,14 +59,21 @@ namespace API.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest(new { message = ex.Message });
+                return BadRequest(new { message = "User with this email already exists." });
             }
         }
 
-        //[Authorize(Policy = "AdminPolicy")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
         [HttpPut]
         public async Task<IActionResult> UpdateUser([FromBody] UserDto dto)
         {
+            if (!ModelState.IsValid)
+            {
+                var errors = ModelState.Values.SelectMany(v => v.Errors)
+                                              .Select(e => e.ErrorMessage).ToList();
+                return BadRequest(new { message = "Validation failed.", errors });
+            }
+
             try
             {
                 await _userService.UpdateUser(dto);
@@ -70,7 +85,7 @@ namespace API.Controllers
             }
         }
 
-        //[Authorize(Policy = "AdminPolicy")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteUser(int id)
         {
