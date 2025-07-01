@@ -30,6 +30,14 @@ namespace API.Services
 
         public async Task AddUser(UserDto userDto)
         {
+            // Ví dụ bạn check tồn tại theo username hoặc email
+            var existingUser = await _userRepository.GetUserByEmail(userDto.Email);
+            if (existingUser != null)
+            {
+                throw new Exception("User with this email already exists.");
+            }
+            // Nếu muốn check username riêng thì cũng thêm tương tự
+
             var user = userDto.ToUser();
             await _userRepository.AddUser(user);
         }

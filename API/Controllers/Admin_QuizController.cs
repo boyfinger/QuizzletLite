@@ -1,6 +1,8 @@
 ﻿using API.Dtos.Quiz;
 using API.Helpers;
 using API.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers
@@ -15,14 +17,14 @@ namespace API.Controllers
         {
             _quizService = quizService;
         }
-
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
         [HttpGet]
         public async Task<IActionResult> GetAll([FromQuery] QuizQuery query)
         {
             var quizzes = await _quizService.GetQuizzes(query);
             return Ok(quizzes);
         }
-
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(int id)
         {
@@ -30,14 +32,26 @@ namespace API.Controllers
             if (quiz == null) return NotFound();
             return Ok(quiz);
         }
-
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] Admin_QuizDto dto)
         {
+            // Lấy UserId từ Claims
+            var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
+            if (userIdClaim == null)
+            {
+                return Unauthorized(new { message = "User ID claim not found." });
+            }
+            if (!int.TryParse(userIdClaim.Value, out int userId))
+            {
+                return BadRequest(new { message = "Invalid User ID." });
+            }
+            dto.CreatedBy = userId;
+
             await _quizService.AddQuiz(dto);
             return Ok(new { message = "Quiz created successfully" });
         }
-
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(int id, [FromBody] Admin_QuizDto dto)
         {
@@ -45,7 +59,7 @@ namespace API.Controllers
             await _quizService.UpdateQuiz(dto);
             return Ok();
         }
-
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
@@ -53,6 +67,7 @@ namespace API.Controllers
             if (!deleted) return NotFound();
             return Ok();
         }
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
         [HttpPut("{id}/toggle-status")]
         public async Task<IActionResult> ToggleStatus(int id)
         {
