@@ -29,7 +29,7 @@
 </head>
 <body>
     @await Html.PartialAsync("_AdminSidebar")
-    <div class="container-xl" style="margin-left: 0px;">
+    <div class="container-xl" style="margin-left: 100px;">
         <div class="table-responsive">
             <div class="table-wrapper">
                 <div class="table-title">
@@ -50,8 +50,8 @@
                                 <div class="col-3 pl-1">
                                     <select id="role-filter" class="form-control">
                                         <option value="">All</option>
-                                        <option value="0">User</option>
-                                        <option value="1">Admin</option>
+                                        <option value="1">User</option>
+                                        <option value="0">Admin</option>
                                     </select>
                                 </div>
                             </div>
@@ -163,8 +163,8 @@
                         <div class="form-group">
                             <label>Role</label>
                             <select class="form-control" id="add-role">
-                                <option value="0">User</option>
-                                <option value="1">Admin</option>
+                                <option value="1">User</option>
+                                <option value="0">Admin</option>
                             </select>
                         </div>
                     </form>
@@ -234,10 +234,10 @@
             users.forEach((user, index) => {
                 let roleText = '';
                 switch(user.role) {
-                    case 0:
+                    case 1:
                         roleText = 'User';
                         break;
-                    case 1:
+                    case 0:
                         roleText = 'Admin';
                         break;
                     default:
