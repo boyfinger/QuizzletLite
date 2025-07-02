@@ -10,6 +10,8 @@ namespace API.Repositories
 
         Task<bool> CheckEmailExists(string email);
 
+        Task<User?> GetUserByEmail(string email);
+
         Task<bool> CheckEmailExistsByDifferentId(int id, string email);
 
         Task<bool> CheckUsernameExists(string username);

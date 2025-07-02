@@ -1,6 +1,7 @@
 ﻿using API.Dtos.User;
 using API.Mappers;
 using API.Services;
+using API.Utils;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;
@@ -18,13 +19,22 @@ namespace API.Controllers
         private readonly IUserService _userService;
         private readonly IJwtService _jwtService;
         private readonly IGoogleAuthService _googleAuthService;
+        private readonly IOtpService _otpService;
+        private readonly IEmailService _emailService;
 
-        public AuthenticationController(IAuthService authenticationService, IJwtService jwtService, IGoogleAuthService googleAuthService, IUserService userService)
+        public AuthenticationController(IAuthService authenticationService,
+                                        IJwtService jwtService,
+                                        IGoogleAuthService googleAuthService,
+                                        IUserService userService,
+                                        IOtpService otpService,
+                                        IEmailService emailService)
         {
             _authenticationService = authenticationService;
             _jwtService = jwtService;
             _googleAuthService = googleAuthService;
             _userService = userService;
+            _otpService = otpService;
+            _emailService = emailService;
         }
 
         [AllowAnonymous]
@@ -141,7 +151,7 @@ namespace API.Controllers
         [HttpPost("change-password")]
         public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDTO changePasswordDTO)
         {
-            var success = await _authenticationService.UpdatePassword(changePasswordDTO.UserId, changePasswordDTO.CurrentPassword, changePasswordDTO.NewPassword, changePasswordDTO.ConfirmNewPassword);
+            var success = await _authenticationService.UpdatePasswordInProfile(changePasswordDTO.UserId, changePasswordDTO.CurrentPassword, changePasswordDTO.NewPassword, changePasswordDTO.ConfirmNewPassword);
             if (!success)
                 return BadRequest("Could not update password. User may not exist.");
             return Ok(success);
@@ -169,6 +179,50 @@ namespace API.Controllers
                 return BadRequest("Can't load user");
             }
             return Ok(userDto);
+        }
+
+        [HttpPost("send-reset-otp")]
+        public async Task<IActionResult> SendResetOtp([FromBody] ForgotPasswordDTO dto)
+        {
+            var otp = RandomStringUtils.RandomIntOtp().ToString();
+            _otpService.StoreOtp(dto.Email, otp);
+            await _emailService.SendEmailAsyncToCustomer(dto.Email, "OTP Reset Code", $"Your OTP is: {otp}");
+            return Ok("OTP sent.");
+        }
+
+        [AllowAnonymous]
+        [HttpPost("verify-otp")]
+        public async Task<IActionResult> VerifyOtp([FromBody] ResetWithOtpInputDto resetWithOtpInputDto)
+        {
+            Console.WriteLine($"🔥 Incoming verify-otp with Email: {resetWithOtpInputDto.Email}, OTP: {resetWithOtpInputDto.OtpCode}");
+
+            if (!ModelState.IsValid)
+            {
+                Console.WriteLine("❌ ModelState is invalid");
+                return BadRequest("Invalid data.");
+            }
+
+            var isValid = _otpService.VerifyOtp(resetWithOtpInputDto.Email, resetWithOtpInputDto.OtpCode);
+            if (!isValid)
+            {
+                Console.WriteLine($"❌ OTP verification failed for {resetWithOtpInputDto.Email}");
+                return BadRequest("OTP is incorrect or expired.");
+            }
+
+            var user = await _authenticationService.GetUserByEmail(resetWithOtpInputDto.Email);
+            if (user == null)
+            {
+                Console.WriteLine($"❌ User not found for {resetWithOtpInputDto.Email}");
+                return NotFound("User not found.");
+            }
+
+            Console.WriteLine($"✅ User found. Resetting password for userId: {user.Id}");
+            await _authenticationService.UpdatePasswordInReset(user.Id, resetWithOtpInputDto.NewPassword, resetWithOtpInputDto.ConfirmPassword);
+
+            _otpService.RemoveOtp(resetWithOtpInputDto.Email);
+            Console.WriteLine("✅ Password reset successful, OTP removed.");
+
+            return Ok("Password has been reset.");
         }
     }
 }

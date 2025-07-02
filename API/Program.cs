@@ -136,7 +136,6 @@ builder.Services.AddScoped<IQuizAttemptService, QuizAttemptService>();
 builder.Services.AddScoped<IQuizAttemptRepository, QuizAttemptRepository>();
 builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
-//builder.Services.AddTransient<IEmailSender, YourEmailSenderImplementation>();
 builder.Services.AddScoped<Admin_IQuizRepository, Admin_QuizRepository>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IAuthRepository, AuthRepository>();
@@ -146,6 +145,7 @@ builder.Services.AddScoped<IGoogleAuthService, GoogleAuthService>();
 builder.Services.AddScoped<Admin_IQuizService, Admin_QuizService>();
 builder.Services.AddScoped<Admin_IQuestionRepository, Admin_QuestionRepository>();
 builder.Services.AddScoped<Admin_IQuestionService, Admin_QuestionService>();
+builder.Services.AddScoped<IOtpService, OtpService>();
 
 
 builder.Services.AddControllers().AddOData(options => options
@@ -190,6 +190,8 @@ builder.Services.AddAuthorization(options =>
     options.AddPolicy("AdminPolicy", policy => policy.RequireRole("Admin"));
     options.AddPolicy("UserPolicy", policy => policy.RequireRole("User"));
 });
+
+builder.Services.AddMemoryCache();
 
 var app = builder.Build();
 

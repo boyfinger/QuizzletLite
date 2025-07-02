@@ -1,0 +1,61 @@
+﻿@page
+@model WebApp.Pages.Auth.ResetWithOtpModel
+@{
+    ViewData["Title"] = "Verify OTP";
+}
+@section Scripts{
+    <script>
+        @if (TempData["ResetInfo"] != null)
+        {
+            <text>
+                alert("@TempData["ResetInfo"]")
+            </text>
+        }
+        @if (TempData["ResetFailed"] != null)
+        {
+            <text>
+                alert("@TempData["ResetFailed"]")
+            </text>
+        }
+    </script>
+}
+<div class="d-flex justify-content-center align-items-center vh-100 bg-light">
+    <div class="card shadow-lg p-4" style="min-width: 350px; max-width: 400px; width: 100%;">
+        <div class="card-header text-center bg-white border-0">
+            <h4 class="mb-0 text-primary">Reset Your Password</h4>
+            <p class="text-muted small">Enter the OTP sent to your email along with your new password.</p>
+        </div>
+        <div class="card-body">
+            <form method="post" asp-page-handler="ResetPassword">
+                <div class="form-group mb-3">
+                    <label asp-for="ResetWithOtpInputDto.Email" class="form-label text-muted">Email address</label>
+                    <input asp-for="ResetWithOtpInputDto.Email" class="form-control" placeholder="Enter your email" required />
+                    <span asp-validation-for="ResetWithOtpInputDto.Email" class="text-danger"></span>
+                </div>
+
+                <div class="form-group mb-3">
+                    <label asp-for="ResetWithOtpInputDto.OtpCode" class="form-label text-muted">OTP Code</label>
+                    <input asp-for="ResetWithOtpInputDto.OtpCode" class="form-control" placeholder="6-digit OTP" required />
+                    <span asp-validation-for="ResetWithOtpInputDto.OtpCode" class="text-danger"></span>
+                </div>
+
+                <div class="form-group mb-3">
+                    <label asp-for="ResetWithOtpInputDto.NewPassword" class="form-label text-muted">New Password</label>
+                    <input asp-for="ResetWithOtpInputDto.NewPassword" type="password" class="form-control" placeholder="Enter new password" required />
+                    <span asp-validation-for="ResetWithOtpInputDto.NewPassword" class="text-danger"></span>
+                </div>
+
+                <div class="form-group mb-3">
+                    <label asp-for="ResetWithOtpInputDto.ConfirmPassword" class="form-label text-muted">Confirm Password</label>
+                    <input asp-for="ResetWithOtpInputDto.ConfirmPassword" type="password" class="form-control" placeholder="Re-enter password" required />
+                    <span asp-validation-for="ResetWithOtpInputDto.ConfirmPassword" class="text-danger"></span>
+                </div>
+
+                <button type="submit" class="btn btn-primary w-100">Reset Password</button>
+            </form>
+        </div>
+        <div class="card-footer text-center bg-white border-0">
+            <small class="text-muted">Didn't receive the code? <a asp-page="/Auth/ForgotPassword">Resend OTP</a></small>
+        </div>
+    </div>
+</div>

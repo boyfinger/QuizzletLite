@@ -7,15 +7,16 @@ using System.Text;
 
 namespace WebApp.Pages.Auth
 {
-    public class ForgotPasswordModel : PageModel
+    public class ResetWithOtpModel : PageModel
     {
         private readonly HttpClient _httpClient;
-        public ForgotPasswordModel(HttpClient httpClient)
+
+        public ResetWithOtpModel(HttpClient httpClient)
         {
             _httpClient = httpClient;
         }
         [BindProperty]
-        public ForgotPasswordDTO ForgotPasswordDTO { get; set; } = new ForgotPasswordDTO();
+        public ResetWithOtpInputDto ResetWithOtpInputDto { get; set; } = new ResetWithOtpInputDto();
         public IActionResult OnGet()
         {
             if (HttpContext.Session.Get<UserDto>("userSession") == null)
@@ -25,24 +26,23 @@ namespace WebApp.Pages.Auth
             return RedirectToPage("/Index");
         }
 
-        public async Task<IActionResult> OnPostSendResetLinkAsync()
+        public async Task<IActionResult> OnPostResetPasswordAsync()
         {
             if (!ModelState.IsValid)
             {
                 return Page();
             }
-            var jsonContent = JsonConvert.SerializeObject(ForgotPasswordDTO);
+            var jsonContent = JsonConvert.SerializeObject(ResetWithOtpInputDto);
             var content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
-            var response = await _httpClient.PostAsync("https://localhost:7245/api/authentication/send-reset-otp", content);
+            var response = await _httpClient.PostAsync("https://localhost:7245/api/authentication/verify-otp", content);
             if (!response.IsSuccessStatusCode)
             {
-                TempData["ResetError"] = "Failed to send OTP. Please try again.";
-                ModelState.AddModelError(string.Empty, "Failed to send OTP. Please check your input.");
+                TempData["ResetFailed"] = "Reset password failed !";
+                ModelState.AddModelError(string.Empty, "Failed to reset password. Please check your input.");
                 return Page();
             }
-
-            TempData["ResetInfo"] = "An OTP has been sent to your email.";
-            return RedirectToPage("/Auth/ResetWithOtp");
+            TempData["ResetSuccess"] = "Reset password successfully !";
+            return RedirectToPage("/Auth/Login");
         }
     }
 }
