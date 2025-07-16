@@ -9,10 +9,6 @@
   <ItemGroup>
     <ProjectReference Include="..\API\API.csproj" />
   </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Pages\Home\" />
-  </ItemGroup>
     
 
 </Project>

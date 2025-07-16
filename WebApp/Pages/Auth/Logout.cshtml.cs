@@ -8,7 +8,7 @@ namespace WebApp.Pages.Auth
         public IActionResult OnPost()
         {
             HttpContext.Session.Clear();
-            return RedirectToPage("/Index");
+            return RedirectToPage("/Player/Home");
         }
     }
 }

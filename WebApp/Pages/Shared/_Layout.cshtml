@@ -1,9 +1,43 @@
 ﻿@using API.Dtos.User
 @using API.Utils
+@using System.IdentityModel.Tokens.Jwt
+@using System.Security.Claims
+@using Newtonsoft.Json
+@using System.Net.Http.Headers
 @inject IHttpContextAccessor HttpContextAccessor
 @{
-    var user = HttpContextAccessor.HttpContext?.Session.Get<UserDto>("userSession");
+    //var user = HttpContextAccessor.HttpContext?.Session.Get<UserDto>("userSession");
+    var tokenString = HttpContextAccessor?.HttpContext?.Session.GetString("accessToken");
+    Console.WriteLine(tokenString);
 }
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+    const tokenString = "@tokenString";
+    if (tokenString != null){
+        fetch("https://localhost:7245/api/authentication/me", {
+        headers: {
+            "Content-Type": "application/json",
+            Authorization: "Bearer " + tokenString
+        }
+    })
+    .then(res => {
+        if (!res.ok) throw new Error("Failed to load user data");
+        return res.json();
+    })
+    .then(user => {
+        // Hiển thị lên giao diện
+        document.getElementById("usernameSpan").innerText = user.username;
+        document.getElementById("avatarImg").src = user.avatar;
+    })
+    .catch(err => {
+        console.error("User fetch error:", err);
+    });
+    }
+
+    
+</script>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -31,24 +65,33 @@
                 <div class="collapse navbar-collapse" id="navbarNav">
                     <ul class="navbar-nav ms-auto">
                         <li class="nav-item">
-                            <a class="nav-link" asp-area="" asp-page="/Index">🏠 Home</a>
+                            <a class="nav-link" asp-page="/Player/Home">🏠 Home</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" asp-area="" asp-page="/Features">✨ Features</a>
+                            <a class="nav-link" asp-page="/Player/Sets">📁 My Sets</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" asp-area="" asp-page="/Contact">📩 Contact</a>
+                            <a class="nav-link" asp-page="/Player/Explore">🔍 Explore</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-page="/Player/Quiz">🧠 Quiz Mode</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-page="/Player/Favorites">⭐ Saved</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-page="/Player/Profile">🙋 Profile</a>
                         </li>
                     </ul>
 
                     <!-- Dropdown cho tài khoản -->
-                    @if (user != null)
+                    @if (tokenString != null)
                     {
                         <ul class="navbar-nav ms-4">
                             <li class="nav-item dropdown">
                                 <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
-                                    <img src="@user.Avatar" alt="Avatar" class="rounded-circle me-2" style="width: 32px; height: 32px; object-fit: cover;" />
-                                    <span class="text-primary">@user.Username</span>
+                                    <img id="avatarImg" src="" alt="Avatar" class="rounded-circle me-2" style="width: 32px; height: 32px; object-fit: cover;" />
+                                    <span class="text-primary" id="usernameSpan"></span>
                                 </a>
                                 <ul class="dropdown-menu dropdown-menu-end">
                                     <li>

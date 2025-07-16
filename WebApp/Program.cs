@@ -31,6 +31,7 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
+app.MapFallbackToPage("/Player/Home");
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseSession();

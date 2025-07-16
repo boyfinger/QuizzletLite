@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace API.Controllers
 {
@@ -44,7 +45,14 @@ namespace API.Controllers
             try
             {
                 var userLogined = await _authenticationService.AuthenticateUser(loginDTO);
-                if (userLogined == null) return Unauthorized("Invalid credentials");
+                if (userLogined == null)
+                {
+                    return Unauthorized(new
+                    {
+                        success = false,
+                        message = "Email hoặc mật khẩu không đúng."
+                    });
+                }
 
                 var userDTO = userLogined.ToUserDto();
 
@@ -52,7 +60,6 @@ namespace API.Controllers
                 Console.WriteLine(token);
                 var response = new AuthResponseDto
                 {
-                    UserDto = userDTO,
                     Token = token
                 };
 
@@ -63,6 +70,60 @@ namespace API.Controllers
                 return StatusCode(500, $"Internal error: {ex.Message}");
             }
 
+        }
+
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        [HttpGet("me")]
+        public async Task<IActionResult> GetCurrentUser()
+        {
+            try
+            {
+                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(userIdClaim))
+                    return Unauthorized("User ID not found in token");
+
+                if (!int.TryParse(userIdClaim, out int userId))
+                    return BadRequest("Invalid user ID format");
+
+                var user = await _userService.GetUserById(userId);
+                if (user == null)
+                    return NotFound("User not found");
+
+                return Ok(user);
+            }
+            catch (Exception ex)
+            {
+                // Nếu có ILogger, bạn có thể log lại
+                // _logger.LogError(ex, "Error fetching current user");
+
+                return StatusCode(500, new { error = "Internal server error", detail = ex.Message });
+            }
+        }
+
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        [HttpGet("avatarforme")]
+        public async Task<IActionResult> GetAvatar()
+        {
+            try
+            {
+                var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+                Console.WriteLine(userIdClaim);
+                if (string.IsNullOrEmpty(userIdClaim)) return Unauthorized("Missing user ID");
+
+                int userId = int.Parse(userIdClaim); // Có thể bị lỗi nếu giá trị không hợp lệ
+                var avatarUrl = await _userService.GetAvatarByUserId(userId);
+
+                if (string.IsNullOrEmpty(avatarUrl))
+                    return NotFound("Avatar not found");
+
+                return Ok(new { avatar = avatarUrl });
+            }
+            catch (Exception ex)
+            {
+                // Có thể thêm logger nếu cần:
+                //_logger.LogError(ex, "Error getting avatar");
+                return StatusCode(500, new { error = "Internal server error", detail = ex.Message });
+            }
         }
 
         [AllowAnonymous]
@@ -97,16 +158,12 @@ namespace API.Controllers
 
             var response = new AuthResponseDto
             {
-                UserDto = userDto,
+
                 Token = token
             };
 
             return Redirect($"https://localhost:7113/Auth/GoogleLoginSuccess" +
-                $"?token={token}" +
-                $"&id={userDto.Id}" +
-                $"&username={Uri.EscapeDataString(userDto.Username)}" +
-                $"&email={Uri.EscapeDataString(userDto.Email)}" +
-                $"&role={userDto.Role}");
+                $"?token={token}");
 
         }
 

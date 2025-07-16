@@ -1,5 +1,4 @@
 ﻿using API.Dtos.User;
-using API.Utils;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Newtonsoft.Json;
@@ -19,17 +18,23 @@ namespace WebApp.Pages.Auth
         public LoginDTO loginDTO { get; set; } = new LoginDTO();
         public IActionResult OnGet()
         {
-            if (HttpContext.Session.Get<UserDto>("userSession") == null)
+            var token = HttpContext.Session.GetString("accessToken");
+            if (string.IsNullOrEmpty(token))
             {
-                var userJson = Request.Cookies["userSession"];
-                if (!string.IsNullOrEmpty(userJson))
-                {
-                    var user = JsonConvert.DeserializeObject<UserDto>(userJson);
-                    HttpContext.Session.Set("userSession", user);
-                }
                 return Page();
             }
-            return RedirectToPage("/Index");
+            return RedirectToPage("/Player/Home");
+            //if (HttpContext.Session.Get<UserDto>("userSession") == null)
+            //{
+            //    var userJson = Request.Cookies["userSession"];
+            //    if (!string.IsNullOrEmpty(userJson))
+            //    {
+            //        var user = JsonConvert.DeserializeObject<UserDto>(userJson);
+            //        HttpContext.Session.Set("userSession", user);
+            //    }
+            //    return Page();
+            //}
+            //return RedirectToPage("/Home/Home");
         }
 
         public async Task<IActionResult> OnPostLoginAsync()
@@ -49,7 +54,7 @@ namespace WebApp.Pages.Auth
             }
             var responseData = await response.Content.ReadAsStringAsync();
             var authResponse = JsonConvert.DeserializeObject<AuthResponseDto>(responseData);
-            HttpContext.Session.Set("userSession", authResponse.UserDto);
+            //HttpContext.Session.Set("userSession", authResponse.UserDto);
             HttpContext.Session.SetString("accessToken", authResponse.Token);
             if (loginDTO.RememberMe)
             {
@@ -61,15 +66,15 @@ namespace WebApp.Pages.Auth
                     Secure = true,
                     SameSite = SameSiteMode.Lax
                 };
-                var userJson = JsonConvert.SerializeObject(authResponse.UserDto);
-                Response.Cookies.Append("userSession", userJson, options);
+                //var userJson = JsonConvert.SerializeObject(authResponse.UserDto);
+                //Response.Cookies.Append("userSession", userJson, options);
             }
             else
             {
-                Response.Cookies.Delete("userSession");
+                //Response.Cookies.Delete("userSession");
             }
 
-            return RedirectToPage("/Index");
+            return RedirectToPage("/Player/Home");
         }
     }
 }

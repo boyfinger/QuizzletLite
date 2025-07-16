@@ -1,42 +1,129 @@
 ﻿@page
-@using API.Dtos.User
-@using API.Utils
 @model WebApp.Pages.Auth.ProfileModel
-@inject IHttpContextAccessor HttpContextAccessor
 
 @{
     ViewData["Title"] = "Profile";
-    var user = HttpContextAccessor?.HttpContext?.Session.Get<UserDto>("userSession");
-    var token = HttpContextAccessor?.HttpContext?.Session.GetString("accessToken");
+    // var user = HttpContextAccessor?.HttpContext?.Session.Get<UserDto>("userSession");
+    // var token = HttpContextAccessor?.HttpContext?.Session.GetString("accessToken");
+    var accessToken = HttpContext.Session.GetString("accessToken");
 }
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+
+    
+
+    const roleLabels = {
+        0: "Admin",
+        1: "User"
+    };
+
+
+    const token = "@Html.Raw(accessToken ?? "")";
+
+    fetch("https://localhost:7245/api/authentication/me", {
+        headers: {
+            "Content-Type": "application/json",
+            Authorization: "Bearer " + token
+        }
+    })
+    .then(async res => {
+        if (!res.ok) {
+            const msg = await res.text();
+            console.error("User info fetch failed:", res.status, msg);
+            return;
+        }
+
+        return res.json();
+    })
+    .then(user => {
+        if (!user) return;
+                    console.log("Username:", user.username);
+    console.log("Role:", user.role);
+    console.log("Avatar:", user.avatar);
+    document.getElementById("avatarImgInfo").src = user.avatar;
+                document.getElementById("usernameSpanInfo").innerText = user.username;
+                document.getElementById("emailSpan").textContent = user.email;
+                document.getElementById("roleBadge").textContent = roleLabels[user.role];
+                document.getElementById("usernameSpanInput").value = user.username;
+                document.getElementById("emailSpanInput").value = user.email;
+    })
+    .catch(err => {
+        console.error("User profile fetch error:", err.message);
+    });
+                
+</script>
+
 @section Scripts {
+
+
     <script>
         @if (TempData["ChangeAvatarSuccess"] != null)
         {
             <text>
-                alert("@TempData["ChangeAvatarSuccess"]");
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Avatar Updated',
+                        text: "@TempData["ChangeAvatarSuccess"]"
+                    });
             </text>
         }
 
         @if (TempData["ChangePasswordSuccess"] != null)
         {
             <text>
-                alert("@TempData["ChangePasswordSuccess"]");
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Done',
+                        text: "@TempData["ChangePasswordSuccess"]"
+                    });
             </text>
         }
+
+        @if (TempData["ChangeAvatarFailed"] != null)
+        {
+            <text>
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Avatar Error',
+                        text: "@TempData["ChangeAvatarFailed"]"
+                    });
+            </text>
+        }
+
+        @if (TempData["ChangePasswordFailed"] != null)
+        {
+            <text>
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Password Error',
+                        text: "@TempData["ChangePasswordFailed"]"
+                    });
+            </text>
+        }
+
         @if (TempData["UpdateProfileSuccess"] != null)
         {
             <text>
-                    alert("@TempData["UpdateProfileSuccess"]");
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Profile Updated',
+                        text: "@TempData["UpdateProfileSuccess"]"
+                    });
             </text>
         }
+
         @if (TempData["UpdateProfileError"] != null)
         {
             <text>
-                    alert("@TempData["UpdateProfileError"]");
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Update Failed',
+                        text: "@TempData["UpdateProfileError"]"
+                    });
             </text>
         }
     </script>
+        
 }
 
 <div class="container py-5">
@@ -45,7 +132,7 @@
             <div class="card shadow-lg">
                 <div class="card-body text-center">
                     <div class="position-relative d-inline-block">
-                        <img src="@(user?.Avatar)"
+                        <img id="avatarImgInfo" src=""
                              class="rounded-circle"
                              style="width: 120px; height: 120px; object-fit: cover; border: 3px solid #6c757d;" />
 
@@ -57,9 +144,9 @@
                         </button>
                     </div>
 
-                    <h4 class="text-primary">@user?.Username</h4>
-                    <p class="text-muted mb-1">@user?.Email</p>
-                    <span class="badge bg-secondary">@user?.Role</span>
+                    <h4 class="text-primary" id="usernameSpanInfo"></h4>
+                    <p class="text-muted mb-1" id="emailSpan"></p>
+                    <span class="badge bg-secondary" id="roleBadge"></span>
 
                     <hr class="my-4" />
 
@@ -69,10 +156,6 @@
                     </div>
                 </div>
             </div>
-
-            @* <div class="text-center mt-4">
-                <small class="text-muted">@token</small>
-            </div>  *@
         </div>
     </div>
 </div>
@@ -140,10 +223,6 @@
                     <div class="text-end mt-3">
                         <button type="submit" class="btn btn-success">Update Password</button>
                     </div>
-
-                    @* <div class="text-center mt-3">
-                        <small class="text-muted">Forgot your password? <a asp-page="/Auth/ForgotPassword">Reset it here</a></small>
-                    </div> *@
                 </form>
 
             </div>
@@ -162,18 +241,18 @@
                 <form method="post" asp-page-handler="UpdateProfile">
 
                     <div class="mb-3">
-                        <label for="Username" class="form-label">Username</label>
-                        <input type="text" id="Username" name="Username" class="form-control" />
+                        <label for="usernameSpanInput" class="form-label">Username</label>
+                        <input type="text" id="usernameSpanInput" name="Username" class="form-control" />
                     </div>
 
                     <div class="mb-3">
-                        <label for="Email" class="form-label">Email</label>
-                        <input type="email" id="Email" name="Email" class="form-control" />
+                        <label for="emailSpanInput" class="form-label">Email</label>
+                        <input type="email" id="emailSpanInput" name="Email" class="form-control" />
                     </div>
 
                     <div class="mb-3">
-                        <label for="CurrentPassword" class="form-label">Confirm with Current Password</label>
-                        <input type="password" id="CurrentPassword" name="CurrentPassword" class="form-control" />
+                        <label for="CurrentPasswordConfirm" class="form-label">Confirm with Current Password</label>
+                        <input type="password" id="CurrentPasswordConfirm" name="CurrentPassword" class="form-control" />
                     </div>
 
                     <div class="text-end mt-3">
@@ -214,14 +293,6 @@
     function openUpdateProfileModal() {
         const modalElement = document.getElementById('updateProfileModal');
         const modal = new bootstrap.Modal(modalElement);
-
-        // Pre-fill current user data into the form fields when the modal opens
-        // This assumes 'user' is accessible in the JavaScript scope, which it is from Razor.
-        // You might need to parse it if it's not directly accessible (e.g., from a hidden field).
-        document.querySelector('#updateProfileModal input[name="Username"]').value = '@(user?.Username)';
-        document.querySelector('#updateProfileModal input[name="Email"]').value = '@(user?.Email)';
-        // Add other fields if you have them in UpdateProfileDTO
-
         modal.show();
     }
 </script>

@@ -65,5 +65,10 @@ namespace API.Services
         {
             return await _userRepository.UserExists(id);
         }
+
+        public async Task<string?> GetAvatarByUserId(int userId)
+        {
+            return await _userRepository.GetAvatarByUserId(userId);
+        }
     }
 }
