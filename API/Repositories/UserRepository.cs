@@ -45,7 +45,7 @@ namespace API.Repositories
 
         public async Task<User?> GetUserById(int id)
         {
-            return await _context.Users.FirstOrDefaultAsync(u => u.Id == id);
+            return await _context.Users.Include(u => u.Quizzes).Include(u => u.QuizAttempts).FirstOrDefaultAsync(u => u.Id == id);
         }
 
         public async Task AddUser(User user)

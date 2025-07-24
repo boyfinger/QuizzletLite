@@ -75,6 +75,7 @@ namespace API.Controllers
             return CreatedAtAction(nameof(GetQuizById), new { id = quizDto.Id }, quizDto);
         }
 
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         [HttpPut("{quizId}")]
         public async Task<ActionResult<QuizzesDto>> UpdateQuiz(int quizId, [FromBody] UpdateQuizDto updateQuizDto)
         {
@@ -102,6 +103,33 @@ namespace API.Controllers
         {
             var quizzes = await _quizService.GetQuizzesByUserAsync(userId);
             return Ok(quizzes);
+        }
+
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        [HttpGet("your-quiz")]
+        public async Task<IActionResult> GetYourQuiz([FromQuery] QuizQuery query)
+        {
+            try
+            {
+                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(userIdClaim))
+                {
+                    return Unauthorized(new { error = "Token invalid", detail = "User ID claim missing" });
+                }
+
+                if (!int.TryParse(userIdClaim, out int userId))
+                {
+                    return BadRequest(new { error = "Bad Request", detail = "User ID in token is not a valid number" });
+                }
+
+                var quizzes = await _quizService.GetUserQuizzesByPage(userId, query);
+                if (quizzes == null) return NotFound("No quizzes found");
+                return Ok(quizzes);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = "Internal server error", detail = ex.Message });
+            }
         }
 
         [HttpPost("submit")]

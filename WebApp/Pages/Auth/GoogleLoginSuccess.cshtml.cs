@@ -17,7 +17,7 @@ namespace WebApp.Pages.Auth
             Token = token;
             HttpContext.Session.SetString("accessToken", token);
 
-            return RedirectToPage("/Home/Home");
+            return RedirectToPage("/Player/Home");
         }
     }
 }

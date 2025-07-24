@@ -1,34 +1,149 @@
 ﻿@page
 @model HomeModel
+@using API.Models;
 @{
     ViewData["Title"] = "Quizlet Lite – Home";
+    var accessToken = HttpContext?.Session.GetString("accessToken");
 }
 
-<div class="text-center py-5">
-    <h1 class="display-4 text-primary">🧠 Welcome to Quizlet Lite!</h1>
-    <p class="lead">Hello, @Model.Username! Ready to boost your learning today?</p>
+@{
+    var recentQuizzesPaged = new List<Quiz> {
+        new Quiz { Id = 1, Name = "Math Practice", CreatedOn = DateTime.Now.AddDays(-1) },
+        new Quiz { Id = 2, Name = "Biology Review", CreatedOn = DateTime.Now.AddDays(-3) },
+        new Quiz { Id = 3, Name = "History Quiz", CreatedOn = DateTime.Now.AddDays(-5) }
+    };
 
-    <hr class="my-4" />
+    var newQuizzes = new List<Quiz> {
+        new Quiz { Id = 10, Name = "New English Set", CreatedOn = DateTime.Now },
+        new Quiz { Id = 11, Name = "Physics Review", CreatedOn = DateTime.Now.AddDays(-1) },
+        new Quiz { Id = 12, Name = "Chemistry Test", CreatedOn = DateTime.Now.AddDays(-2) }
+    };
+}
 
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card shadow-sm border-0">
-                <div class="card-body">
-                    <h4 class="card-title">✨ Features You'll Love</h4>
-                    <ul class="list-group list-group-flush text-start">
-                        <li class="list-group-item">📁 Create and manage your own flashcard sets</li>
-                        <li class="list-group-item">🔍 Explore public quizzes and study sets</li>
-                        <li class="list-group-item">🧪 Test yourself in quiz mode</li>
-                        <li class="list-group-item">⭐ Save your favorite sets for later</li>
-                        <li class="list-group-item">📊 Track your learning progress</li>
-                    </ul>
+<script>
+    const token = "@Html.Raw(accessToken ?? "")";
 
-                    <div class="mt-4">
-                        <a asp-page="/Sets/Create" class="btn btn-success me-2">🎯 Create Flashcards</a>
-                        <a asp-page="/Player/Explore" class="btn btn-outline-primary">🌐 Explore Sets</a>
+    fetch("https://localhost:7245/api/authentication/me", {
+        headers: {
+            "Content-Type": "application/json",
+            Authorization: "Bearer " + token
+        }
+    })
+    .then(async res => {
+        if (!res.ok) {
+            const msg = await res.text();
+            console.error("User info fetch failed:", res.status, msg);
+            return;
+        }
+
+        return res.json();
+    }).then(user => {
+        if (!user) return;
+                document.getElementById("usernameSpanHome").innerText = user.username;
+    })
+    .catch(err => {
+        console.error("User profile fetch error:", err.message);
+    });
+</script>
+
+@if (accessToken == null)
+{
+    <div class="text-center py-5">
+        <h1 class="display-4 text-primary">🧠 Welcome to Quizlet Lite!</h1>
+        <p class="lead">Hello! Ready to boost your learning today?</p>
+
+        <hr class="my-4" />
+
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card shadow-sm border-0">
+                    <div class="card-body">
+                        <h4 class="card-title">✨ Features You'll Love</h4>
+                        <ul class="list-group list-group-flush text-start">
+                            <li class="list-group-item">📁 Create and manage your own flashcard sets</li>
+                            <li class="list-group-item">🔍 Explore public quizzes and study sets</li>
+                            <li class="list-group-item">🧪 Test yourself in quiz mode</li>
+                            <li class="list-group-item">⭐ Save your favorite sets for later</li>
+                            <li class="list-group-item">📊 Track your learning progress</li>
+                        </ul>
+
+                        <div class="mt-4">
+                            <a asp-page="/Auth/Register" class="btn btn-success me-2">
+                                🟢
+                                Start
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
+}
+else
+{
+    <div class="py-5">
+        <h2 class="text-primary mb-4">🎉 Welcome , <span id="usernameSpanHome"></span>!</h2>
+
+        <div class="row gy-4">
+            <!-- Thống kê học tập -->
+            <div class="col-md-6">
+                <div class="card border-success shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title">📊 Your Progress</h5>
+                        <p class="card-text">
+                            You've created <strong>12 sets</strong> and completed <strong>8 quizzes</strong> so far. Keep it up!
+                        </p>
+                        <a asp-page="/Player/Stats" class="btn btn-outline-success">View Full Stats</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Shortcut menu -->
+            <div class="col-12">
+                <div class="card shadow-sm">
+                    <div class="card-body text-center">
+                        <h5 class="card-title mb-3">🚀 Quick Access</h5>
+                        <a asp-page="/Sets/Create" class="btn btn-success me-2">📁 Create Flashcards</a>
+                        <a asp-page="/Quiz/QuizList" class="btn btn-outline-primary me-2">🔍 Explore Sets</a>
+                    </div>
+                </div>
+            </div>
+
+            <h5 class="mt-4">🕘 Recent Quizzes</h5>
+            <div class="row">
+                @foreach (var quiz in recentQuizzesPaged)
+                {
+                    <div class="col-md-4 mb-2">
+                        <div class="card shadow-sm h-100">
+                            <div class="card-body d-flex flex-column">
+                                <h5 class="card-title">@quiz.Name</h5>
+                                <p class="card-text text-muted">
+                                    Created on @quiz.CreatedOn.ToShortDateString()
+                                </p>
+                                <a asp-page="/Player/Quiz" asp-route-id="@quiz.Id" class="btn btn-outline-primary mt-auto">Take Quiz</a>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <h5 class="mt-4">🆕 New Quizzes</h5>
+            <div class="row">
+                @foreach (var quiz in newQuizzes)
+                {
+                    <div class="col-md-4 mb-2">
+                        <div class="card shadow-sm h-100">
+                            <div class="card-body d-flex flex-column">
+                                <h5 class="card-title">@quiz.Name</h5>
+                                <p class="card-text text-muted">
+                                    Added on @quiz.CreatedOn.ToShortDateString()
+                                </p>
+                                <a asp-page="/Player/Quiz" asp-route-id="@quiz.Id" class="btn btn-outline-primary mt-auto">Try Now</a>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+}

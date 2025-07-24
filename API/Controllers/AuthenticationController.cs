@@ -93,8 +93,6 @@ namespace API.Controllers
             }
             catch (Exception ex)
             {
-                // Nếu có ILogger, bạn có thể log lại
-                // _logger.LogError(ex, "Error fetching current user");
 
                 return StatusCode(500, new { error = "Internal server error", detail = ex.Message });
             }

@@ -9,48 +9,80 @@
 }
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
-
-    
-
-    const roleLabels = {
+        const roleLabels = {
         0: "Admin",
         1: "User"
     };
 
+    async function loadAndDisplayUserProfile() {
+        // Ensure '@Html.Raw(accessToken ?? "")' is correctly replaced by your server-side rendering.
+        const token = "@Html.Raw(accessToken ?? "")";
 
-    const token = "@Html.Raw(accessToken ?? "")";
+        // --- Token Validation ---
+        if (!token || token.trim() === "" || token === "@accessToken") {
+            console.warn("Token is missing, empty, or not properly rendered. Cannot fetch user profile.");
 
-    fetch("https://localhost:7245/api/authentication/me", {
-        headers: {
-            "Content-Type": "application/json",
-            Authorization: "Bearer " + token
-        }
-    })
-    .then(async res => {
-        if (!res.ok) {
-            const msg = await res.text();
-            console.error("User info fetch failed:", res.status, msg);
-            return;
         }
 
-        return res.json();
-    })
-    .then(user => {
-        if (!user) return;
-                    console.log("Username:", user.username);
-    console.log("Role:", user.role);
-    console.log("Avatar:", user.avatar);
-    document.getElementById("avatarImgInfo").src = user.avatar;
-                document.getElementById("usernameSpanInfo").innerText = user.username;
-                document.getElementById("emailSpan").textContent = user.email;
-                document.getElementById("roleBadge").textContent = roleLabels[user.role];
-                document.getElementById("usernameSpanInput").value = user.username;
-                document.getElementById("emailSpanInput").value = user.email;
-    })
-    .catch(err => {
-        console.error("User profile fetch error:", err.message);
-    });
-                
+        try {
+            // --- API Call to Fetch User Data ---
+            const response = await fetch("https://localhost:7245/api/authentication/me", {
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: "Bearer " + token
+                }
+            });
+
+            // --- Error Handling for HTTP Responses ---
+            if (!response.ok) {
+                const errorMsg = await response.text(); 
+                console.error(`User info fetch failed: Status ${response.status}, Error: ${errorMsg}`);
+
+                switch (response.status) {
+                    case 401:
+                        alert("Unauthorized access. Please log in again.");
+                        window.location.href = "/Auth/Login";
+                        break;
+                    case 403:
+                        alert("Access forbidden. You do not have permission.");
+                        window.location.href = "/Player/Home"; 
+                        break;
+                    case 404:
+                        alert("User profile not found.");
+                        break;
+                    case 500:
+                        alert("Server error occurred. Please try again later.");
+                        break;
+                    default:
+                        alert(`An unexpected error occurred: ${response.status}`);
+                        break;
+                }
+                return;
+            }
+
+            const user = await response.json(); 
+            if (!user) {
+                console.warn("No user data returned from the API.");
+                return; 
+            }
+
+            console.log("User data loaded successfully:", user); 
+
+            document.getElementById("avatarImgInfo").src = user.avatar || "/images/default-avatar.png";
+            document.getElementById("usernameSpanInfo").innerText = user.username;
+            document.getElementById("emailSpan").textContent = user.email;
+            document.getElementById("roleBadge").textContent = roleLabels[user.role] || "Unknown Role";
+
+            document.getElementById("usernameSpanInput").value = user.username;
+            document.getElementById("emailSpanInput").value = user.email;
+
+        } catch (err) {
+            console.error("Failed to fetch user profile due to a network or unexpected error:", err.message);
+            alert("Could not load user profile. Please check your internet connection or try again later.");
+        }
+    }
+
+    loadAndDisplayUserProfile();
 </script>
 
 @section Scripts {

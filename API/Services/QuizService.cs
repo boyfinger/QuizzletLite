@@ -155,5 +155,28 @@ namespace API.Services
                 }).ToList()
             };
         }
+
+        public async Task<List<QuizzesDto>> GetUserQuizzesByPage(int userId, QuizQuery quizQuery)
+        {
+            var quizzes = await GetQuizzesByUserAsync(userId);
+            var filtered = quizzes.AsQueryable();
+            if (!string.IsNullOrWhiteSpace(quizQuery.Name))
+            {
+                filtered = filtered.Where(q => q.Name.Contains(quizQuery.Name, StringComparison.OrdinalIgnoreCase));
+            }
+            if (quizQuery.IsActive.HasValue)
+            {
+                filtered = filtered.Where(q => q.IsActive == quizQuery.IsActive.Value);
+            }
+            var page = quizQuery.Page > 0 ? quizQuery.Page : 1;
+            var pageSize = quizQuery.PageSize > 0 ? quizQuery.PageSize : 5;
+
+            var pagedResult = filtered
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+
+            return pagedResult;
+        }
     }
 }
