@@ -13,7 +13,7 @@ public partial class Question
 
     public QuestionType QuestionType { get; set; }
 
-    public bool IsActive { get; set; }
+    public bool IsActive { get; set; } = true;
 
     public virtual Quiz? Quiz { get; set; }
 }
