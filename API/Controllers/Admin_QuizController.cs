@@ -4,12 +4,14 @@ using API.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.OData.Query;
+using Microsoft.AspNetCore.OData.Routing.Controllers;
 
 namespace API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class Admin_QuizController : ControllerBase
+    public class Admin_QuizController : ODataController
     {
         private readonly Admin_IQuizService _quizService;
 
@@ -17,6 +19,7 @@ namespace API.Controllers
         {
             _quizService = quizService;
         }
+        [EnableQuery]
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
         [HttpGet]
         public async Task<IActionResult> GetAll([FromQuery] QuizQuery query)
