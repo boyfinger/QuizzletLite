@@ -9,5 +9,7 @@ namespace API.Services
         Task Add(Admin_QuestionDto dto);
         Task Update(Admin_QuestionDto dto);
         Task Delete(int id);
+        Task<bool> ToggleQuestionStatus(int id);
+
     }
 }

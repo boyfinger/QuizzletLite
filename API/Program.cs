@@ -1,6 +1,8 @@
 ﻿using API.DAO;
 using API.Dtos;
 using API.Dtos.Question;
+using API.Dtos.Quiz;
+using API.Dtos.User;
 using API.Dtos.QuizAttempt;
 using API.Models;
 using API.Repositories;
@@ -171,6 +173,8 @@ IEdmModel getEdmModel()
     builder.EntitySet<User>("Users");
     builder.EntitySet<QuizzesDto>("QuizzesDto");
     builder.EntitySet<QuestionDto>("QuestionDtos");
+    builder.EntitySet<UserDto>("Users");
+    builder.EntitySet<Admin_QuizDto>("Admin_Quizzes");
     builder.EntitySet<QuizAttemptDto>("QuizAttemptDtos");
     return builder.GetEdmModel();
 }

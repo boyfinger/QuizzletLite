@@ -78,5 +78,13 @@ namespace API.Controllers
             if (!toggled) return NotFound();
             return Ok(new { message = "Quiz status updated successfully." });
         }
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
+        [EnableQuery(PageSize = 5)] // Hỗ trợ OData phân trang/lọc
+        [HttpGet("/odata/Admin_Quizzes")]
+        public IActionResult GetUsersOData()
+        {
+            var result = _quizService.GetQuizzesForOData();
+            return Ok(result);
+        }
     }
 }

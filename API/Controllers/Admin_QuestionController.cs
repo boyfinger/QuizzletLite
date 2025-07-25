@@ -57,5 +57,13 @@ namespace API.Controllers
             await _service.Delete(id);
             return Ok(new { message = "Question deleted successfully." });
         }
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
+        [HttpPut("{id}/toggle-status")]
+        public async Task<IActionResult> ToggleStatus(int id)
+        {
+            var toggled = await _service.ToggleQuestionStatus(id);
+            if (!toggled) return NotFound();
+            return Ok(new { message = "Question status updated successfully." });
+        }
     }
 }

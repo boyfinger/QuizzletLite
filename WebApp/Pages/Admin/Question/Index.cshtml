@@ -1,6 +1,7 @@
 ﻿@page
 @model WebApp.Pages.Admin.Question.IndexModel
 @{
+    Layout = "_AdminLayout";
     var token = HttpContext.Session.GetString("accessToken");
 }
 
@@ -24,12 +25,22 @@
         .cursor-pointer {
             cursor: pointer;
         }
+
+        .toggle-btn {
+            min-width: 90px;
+        }
     </style>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link href="https://cdn.jsdelivr.net/gh/gitbrent/bootstrap4-toggle@3.6.1/css/bootstrap4-toggle.min.css" rel="stylesheet">
 </head>
 <body class="p-4">
-    @await Html.PartialAsync("_AdminSidebar")
+    <div class="wrapper">
+        @await Html.PartialAsync("_AdminSidebar")
+        <div class="main-panel">
+            @await Html.PartialAsync("AdminNavbar")
+    <div class="content" style="margin-left: 0px;">
 
-    <div class="container" style="margin-left: 100px;">
         <h2 class="mb-4">Questions of Quiz ID: <span id="quiz-id-title"></span></h2>
 
         <div class="mb-3">
@@ -105,10 +116,9 @@
             </div>
         </div>
     </div>
+    </div>
 
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/js/bootstrap.bundle.min.js"></script>
-
+    </div>
     <script>
         // Token được lấy từ server và gán vào JS
         const accessToken = '@token';
@@ -168,7 +178,7 @@
 
             questions.forEach((q, index) => {
                 questionsData[q.id] = q; // lưu câu hỏi theo id
-
+                console.log("Câu hỏi:", q.id, "isActive =", q.isActive);
                 const options = JSON.parse(q.optionsJson || '[]');
 
                 const card = document.createElement('div');
@@ -184,7 +194,11 @@
                         </div>
                         <div>
                             <button class="btn btn-sm btn-primary mr-1" onclick="showEditForm(${q.id})">Edit</button>
-                            <button class="btn btn-sm btn-danger" onclick="deleteQuestion(${q.id})">Delete</button>
+                                            <button class="btn toggle-btn ${q.isActive ? 'btn-primary' : 'btn-secondary'}" data-id="${q.id}" data-status="${q.isActive}">
+            ${q.isActive ? 'Enabled' : 'Disabled'}
+        </button>
+
+
                         </div>
                     </div>`;
 
@@ -208,6 +222,30 @@
                 card.appendChild(header);
                 card.appendChild(body);
                 container.appendChild(card);
+                                card.querySelector('.toggle-btn').addEventListener('click', async function () {
+            const id = this.getAttribute('data-id');
+            const currentStatus = this.getAttribute('data-status') === 'true';
+
+            try {
+                const response = await fetch(`${API_URL}/${id}/toggle-status`, {
+                    method: 'PUT',
+                    headers: getAuthHeaders()
+                });
+                if (!response.ok) throw new Error();
+
+                // Update button text and style
+                this.innerText = currentStatus ? 'Disabled' : 'Enabled';
+                this.classList.toggle('btn-primary', !currentStatus);
+                this.classList.toggle('btn-secondary', currentStatus);
+                this.setAttribute('data-status', (!currentStatus).toString());
+
+                showMessage('Status updated successfully.');
+            } catch (err) {
+                console.error(err);
+                showMessage('Failed to update status.');
+            }
+        });
+
             });
         }
 

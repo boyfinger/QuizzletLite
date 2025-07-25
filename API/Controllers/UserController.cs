@@ -20,14 +20,14 @@ namespace API.Controllers
         {
             _userService = userService;
         }
-        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
-        [EnableQuery(PageSize = 5)]
-        [HttpGet]
-        public async Task<IActionResult> GetUsers([FromQuery] UserQuery query)
-        {
-            var pagedResult = await _userService.GetUsers(query);
-            return Ok(pagedResult);
-        }
+        //[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
+        //[EnableQuery(PageSize = 5)]
+        //[HttpGet]
+        //public async Task<IActionResult> GetUsers([FromQuery] UserQuery query)
+        //{
+        //    var pagedResult = await _userService.GetUsers(query);
+        //    return Ok(pagedResult);
+        //}
 
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
         [HttpGet("{id}")]
@@ -106,6 +106,14 @@ namespace API.Controllers
             {
                 return BadRequest(new { message = ex.Message });
             }
+        }
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
+        [EnableQuery(PageSize = 5)] // Hỗ trợ OData phân trang/lọc
+        [HttpGet("/odata/Users")]
+        public IActionResult GetUsersOData()
+        {
+            var result = _userService.GetUsersForOData();
+            return Ok(result);
         }
     }
 }

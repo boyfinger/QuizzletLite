@@ -1,6 +1,7 @@
 ﻿@page
 @model WebApp.Pages.Admin.Quiz.IndexModel
 @{
+    Layout = "_AdminLayout";
     var token = HttpContext.Session.GetString("accessToken");
 }
 <!DOCTYPE html>
@@ -14,9 +15,6 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons" />
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" />
     <link href="~/css/crud.css" rel="stylesheet" />
-    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" rel="stylesheet" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
     <link href="~/css/admin_sidebar.css" rel="stylesheet" />
@@ -28,60 +26,66 @@
     </script>
 </head>
 <body>
-    @await Html.PartialAsync("_AdminSidebar")
-    <div class="container-xl" style="margin-left: 100px;">
-        <div class="table-responsive">
-            <div class="table-wrapper">
-                <div class="table-title">
-                    <div class="row">
-                        <div class="col-sm-8">
-                            <h2>Quiz <b>Management</b></h2>
-                            <button type="button" class="btn btn-success ml-3" onclick="openAddModal()">
-                                <span>Add New Quiz</span>
-                            </button>
-                        </div>
-                        <div class="col-sm-4">
-                            <div class="row">
-                                <div class="col-7 pr-1">
-                                    <div class="search-box">
-                                        <i class="material-icons">&#xE8B6;</i>
-                                        <input id="search-input" type="text" class="form-control" placeholder="Search quiz name..." />
+    <div class="wrapper">
+        @await Html.PartialAsync("_AdminSidebar")
+        <div class="main-panel">
+            @await Html.PartialAsync("AdminNavbar")
+                <div class="content" style="margin-left: 0px;">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="card">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h5 class="card-title mb-0">Quiz Management</h5>
+                                <button type="button" class="btn btn-success" onclick="openAddModal()">➕ Add New Quiz</button>
+                            </div>
+                            <div class="card-body">
+                                <div class="row mb-3">
+                                    <div class="col-md-8">
+                                        <div class="input-group">
+                                            <div class="input-group-prepend">
+                                                <span class="input-group-text"><i class="material-icons">search</i></span>
+                                            </div>
+                                            <input id="search-input" type="text" class="form-control" placeholder="Search quiz name..." />
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <select id="status-filter" class="form-control">
+                                            <option value="">All Status</option>
+                                            <option value="true">Active</option>
+                                            <option value="false">Inactive</option>
+                                        </select>
                                     </div>
                                 </div>
-                                <div class="col-5 pl-1">
-                                    <select id="status-filter" class="form-control">
-                                        <option value="">All Status</option>
-                                        <option value="true">Active</option>
-                                        <option value="false">Inactive</option>
-                                    </select>
+
+                                <div class="table-responsive">
+                                    <table class="table table-hover table-bordered">
+                                        <thead class="thead-light">
+                                            <tr>
+                                                <th>#</th>
+                                                <th>Name</th>
+                                                <th>Created By</th>
+                                                <th>Created On</th>
+                                                <th>Status</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="quiz-table-body">
+                                            <!-- Rows will be dynamically injected here -->
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                <div class="d-flex justify-content-between align-items-center mt-3">
+                                    <div id="hint-text" class="text-muted">Loading...</div>
+                                    <ul id="pagination-bar" class="pagination pagination-sm mb-0">
+                                        <!-- Pagination links will be dynamically created here -->
+                                    </ul>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-
-                <table class="table table-striped table-hover table-bordered">
-                    <thead>
-                        <tr>
-                            <th>#</th>
-                            <th>Name</th>
-                            <th>Created By</th>
-                            <th>Created On</th>
-                            <th>Status</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="quiz-table-body">
-                        <!-- Rows will be dynamically injected here -->
-                    </tbody>
-                </table>
-                <div class="clearfix">
-                    <div class="hint-text" id="hint-text">Loading...</div>
-                    <ul class="pagination" id="pagination-bar">
-                        <!-- Pagination links will be dynamically created here -->
-                    </ul>
-                </div>
-            </div>
+        </div>
         </div>
     </div>
 
@@ -196,41 +200,52 @@
             return headers;
         }
 
-        async function fetchQuizzes(page) {
+                async function fetchQuizzes(page) {
             const searchValue = document.getElementById('search-input').value.trim();
             const statusValue = document.getElementById('status-filter').value;
 
-            const params = new URLSearchParams();
+            const skip = (page - 1) * pageSize;
+            const top = pageSize;
+
+            let filters = [];
+
             if (searchValue !== '') {
-                params.append('Name', searchValue);
+                filters.push(`contains(tolower(Name),'${searchValue.toLowerCase()}')`);
             }
+
             if (statusValue !== '') {
-                params.append('IsActive', statusValue);
+                filters.push(`IsActive eq ${statusValue}`);
             }
-            params.append('Page', page);
-            params.append('PageSize', pageSize);
+
+            const query = new URLSearchParams();
+            query.set('$top', top);
+            query.set('$skip', skip);
+            query.set('$count', 'true');
+            if (filters.length > 0) {
+                query.set('$filter', filters.join(' and '));
+            }
 
             try {
-                const response = await fetch(`${API_URL}?${params.toString()}`, {
+                const response = await fetch(`https://localhost:7245/odata/Admin_Quizzes?${query.toString()}`, {
                     headers: {
-                        ...getAuthHeaders(),
+                        'Authorization': `Bearer ${accessToken}`,
                         'Accept': 'application/json'
                     }
                 });
+
                 if (!response.ok) throw new Error('Failed to fetch quizzes');
                 const data = await response.json();
 
-                renderTable(data.items);
-                const totalRecords = data.totalCount || 0;
-                const totalPages = Math.max(1, Math.ceil(totalRecords / pageSize));
-
-                updateHintText(data.items.length, totalRecords);
-                updatePagination(page, totalPages);
+                renderTable(data.value);
+                const totalCount = data['@@odata.count'] || 0;
+                updateHintText(data.value.length, totalCount);
+                updatePagination(page, Math.ceil(totalCount / pageSize));
             } catch (error) {
                 console.error('Error:', error);
                 alert('Could not load quiz data.');
             }
         }
+
 
         function renderTable(quizzes) {
             const tbody = document.getElementById('quiz-table-body');
@@ -242,23 +257,31 @@
             }
 
             quizzes.forEach((quiz, index) => {
-                const statusText = quiz.isActive ? 'Active' : 'Inactive';
+                const statusText = quiz.IsActive ? 'Active' : 'Inactive';
 
                 const row = document.createElement('tr');
                 row.innerHTML = `
                     <td>${(currentPage - 1) * pageSize + index + 1}</td>
-                    <td>${escapeHtml(quiz.name)}</td>
-                    <td>${escapeHtml(quiz.createdByName ?? '')}</td>
-                    <td>${new Date(quiz.createdOn).toLocaleString()}</td>
+                    <td>${escapeHtml(quiz.Name)}</td>
+                    <td>${escapeHtml(quiz.CreatedByName ?? '')}</td>
+                    <td>${new Date(quiz.CreatedOn).toLocaleString()}</td>
                     <td>${statusText}</td>
                     <td>
-                        <a href="#" class="edit" title="Edit" data-toggle="tooltip" onclick="openEditModal('${encodeURIComponent(JSON.stringify(quiz))}'); return false;">
-                            <i class="material-icons">&#xE254;</i>
-                        </a>
-                        <a href="#" class="toggle-status" title="Toggle Status" data-toggle="tooltip" onclick="toggleQuizStatus(${quiz.id}); return false;">
+                        <a href="#" class="edit"
+           title="Edit"
+           data-toggle="tooltip"
+           data-id="${quiz.Id}"
+           data-name="${escapeHtml(quiz.Name)}"
+           data-createdby="${escapeHtml(quiz.CreatedByName ?? '')}"
+           data-createdon="${quiz.CreatedOn}"
+           data-status="${quiz.IsActive}"
+           onclick="openEditModal(this); return false;">
+            <i class="material-icons">&#xE254;</i>
+        </a>
+                        <a href="#" class="toggle-status" title="Toggle Status" data-toggle="tooltip" onclick="toggleQuizStatus(${quiz.Id}); return false;">
                             <i class="material-icons text-warning">&#xE8F4;</i>
                         </a>
-                        <a href="/Admin/Question?quizId=${quiz.id}" class="view-questions text-primary" title="View Questions" data-toggle="tooltip">
+                        <a href="/Admin/Question?quizId=${quiz.Id}" class="view-questions text-primary" title="View Questions" data-toggle="tooltip">
                             <i class="material-icons">&#xE417;</i>
                         </a>
                     </td>
@@ -304,17 +327,15 @@
             fetchQuizzes(page);
         }
 
-        function openEditModal(encodedQuiz) {
-            const quiz = JSON.parse(decodeURIComponent(encodedQuiz));
-            document.getElementById('edit-quiz-id').value = quiz.id;
-            document.getElementById('edit-name').value = quiz.name;
-            document.getElementById('edit-createdby').value = quiz.createdByName ?? '';
-            document.getElementById('edit-createdon').value = new Date(quiz.createdOn).toLocaleString();
-            document.getElementById('edit-status').value = quiz.isActive.toString();
+                function openEditModal(element) {
+            document.getElementById('edit-quiz-id').value = element.dataset.id;
+            document.getElementById('edit-name').value = element.dataset.name;
+            document.getElementById('edit-createdby').value = element.dataset.createdby;
+            document.getElementById('edit-createdon').value = new Date(element.dataset.createdon).toLocaleString();
+            document.getElementById('edit-status').value = element.dataset.status;
 
             $('#editQuizModal').modal('show');
         }
-
         async function updateQuiz() {
             const id = document.getElementById('edit-quiz-id').value;
             const updatedQuiz = {

@@ -90,6 +90,10 @@ namespace API.Repositories
                 .Select(u => u.Avatar)
                 .FirstOrDefaultAsync();
         }
+        public IQueryable<User> GetUsersQueryable()
+        {
+            return _context.Users.AsQueryable();
+        }
 
     }
 }

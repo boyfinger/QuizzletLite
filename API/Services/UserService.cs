@@ -77,5 +77,18 @@ namespace API.Services
         {
             return await _userRepository.GetAvatarByUserId(userId);
         }
+        public IQueryable<UserDto> GetUsersForOData()
+    {
+        return _userRepository.GetUsersQueryable()
+            .Select(u => new UserDto
+            {
+                Id = u.Id,
+                Avatar = u.Avatar,
+                Username = u.Username,
+                Email = u.Email,
+                Role = u.Role
+            });
+    }
+
     }
 }

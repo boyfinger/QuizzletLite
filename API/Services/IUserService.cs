@@ -12,5 +12,6 @@ namespace API.Services
         Task<bool> DeleteUser(int id);
         Task<bool> UserExists(int id);
         Task<string?> GetAvatarByUserId(int userId);
+        IQueryable<UserDto> GetUsersForOData();
     }
 }

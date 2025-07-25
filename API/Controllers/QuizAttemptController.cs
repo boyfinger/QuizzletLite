@@ -3,6 +3,7 @@ using API.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 
 namespace API.Controllers
@@ -84,6 +85,31 @@ namespace API.Controllers
             {
                 return StatusCode(StatusCodes.Status500InternalServerError, $"Internal server error: {ex.Message}");
             }
+        }
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
+        [HttpGet("api/statistics/unique-quiz-users")]
+        public IActionResult GetDistinctUserCount()
+        {
+            var count = _quizAttemptService.CountDistinctUsersParticipated();
+            return Ok(count);
+        }
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
+        [HttpGet("top5-users")]
+        public IActionResult GetTop5Users()
+        {
+            var topUsers = _quizAttemptService.GetTop5UsersByScore();
+            var result = topUsers.Select(u => new { Username = u.Username, TotalScore = u.TotalScore }).ToList();
+            return Ok(result);
+        }
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
+        [HttpGet("most-active-user")]
+        public async Task<IActionResult> GetMostActiveUser()
+        {
+            var result = await _quizAttemptService.GetMostActiveUserAsync();
+            if (result == null)
+                return NotFound("No attempts found");
+
+            return Ok(new { Username = result.Value.Username, AttemptCount = result.Value.AttemptCount });
         }
     }
 }
