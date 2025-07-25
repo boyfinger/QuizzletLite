@@ -35,17 +35,19 @@ namespace WebApp.Pages.Quiz
             try
             {
                 List<QuizDto> fullList;
+
                 if (string.IsNullOrEmpty(SearchString))
                 {
-                    fullList = await _httpClient.GetFromJsonAsync<List<QuizDto>>($"{_baseUrl}/api/quiz");
+                    fullList = await _httpClient.GetFromJsonAsync<List<QuizDto>>($"{_baseUrl}/api/quiz/quizzes");
+                    QuizList = await _httpClient.GetFromJsonAsync<List<QuizDto>>($"{_baseUrl}/api/quiz/quizzes?page={CurrentPage}&pageSize={pageSize}");
                 }
                 else
                 {
-                    fullList = await _httpClient.GetFromJsonAsync<List<QuizDto>>($"{_baseUrl}/api/quiz?name={SearchString}");
+                    fullList = await _httpClient.GetFromJsonAsync<List<QuizDto>>($"{_baseUrl}/api/quiz/quizzes?name={SearchString}");
+                    QuizList = await _httpClient.GetFromJsonAsync<List<QuizDto>>($"{_baseUrl}/api/quiz/quizzes?name={SearchString}&page={CurrentPage}&pageSize={pageSize}");
                 }
 
                 TotalPages = (int)Math.Ceiling((double)fullList.Count / pageSize);
-
                 if (CurrentPage < 1)
                 {
                     CurrentPage = 1;
@@ -54,7 +56,6 @@ namespace WebApp.Pages.Quiz
                 {
                     CurrentPage = TotalPages;
                 }
-                QuizList = await _httpClient.GetFromJsonAsync<List<QuizDto>>($"{_baseUrl}/api/quiz?page={CurrentPage}&pageSize={pageSize}");
             }
             catch (Exception ex)
             {

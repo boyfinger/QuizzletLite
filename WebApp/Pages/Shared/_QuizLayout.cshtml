@@ -1,9 +1,55 @@
 ﻿@using API.Dtos.User
 @using API.Utils
+@using System.IdentityModel.Tokens.Jwt
+@using System.Security.Claims
+@using Newtonsoft.Json
+@using System.Net.Http.Headers
 @inject IHttpContextAccessor HttpContextAccessor
 @{
-    var user = HttpContextAccessor.HttpContext?.Session.Get<UserDto>("userSession");
+    var tokenString = HttpContextAccessor?.HttpContext?.Session.GetString("accessToken");
+    Console.WriteLine(tokenString);
 }
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+        const tokenString = "@tokenString";
+
+    async function loadUserData() {
+      if (tokenString == null) {
+        console.log("Token string is null, skipping user data load.");
+        return; // Exit if there's no token
+      }
+
+      try {
+        const response = await fetch("https://localhost:7245/api/authentication/me", {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: "Bearer " + tokenString
+          }
+        });
+
+        if (!response.ok) {
+          // If the response is not OK (e.g., 401, 404, 500), throw an error
+          throw new Error(`Failed to load user data: ${response.status} ${response.statusText}`);
+        }
+
+        const user = await response.json();
+
+        // Display on the interface
+        document.getElementById("usernameSpan").innerText = user.username;
+        document.getElementById("avatarImg").src = user.avatar;
+
+      } catch (error) {
+        console.error("User fetch error:", error);
+        // Optionally, you could display an error message to the user here
+        // document.getElementById("errorMessageDiv").innerText = "Error loading user data.";
+      }
+    }
+
+    // Call the async function to load user data
+    loadUserData();
+
+</script>
 
 <!DOCTYPE html>
 <html lang="en">
@@ -21,7 +67,7 @@
     <header>
         <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom shadow-sm">
             <div class="container">
-                <a class="navbar-brand fw-bold text-primary" asp-area="" asp-page="/Index">
+                <a class="navbar-brand fw-bold text-primary" asp-page="/Player/Home">
                     <img src="~/image_downloaded/icon of app quizlet .png" alt="WebApp Logo" width="40" class="me-2"> Quizlet Lite
                 </a>
 
@@ -32,29 +78,32 @@
                 <div class="collapse navbar-collapse" id="navbarNav">
                     <ul class="navbar-nav ms-auto">
                         <li class="nav-item">
-                            <a class="nav-link" asp-area="" asp-page="/Index">🏠 Home</a>
+                            <a class="nav-link" asp-page="/Player/Home">🏠 Home</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" asp-area="" asp-page="/Features">✨ Features</a>
+                            <a class="nav-link" asp-page="/Quiz/QuizList">🔍 Explore</a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link" asp-area="" asp-page="/Contact">📩 Contact</a>
-                        </li>
+                        @if (tokenString != null)
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" asp-page="/Quiz/YourQuiz">🧠 Your Quiz</a>
+                            </li>
+                        }
                     </ul>
 
                     <!-- Dropdown cho tài khoản -->
-                    @if (user != null)
+                    @if (tokenString != null)
                     {
                         <ul class="navbar-nav ms-4">
                             <li class="nav-item dropdown">
                                 <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
-                                    <img src="@user.Avatar" alt="Avatar" class="rounded-circle me-2" style="width: 32px; height: 32px; object-fit: cover;" />
-                                    <span class="text-primary">@user.Username</span>
+                                    <img id="avatarImg" src="" alt="Avatar" class="rounded-circle me-2" style="width: 32px; height: 32px; object-fit: cover;" />
+                                    <span class="text-primary" id="usernameSpan"></span>
                                 </a>
                                 <ul class="dropdown-menu dropdown-menu-end">
                                     <li>
                                         <a class="dropdown-item" asp-page="/Auth/Profile">
-                                            👤 Profile
+                                            🙋 Profile
                                         </a>
                                     </li>
                                     <li>
@@ -87,7 +136,7 @@
         </nav>
     </header>
 
-    <main role="main">
+    <main role="main" class="pb-3">
         @RenderBody()
     </main>
 
