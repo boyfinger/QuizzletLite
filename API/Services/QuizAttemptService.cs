@@ -1,6 +1,6 @@
 ﻿using API.Dtos.QuizAttempt;
 using API.Helpers;
-using API.Models;
+using API.Mappers;
 using API.Models.Snapshots;
 using API.Repositories;
 
@@ -13,6 +13,11 @@ namespace API.Services
         public QuizAttemptService(IQuizAttemptRepository quizResultRepository)
         {
             _quizAttemptRepository = quizResultRepository;
+        }
+
+        public IQueryable<QuizAttemptDto> GetAllQuizAttempts()
+        {
+            return _quizAttemptRepository.GetAllQuizAttempts().Select(QuizAttemptMappers.ToQuizAttemptDtoFull).AsQueryable();
         }
 
         public async Task<QuizAttemptDto> GetQuizAttempt(int quizAttemptId)

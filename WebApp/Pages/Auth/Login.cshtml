@@ -60,7 +60,7 @@
 
                 <div class="form-group mb-3">
                     <label asp-for="loginDTO.Password" class="form-label text-muted">Password</label>
-                    <input asp-for="loginDTO.Password" type="password" class="form-control" placeholder="Password" required>
+                    <input asp-for="loginDTO.Password" type="password" value="@Model.loginDTO.Password" class="form-control" placeholder="Password" required>
                     <span asp-validation-for="loginDTO.Password" class="text-danger"></span>
                     <small class="form-text text-muted">Your password is encrypted.</small>
                 </div>
