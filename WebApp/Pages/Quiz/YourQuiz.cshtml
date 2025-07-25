@@ -9,17 +9,18 @@
     let currentPage = 1;
     let fullData = [];
     let searchString = '';
+    let filterStatus = '';
     let apiUrl = 'https://localhost:7245/api/Quiz/your-quiz';
     let itemsPerPage = 6;
-
-    let url = apiUrl + '?page=' + currentPage + '&pageSize=' + itemsPerPage;
-        if (searchString) {
-            url += '&name=' + searchString;
-        }
 
         async function loadQuizzes() {
         let url = apiUrl + '?page=' + currentPage + '&pageSize=' + itemsPerPage;
         if (searchString) url += '&name=' + encodeURIComponent(searchString);
+        if (filterStatus !== '') {
+        url += '&isActive=' + filterStatus;
+    }
+
+
 
         const token = "@Html.Raw(accessToken ?? "")";
 
@@ -109,9 +110,22 @@
             loadQuizzes();
         });
 
+        document.getElementById("showLessBtn").addEventListener("click", () => {
+            if (currentPage > 1) {
+                currentPage--;
+                loadQuizzes();
+            }
+        });
+
         document.getElementById("searchInput").addEventListener("input", () => {
             currentPage = 1;
             searchString = document.getElementById("searchInput").value.trim();
+            loadQuizzes();
+        });
+
+        document.getElementById("filterStatus").addEventListener("change", (e) => {
+            filterStatus = e.target.value;
+            currentPage = 1;
             loadQuizzes();
         });
 
@@ -124,12 +138,30 @@
 
 <div class="py-5 text-center">
     <h2 class="text-primary mb-4">📝 Your Quizzes</h2>
-    <form class="mb-4 d-flex" method="get">
+    <form class="mb-4 d-flex">
         <input type="text" id="searchInput" name="search" class="form-control me-2" placeholder="🔍 Search your quizzes..." value="" />
+        <select id="filterStatus" class="form-select mb-3">
+            <option value="">All</option>
+            <option value="true">✅  Active</option>
+            <option value="false">🚫 Inactive</option>
+        </select>
     </form>
     <a href="/Quiz/Create" class="btn btn-outline-primary mb-3">✏️ Create One Now</a>
     <div class="row" id="yourQuizListContainer">
         
     </div>
-    <button class="btn btn-primary" id="loadMoreBtn">Load more</button>
+    <div class="row justify-content-center mt-4">
+        <div class="col-auto">
+            <button class="btn btn-outline-primary btn-sm text-center px-3 py-1 d-flex flex-column align-items-center" id="loadMoreBtn">
+                <i class="bi bi-plus-circle"></i>
+                <span>Load More</span>
+            </button>
+        </div>
+        <div class="col-auto">
+            <button class="btn btn-outline-danger btn-sm text-center px-3 py-1 d-flex flex-column align-items-center" id="showLessBtn">
+                <i class="bi bi-arrow-up-circle"></i>
+                <span>Show Less</span>
+            </button>
+        </div>
+    </div>
 </div>
