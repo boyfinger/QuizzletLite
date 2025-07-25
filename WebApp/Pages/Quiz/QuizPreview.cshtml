@@ -1,0 +1,95 @@
+﻿@page "{id:int}"
+@using System.Text.Json
+@model WebApp.Pages.Quiz.QuizPreviewModel
+@{
+    var quizDetails = Model.QuizDetails;
+}
+
+<link rel="stylesheet" accesskey="" href="~/css/QuizPreview/flashcard.css" />
+<link rel="stylesheet" accesskey="" href="~/css/QuizPreview/horizontal-card.css" />
+
+<div class="container mt-5 mb-5 text-center">
+    <div>
+        <h1>@Model.QuizDetails.Name</h1>
+    </div>
+    <div class="mb-2">
+        <a asp-page="quiztaking" asp-route-id="@quizDetails.Id" class="btn btn-outline-info">
+            <i class="bi bi-file-text mr-1"></i> Test
+        </a>
+    </div>
+    <div id="flashcard-container">
+        <!-- Card will be injected via JavaScript -->
+    </div>
+
+    <div class="mt-3 d-flex justify-content-center align-items-center gap-3">
+        <button class="btn btn-outline-primary" onclick="showPrev()" id="prevBtn">⏪ Prev</button>
+        <div><strong id="cardCounter">1 / 3</strong></div>
+        <button class="btn btn-outline-primary" onclick="showNext()" id="nextBtn">Next ⏩</button>
+    </div>
+</div>
+
+<div class="container">
+    <div id="questionList"></div>
+</div>
+
+
+@section Scripts {
+    <script>
+        const flashcards = @Html.Raw(JsonSerializer.Serialize(Model.Flashcards));
+        let currentIndex = 0;
+
+        function renderCard(index) {
+            const card = flashcards[index];
+            document.getElementById('flashcard-container').innerHTML = `
+                <div class="flashcard-container">
+                    <div class="flashcard" onclick="this.classList.toggle('flipped')">
+                        <div class="front"><h5>${card.Question}</h5></div>
+                        <div class="back"><h5>${card.Answer}</h5></div>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('cardCounter').textContent = `${index + 1} / ${flashcards.length}`;
+            document.getElementById('prevBtn').disabled = index === 0;
+            document.getElementById('nextBtn').disabled = index === flashcards.length - 1;
+        }
+
+        function showPrev() {
+            if (currentIndex > 0) {
+                currentIndex--;
+                renderCard(currentIndex);
+            }
+        }
+
+        function showNext() {
+            if (currentIndex < flashcards.length - 1) {
+                currentIndex++;
+                renderCard(currentIndex);
+            }
+        }
+
+        function renderQuestionList(){
+            let questionList = document.getElementById('questionList');
+            flashcards.forEach(card => {
+                const questionWrapper = document.createElement("div");
+                questionWrapper.className = "horizontal-card mb-2";
+                questionWrapper.innerHTML = `
+                    <div class="card-side left">
+                        <span>${card.Question}</span>
+                    </div>
+                    <div class="card-divider"></div>
+                    <div class="card-side">
+                        <span>${card.Answer}</span>
+                    </div>
+                `;
+
+                questionList.appendChild(questionWrapper);
+            });
+        }
+
+        // Load first card
+        renderCard(currentIndex);
+        renderQuestionList();
+    </script>
+}
+

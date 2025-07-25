@@ -2,28 +2,32 @@ using API.Dtos.Quiz.QuizDetails;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Newtonsoft.Json;
-using System.Net.Http.Headers;
 using System.Net;
+using System.Net.Http.Headers;
 using WebApp.Helpers;
 
 namespace WebApp.Pages.Quiz
 {
-    public class QuizTakingModel : PageModel
+    public class QuizPreviewModel : PageModel
     {
         private readonly HttpClient _httpClient;
         private readonly string _baseUrl;
 
-        [BindProperty(SupportsGet = true)]
-        public int Id { get; set; }
+        [BindProperty]
+        public List<Flashcard> Flashcards { get; set; } = [];
         [BindProperty]
         public QuizDetailsDto QuizDetails { get; set; }
 
-        public QuizTakingModel(HttpClient httpClient)
+        public QuizPreviewModel(HttpClient httpClient)
         {
             _httpClient = httpClient;
             _baseUrl = APIUrlHelper.GetBaseUrl();
         }
-        public async Task<IActionResult> OnGet()
+
+        [BindProperty(SupportsGet = true)]
+        public int Id { get; set; }
+
+        public async Task<IActionResult> OnGetAsync()
         {
             var request = new HttpRequestMessage(HttpMethod.Get, $"{_baseUrl}/api/quiz/{Id}/questions");
             var accessToken = HttpContext.Session.GetString("accessToken");
@@ -46,6 +50,18 @@ namespace WebApp.Pages.Quiz
             {
                 var jsonString = await response.Content.ReadAsStringAsync();
                 QuizDetails = JsonConvert.DeserializeObject<QuizDetailsDto>(jsonString) ?? new QuizDetailsDto();
+                Flashcards = QuizDetails.Questions.Select(q =>
+                {
+                    string question = q.Content + "<br /><br />" + string.Join("<br />", q.Options.Select(o => o.Content));
+                    string answer = string.Join("<br />", q.Options.Where(o => o.IsCorrect).Select(o => o.Content));
+
+                    var flashcard = new Flashcard
+                    {
+                        Question = question.Trim(),
+                        Answer = answer.Trim()
+                    };
+                    return flashcard;
+                }).ToList();
                 return Page();
             }
         }

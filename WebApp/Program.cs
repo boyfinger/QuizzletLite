@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Authentication.Cookies;
+﻿using Google.Apis.Util;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using WebApp.Helpers;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,6 +23,9 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddHttpClient();
 builder.Services.AddHttpContextAccessor();
+
+APIUrlHelper.Initialize(builder.Configuration);
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

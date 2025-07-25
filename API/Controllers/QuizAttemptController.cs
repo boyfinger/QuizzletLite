@@ -69,7 +69,7 @@ namespace API.Controllers
                 {
                     qr.Id,
                     qr.QuizId,
-                    qr.Quiz.Name,
+                    QuizName = qr.Quiz.Name,
                     qr.Score,
                     qr.CompletedDate
                 }).ToList();

@@ -1,99 +1,81 @@
-﻿@page
+﻿@page "{id:int}"
 @model WebApp.Pages.QuizAttempt.DetailsModel
 @{
-    Layout = null;
     var accessToken = HttpContext.Session.GetString("accessToken");
+    var quizAttempt = Model.QuizAttempt;
+
+    Layout = "_QuizLayout";
 }
 
-<link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-<link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-<link rel="stylesheet" href="~/WebApp.styles.css" asp-append-version="true" />
+<head>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+</head>
 
-<div id="container"></div>
-
-<script src="~/lib/jquery/dist/jquery.min.js"></script>
-<script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-<script src="~/js/site.js" asp-append-version="true"></script>
-
-<script>
-    var quizAttemptId;
-    let accessToken = "@(accessToken ?? "")";
-
-    window.onload = () => {
-        const params = new URLSearchParams(window.location.search);
-        quizAttemptId = params.get("id");
-        renderQuizAttemptDetails();
-    }
-
-    async function getData(){
-        let url = 'https://localhost:7245/api/QuizAttempt/' + quizAttemptId;
-        try {
-            const response = await fetch(url, {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': 'Bearer ' + accessToken
+<div class="row p-2 d-flex" style="height: 90vh; overflow: hidden;">
+    <div class="col-lg-3 p-2" style="position: sticky; top: 0; height: 90vh; overflow-y: auto;">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="mb-5">@quizAttempt.QuizName</h4>
+                <p>Score: @(quizAttempt.TotalScore)/10</p>
+                @for (int i = 0; i < quizAttempt.Questions.Count; i++)
+                {
+                    var question = quizAttempt.Questions[i];
+                    <a href="#question@(i + 1)" class="btn @(question.IsCorrect ? "btn-success" : "btn-danger") mb-1" data-id="@(i + 1)"
+                       style="width: 80px;">Q@(i + 1)</a>
                 }
-            });
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-9 p-2" style="height: 90vh; overflow-y: auto;">
+        <div>
+            @for (int i = 0; i < quizAttempt.Questions.Count; i++)
+            {
+                var question = quizAttempt.Questions[i];
+                var correctAnswersCount = question.Answers.Count(a => a.IsCorrect);
 
-            console.log('Status:', response.status);
-
-            if (!response.ok) {
-                throw new Error('HTTP error! Status: ' + response.status);
-            }
-
-            return await response.json();
-        } catch (error) {
-            console.error('Error:', error.message);
-        }
-    }
-
-    async function renderQuizAttemptDetails(){
-        const data = await getData();
-        const container = arguments[0] || document.getElementById('container');
-
-        data.questions.forEach((question, index) => {
-            const questionWrapper = document.createElement("div");
-
-            var questionTextColor;
-            if (question.isCorrect){
-                questionTextColor = "text-success";
-            } else {
-                questionTextColor = "text-danger";
-            }
-
-            questionWrapper.innerHTML = `<p class=${questionTextColor}><strong>Q${index + 1}:</strong> ${question.questionContent}</p>`;
-
-            let noOfCorrectAnswers = question.answers.filter(a => a.isCorrect).length;
-            var inputType;
-            if (noOfCorrectAnswers === 1) {
-                inputType = 'radio';
-            } else if (noOfCorrectAnswers > 1) {
-                inputType = 'checkbox';
-            } else {
-                console.error("Unknown question type:", question.questionType);
-                return; // Skip this question if the type is unknown
-            }
-
-            question.answers.forEach((answer, answerIndex) => {
-                var answerTextColor;
-                if (answer.isCorrect){
-                    answerTextColor = "text-success";
-                } else if (answer.isSelected && !answer.isCorrect) {
-                    answerTextColor = "text-danger";
-                }
-                const answerId = `q${index}_opt${answerIndex}`;
-                const answerHTML = `
-                    <div>
-                        <label for="${answerId}">
-                            <input type="${inputType}" ${answer.isSelected ? 'checked' : ''} disabled id="${answerId}" name="question${index}" value="${answer.content}">
-                            <span class=${answerTextColor}>${answer.content}</span>
-                        </label>
+                <div class="card mb-4 p-2" id="question@(i + 1)" data-id="@(i + 1)">
+                    <div class="card-title">
+                        <p><strong>Q@(i + 1):</strong> @question.QuestionContent</p>
+                        @if (question.IsCorrect)
+                        {
+                            <span class="badge rounded-pill text-bg-success">Correct</span>
+                        }
+                        else
+                        {
+                            <span class="badge rounded-pill text-bg-danger">Incorrect</span>
+                        }
                     </div>
-                `;
-                questionWrapper.innerHTML += answerHTML;
-            });
-            container.appendChild(questionWrapper);
-        });
-    }
-</script>
+                    <div class="card-body">
+                        <div class="row">
+                            @for (int j = 0; j < question.Answers.Count; j++)
+                            {
+                                var option = question.Answers[j];
+                                var optionId = $"q{i}_opt{j}";
+
+
+                                <div class="col-lg-6">
+                                    <input type="@(correctAnswersCount > 1 ? "checkbox" : "radio")"
+                                           class="btn-check" id="@optionId" autocomplete="off" name="question@(i)" value="@option.Content"
+                                    @(option.IsSelected ? "checked" : "")
+                                           disabled>
+                                    <label style="width: 95%;"
+                                           class="btn @(option.IsCorrect ? "btn-outline-success" : (option.IsSelected ? "btn-outline-danger" : "btn-outline-dark")) mr-2 mb-1"
+                                           for="@optionId">
+                                        @option.Content
+                                        @if (option.IsCorrect && !option.IsSelected)
+                                        {
+                                            <span class="ms-2">
+                                                @(option.IsCorrect ? "✔️" : "")
+                                            </span>
+                                        }
+                                    </label>
+                                    <br>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>

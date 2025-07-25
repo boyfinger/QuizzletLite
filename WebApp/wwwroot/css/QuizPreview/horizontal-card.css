@@ -1,0 +1,25 @@
+﻿.horizontal-card {
+    display: flex;
+    width: 600px;
+    height: 200px;
+    border: 1px solid #dee2e6;
+    background-color: #f8f9fa;
+    box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.1);
+    margin: auto;
+}
+
+.card-side {
+    flex: 1;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    font-size: 1.1rem;
+}
+
+.card-divider {
+    width: 2px;
+    background-color: #6c757d;
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
