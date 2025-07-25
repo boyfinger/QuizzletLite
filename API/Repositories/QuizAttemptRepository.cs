@@ -13,6 +13,11 @@ namespace API.Repositories
             _context = context;
         }
 
+        public IQueryable<QuizAttempt> GetAllQuizAttempts()
+        {
+            return _context.QuizAttempts.AsNoTracking();
+        }
+
         public async Task<QuizAttempt?> GetQuizAttemptById(int quizAttemptId)
         {
             return await _context.QuizAttempts

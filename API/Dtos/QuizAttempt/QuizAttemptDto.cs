@@ -6,7 +6,7 @@
         public int QuizId { get; set; }
         public string QuizName { get; set; }
         public int UserId { get; set; }
-
+        public DateTime? CompletedDate { get; set; }
         public List<AttemptQuestionDto> Questions { get; set; }
         public double TotalScore { get; set; }
     }
