@@ -7,21 +7,46 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
     let currentPage = 1;
-    let fullData = [];
     let searchString = '';
     let filterStatus = '';
-    let apiUrl = 'https://localhost:7245/api/Quiz/your-quiz';
     let itemsPerPage = 6;
+    let hasMoreData = true;
+    let isLoading = false; 
 
-        async function loadQuizzes() {
-        let url = apiUrl + '?page=' + currentPage + '&pageSize=' + itemsPerPage;
-        if (searchString) url += '&name=' + encodeURIComponent(searchString);
+    async function loadQuizzes() {
+        if (isLoading) return; 
+        isLoading = true;
+
+        const container = document.getElementById("yourQuizListContainer");
+        container.innerHTML = `
+            <div class="col-12 text-center py-5">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading quizzes...</span>
+                </div>
+            </div>`;
+
+        let baseUrl = 'https://localhost:7245/odata/QuizzesDto';
+        let queryParams = [];
+
+        queryParams.push(`$skip=${(currentPage - 1) * itemsPerPage}`);
+        queryParams.push(`$top=${itemsPerPage}`);
+        queryParams.push(`$orderby=createdOn desc`);
+        if (searchString) {
+            queryParams.push(`$filter=contains(Name,'${encodeURIComponent(searchString)}')`);
+        }
+
         if (filterStatus !== '') {
-        url += '&isActive=' + filterStatus;
-    }
+            const filterClause = `IsActive eq ${filterStatus}`; 
+            const existingFilterIndex = queryParams.findIndex(q => q.startsWith('$filter='));
 
+            if (existingFilterIndex !== -1) {
+                queryParams[existingFilterIndex] = `${queryParams[existingFilterIndex]} and ${filterClause}`;
+            } else {
+                queryParams.push(`$filter=${filterClause}`);
+            }
+        }
 
-
+        const url = `${baseUrl}?${queryParams.join('&')}`;
         const token = "@Html.Raw(accessToken ?? "")";
 
         try {
@@ -32,88 +57,138 @@
                 }
             });
 
-                switch (res.status) {
-        case 401:
-            window.location.href = "/Auth/Login"; break;
-        case 403: // bạn có thể xử lý riêng nếu cần
-            window.location.href = "/"; break;
-        case 400:
-            Swal.fire({ icon: "warning", title: "Bad Request", text: "Token format is invalid." });
-            break;
-        case 404:
-            Swal.fire({ icon: "info", title: "No Quizzes Found", text: "You have not created any quiz yet." });
-            break;
-        case 500:
-            Swal.fire({ icon: "error", title: "Server Error", text: "There was a system error. Please try again later." });
-            window.location.href = "/Error";
-            break;
-        case 200:
-            break;
-        default:
-            Swal.fire({ icon: "question", title: "Unknown Error", text: `Status: ${res.status}` });
-            break;
-    }
+            container.innerHTML = '';
 
-            const quizzes = await res.json();
-                if (!Array.isArray(quizzes) || quizzes.length === 0) {
-        if (currentPage === 1) {
-            const container = document.getElementById("yourQuizListContainer");
-            container.innerHTML = `
-                <div class="col-12 text-center py-5">
-                    <div class="d-flex flex-column align-items-center text-muted">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="currentColor" class="bi bi-journal-x mb-3" viewBox="0 0 16 16">
-                            <path d="M6.146 8.146a.5.5 0 0 1 .708 0L8 9.293l1.146-1.147a.5.5 0 0 1 .708.708L8.707 10l1.147 1.146a.5.5 0 0 1-.708.708L8 10.707l-1.146 1.147a.5.5 0 0 1-.708-.708L7.293 10 6.146 8.854a.5.5 0 0 1 0-.708z"/>
-                            <path d="M3 0h10a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.832.374L12.5 14H3a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2zm0 1a1 1 0 0 0-1 1v10a2 2 0 0 1 2 2h9v-1.5a.5.5 0 0 1 .832-.374L14 13.118V2a1 1 0 0 0-1-1H3z"/>
-                        </svg>
-                        <h5 class="mb-1">No Quizzes Found</h5>
-                        <p class="mb-3">Looks like you haven’t created any quizzes yet.</p>
-                    </div>
-                </div>
-            `;
-        }
-        return;
-    }
+            switch (res.status) {
+                case 200:
+                    const json = await res.json();
+                    const quizzes = json.value;
 
-            const container = document.getElementById("yourQuizListContainer");
-            if (currentPage === 1) container.innerHTML = ""; // Nếu là trang đầu, clear trước
+                    hasMoreData = quizzes.length === itemsPerPage;
 
-            quizzes.forEach(quiz => {
-                const html = `
-                    <div class="col-md-4 mb-3">
-                        <div class="card shadow-sm h-100">
-                            <div class="card-body d-flex flex-column">
-                                <h5 class="card-title">${quiz.name}</h5>
-                                <p class="card-text text-muted">Created on ${new Date(quiz.createdOn).toLocaleDateString()}</p>
-                                <div class="mt-auto">
-                                    <a href="/Quiz/Details?id=${quiz.id}" class="btn btn-outline-primary me-2">🔍 View</a>
-                                    <a href="/Quiz/Edit?id=${quiz.id}" class="btn btn-outline-secondary me-2">✏️ Edit</a>
-                                    <form method="post" action="/Quiz/Delete?id=${quiz.id}" class="d-inline">
-                                        <button type="submit" class="btn btn-outline-danger">🗑 Delete</button>
-                                    </form>
+                    if (quizzes.length === 0) {
+                        if (currentPage > 1) {
+                            currentPage--;
+                            loadQuizzes();
+                            return;
+                        }
+                        container.innerHTML = `
+                            <div class="col-12 text-center py-5">
+                                <div class="d-flex flex-column align-items-center text-muted">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="currentColor" class="bi bi-journal-x mb-3" viewBox="0 0 16 16">
+                                        <path d="M6.146 8.146a.5.5 0 0 1 .708 0L8 9.293l1.146-1.147a.5.5 0 0 1 .708.708L8.707 10l1.147 1.146a.5.5 0 0 1-.708.708L8 10.707l-1.146 1.147a.5.5 0 0 1-.708-.708L7.293 10 6.146 8.854a.5.5 0 0 1 0-.708z"/>
+                                        <path d="M3 0h10a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.832.374L12.5 14H3a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2zm0 1a1 1 0 0 0-1 1v10a2 2 0 0 1 2 2h9v-1.5a.5.5 0 0 1 .832-.374L14 13.118V2a1 1 0 0 0-1-1H3z"/>
+                                    </svg>
+                                    <h5 class="mb-1">No Quizzes Found</h5>
+                                    <p class="mb-3">Looks like you haven’t created any quizzes yet, or no quizzes match your search/filter criteria.</p>
                                 </div>
                             </div>
+                        `;
+                    } else {
+                        quizzes.forEach(quiz => {
+                            const html = `
+                                <div class="col-md-4 mb-3">
+                                    <div class="card shadow-sm h-100">
+                                        <div class="card-body d-flex flex-column">
+                                            <h5 class="card-title">${quiz.Name}</h5>
+                                            <p class="card-text text-muted">Created on ${new Date(quiz.CreatedOn).toLocaleDateString()}</p>
+                                            <div class="mt-auto">
+                                                <a href="/Quiz/ViewYourQuiz?quizId=${quiz.Id}" class="btn btn-outline-primary me-2">🔍 View</a>
+                                                <a href="/Quiz/Edit?quizId=${quiz.Id}" class="btn btn-outline-secondary me-2">✏️ Edit</a>
+                                                <form method="post" action="/Quiz/Delete?id=${quiz.Id}" class="d-inline">
+                                                    <button type="submit" class="btn btn-outline-danger">🗑 Delete</button>
+                                                </form>
+                                            </div>
+                                            <p class="${quiz.IsActive === true ? 'text-success' : 'text-danger'} mt-2 mb-0">
+                                                ${quiz.IsActive === true ? '✅ Active' : '🚫 Inactive'}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>`;
+                            container.innerHTML += html;
+                        });
+                    }
+                    updatePaginationButtons(); 
+                    break;
+
+                case 401: window.location.href = "/Auth/Login"; break;
+                case 403: window.location.href = "/"; break;
+                case 400: Swal.fire({ icon: "warning", title: "Bad Request", text: "Token format is invalid." }); break;
+                case 404:
+                    Swal.fire({ icon: "info", title: "No Quizzes Found", text: "You have not created any quiz yet." });
+                    container.innerHTML = `
+                        <div class="col-12 text-center py-5">
+                            <div class="d-flex flex-column align-items-center text-muted">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="currentColor" class="bi bi-journal-x mb-3" viewBox="0 0 16 16">
+                                    <path d="M6.146 8.146a.5.5 0 0 1 .708 0L8 9.293l1.146-1.147a.5.5 0 0 1 .708.708L8.707 10l1.147 1.146a.5.5 0 0 1-.708.708L8 10.707l-1.146 1.147a.5.5 0 0 1-.708-.708L7.293 10 6.146 8.854a.5.5 0 0 1 0-.708z"/>
+                                    <path d="M3 0h10a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.832.374L12.5 14H3a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2zm0 1a1 1 0 0 0-1 1v10a2 2 0 0 1 2 2h9v-1.5a.5.5 0 0 1 .832-.374L14 13.118V2a1 1 0 0 0-1-1H3z"/>
+                                </svg>
+                                <h5 class="mb-1">No Quizzes Found</h5>
+                                <p class="mb-3">You have not created any quiz yet.</p>
+                            </div>
                         </div>
-                    </div>`;
-                container.innerHTML += html;
-            });
+                    `;
+                    hasMoreData = false;
+                    updatePaginationButtons();
+                    break;
+                case 500:
+                    Swal.fire({ icon: "error", title: "Server Error", text: "There was a system error. Please try again later." });
+                    window.location.href = "/Error"; // Tùy chọn redirect
+                    break;
+                default:
+                    Swal.fire({ icon: "question", title: "Unknown Error", text: `Status: ${res.status}` });
+                    break;
+            }
 
         } catch (err) {
             console.error("Quiz fetch error:", err.message);
+            Swal.fire({ title: 'Oops!', text: 'Cannot load quizzes!', icon: 'error' });
+            container.innerHTML = '<div class="col-12 text-center py-5 text-danger">Failed to load quizzes. Please try again later.</div>';
+        } finally {
+            isLoading = false;
         }
     }
 
-    // 👉 Tải lần đầu khi trang vào
-    // 👉 Gắn listener sau khi DOM đã sẵn sàng
+    function updatePaginationButtons() {
+        const nextPageBtn = document.getElementById("nextPageBtn");
+        const prevPageBtn = document.getElementById("prevPageBtn");
+        const pageInfoSpan = document.getElementById("pageInfo");
+
+        if (prevPageBtn) {
+            prevPageBtn.style.display = currentPage > 1 ? "flex" : "none";
+        }
+        if (nextPageBtn) {
+            nextPageBtn.style.display = hasMoreData ? "flex" : "none"; 
+        }
+        if (pageInfoSpan) {
+            pageInfoSpan.textContent = `Page ${currentPage}`;
+        }
+    }
+
     document.addEventListener("DOMContentLoaded", () => {
-        document.getElementById("loadMoreBtn").addEventListener("click", () => {
-            currentPage++;
+        document.getElementById("nextPageBtn").addEventListener("click", () => {
+            if (!hasMoreData) {
+                    Swal.fire({
+                        icon: "info",
+                        title: "End of Page",
+                        text: "You have reached the last page of your quizzes."
+                    });
+                    return;
+                }
+                currentPage++;
             loadQuizzes();
         });
 
-        document.getElementById("showLessBtn").addEventListener("click", () => {
+        document.getElementById("prevPageBtn").addEventListener("click", () => {
             if (currentPage > 1) {
                 currentPage--;
                 loadQuizzes();
+            } else {
+                Swal.fire({
+                    icon: "info",
+                    title: "First Page",
+                    text: "You are already on the first page."
+                });
             }
         });
 
@@ -129,38 +204,37 @@
             loadQuizzes();
         });
 
-        // Tải lần đầu
         loadQuizzes();
     });
-
-
 </script>
 
 <div class="py-5 text-center">
     <h2 class="text-primary mb-4">📝 Your Quizzes</h2>
-    <form class="mb-4 d-flex">
-        <input type="text" id="searchInput" name="search" class="form-control me-2" placeholder="🔍 Search your quizzes..." value="" />
-        <select id="filterStatus" class="form-select mb-3">
+    <div class="mb-4 d-flex flex-column flex-md-row justify-content-between align-items-center">
+        <input type="text" id="searchInput" name="search" class="form-control me-md-2 mb-2 mb-md-0" placeholder="🔍 Search your quizzes..." value="" />
+        <select id="filterStatus" class="form-select w-auto">
             <option value="">All</option>
-            <option value="true">✅  Active</option>
+            <option value="true">✅ Active</option>
             <option value="false">🚫 Inactive</option>
         </select>
-    </form>
+    </div>
     <a href="/Quiz/Create" class="btn btn-outline-primary mb-3">✏️ Create One Now</a>
     <div class="row" id="yourQuizListContainer">
-        
     </div>
     <div class="row justify-content-center mt-4">
         <div class="col-auto">
-            <button class="btn btn-outline-primary btn-sm text-center px-3 py-1 d-flex flex-column align-items-center" id="loadMoreBtn">
-                <i class="bi bi-plus-circle"></i>
-                <span>Load More</span>
+            <button class="btn btn-outline-secondary btn-sm text-center px-3 py-1 d-flex flex-column align-items-center" id="prevPageBtn">
+                <i class="bi bi-arrow-left-circle"></i>
+                <span>Previous Page</span>
             </button>
         </div>
+        <div class="col-auto d-flex align-items-center">
+            <span id="pageInfo" class="fw-bold"></span>
+        </div>
         <div class="col-auto">
-            <button class="btn btn-outline-danger btn-sm text-center px-3 py-1 d-flex flex-column align-items-center" id="showLessBtn">
-                <i class="bi bi-arrow-up-circle"></i>
-                <span>Show Less</span>
+            <button class="btn btn-outline-primary btn-sm text-center px-3 py-1 d-flex flex-column align-items-center" id="nextPageBtn">
+                <i class="bi bi-arrow-right-circle"></i>
+                <span>Next Page</span>
             </button>
         </div>
     </div>

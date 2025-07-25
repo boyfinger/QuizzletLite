@@ -1,0 +1,232 @@
+﻿@page
+@using API.Models
+@using System.Text.Json
+@using API.Models.Enums
+@model WebApp.Pages.Quiz.ViewYourQuizModel
+@{
+    var accessToken = HttpContext.Session.GetString("accessToken");
+    ViewData["Title"] = "Quizlet Lite – Flashcard";
+}
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    var quizId;
+    let accessToken = "@(accessToken ?? "")";
+    let baseUrl = 'https://localhost:7245/odata/QuestionDtos';
+    let currentPage = 1; 
+    let itemsPerPage = 4;
+    let hasMoreData = true; 
+    let isLoading = false; 
+
+    window.onload = () => {
+        const params = new URLSearchParams(window.location.search);
+        quizId = params.get("quizId");
+        currentPage = 1; 
+        loadFlashcards();
+    }
+
+    async function loadFlashcards() {
+        if (isLoading) return;
+        isLoading = true;
+
+        const container = document.getElementById("listFlashcardContainer");
+        container.innerHTML = '<div class="col-12 text-center py-5"><div class="spinner-border text-info" role="status"><span class="visually-hidden">Loading...</span></div></div>'; // Hiển thị spinner khi đang tải
+
+        try {
+            let skip = (currentPage - 1) * itemsPerPage;
+            let top = itemsPerPage;
+            let filter = `$filter=quizId eq ${quizId}`;
+            let url = `${baseUrl}?${filter}&$top=${top}&$skip=${skip}`;
+
+            const response = await fetch(url, {
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${accessToken}`
+                }
+            });
+
+            container.innerHTML = '';
+
+            switch (response.status) {
+                case 200:
+                    const result = await response.json();
+                    const questionList = result.value;
+
+                    hasMoreData = questionList.length === itemsPerPage;
+
+                    if (questionList.length === 0) {
+                        container.innerHTML = '<p class="text-center w-100">No questions found for this quiz on this page.</p>';
+                      
+                        if (currentPage > 1) {
+                            currentPage--; 
+                            loadFlashcards(); 
+                            return;
+                        }
+                    }
+
+                    questionList.forEach((card, index) => {
+                        const questionGlobalIndex = (currentPage - 1) * itemsPerPage + index + 1; 
+
+                        const questionStatus = card.IsActive == true 
+                        ? `<span class="badge bg-success">Active</span>`
+                        : `<span class="badge bg-danger">Inactive</span>`;
+
+                        const questionTypeBadge = card.QuestionType === "SingleChoice"
+                            ? `<span class="badge bg-primary">Single Choice</span>`
+                            : `<span class="badge bg-warning">Multiple Choice</span>`;
+
+                        let options = [];
+                        try {
+                            if (typeof card.OptionsJson === "string" && card.OptionsJson.trim() !== "") {
+                                let parsedOnce = JSON.parse(card.OptionsJson);
+                                if (Array.isArray(parsedOnce) && parsedOnce.length > 0 && Array.isArray(parsedOnce[0])) {
+                                    options = parsedOnce[0];
+                                } else {
+                                    options = parsedOnce;
+                                }
+                            }
+                        } catch (error) {
+                            console.error(`❌ Lỗi khi parse OptionsJson của Q${card.Id}:`, error);
+                            options = [];
+                        }
+
+                        const optionListHTML = options.map((opt) => {
+                            const content = opt.Content || 'N/A';
+                            const isCorrect = opt.IsCorrect || false;
+                            return `
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    ${content}
+                                    <span class="badge ${isCorrect ? "bg-success" : "bg-secondary"}">
+                                        ${isCorrect ? "✅" : "❌"}
+                                    </span>
+                                </li>
+                            `;
+                        }).join("");
+
+                        const html = `
+                                <div class="col-md-6 mb-4">
+        <div class="card border-info shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title">Q${questionGlobalIndex}: ${card.Content}</h5>
+
+                <div class="mb-1">
+                    <strong class="me-2">Status:</strong>
+                    ${questionStatus}
+                </div>
+
+                <div class="mb-1">
+                    <strong class="me-2">Type:</strong>
+                    ${questionTypeBadge}
+                </div>
+
+                <ul class="list-group mt-3">
+                    ${optionListHTML}
+                </ul>
+            </div>
+        </div>
+    </div>
+                        `;
+                        container.innerHTML += html;
+                    });
+
+                    updatePaginationButtons();
+                    break;
+
+                case 400: Swal.fire({ icon: "warning", title: "Bad Request", text: "Token format is invalid." }); break;
+                case 401: window.location.href = "/Auth/Login"; break;
+                case 403: window.location.href = "/Player/Home"; break;
+                case 404:
+                    Swal.fire({ icon: "info", title: "No Quizzes Found", text: "You have not created any quiz yet." });
+                    container.innerHTML = '<p class="text-center w-100">No questions found for this quiz.</p>';
+                    hasMoreData = false;
+                    updatePaginationButtons();
+                    break;
+                case 500: Swal.fire({ icon: "error", title: "Server Error", text: "There was a system error. Please try again later." }); break;
+                default: Swal.fire({ icon: "question", title: "Unknown Error", text: `Status: ${response.status}` }); break;
+            }
+
+        } catch (error) {
+            console.error("Lỗi khi tải flashcards:", error);
+            Swal.fire({ title: 'Oops!', text: 'Cannot load flashcards!', icon: 'error' });
+            container.innerHTML = '<p class="text-center w-100 text-danger">Failed to load questions. Please try again later.</p>'; // Hiển thị lỗi trên UI
+        } finally {
+            isLoading = false;
+        }
+    }
+
+    function updatePaginationButtons() {
+        const nextPageBtn = document.getElementById("nextPageBtn");
+        const prevPageBtn = document.getElementById("prevPageBtn");
+        const pageInfoSpan = document.getElementById("pageInfo");
+
+        if (nextPageBtn) {
+            nextPageBtn.style.display = hasMoreData ? "block" : "none";
+        }
+
+        if (prevPageBtn) {
+            prevPageBtn.style.display = currentPage > 1 ? "block" : "none";
+        }
+
+        if (pageInfoSpan) {
+            pageInfoSpan.textContent = `Page ${currentPage}`;
+        }
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+        const nextPageBtn = document.getElementById("nextPageBtn");
+        const prevPageBtn = document.getElementById("prevPageBtn");
+
+        if (nextPageBtn) {
+            nextPageBtn.addEventListener("click", () => {
+                if (!hasMoreData) {
+                    Swal.fire({
+                        icon: "info",
+                        title: "End of Quizzes",
+                        text: "You have reached the last page of your quizzes."
+                    });
+                    return;
+                }
+                currentPage++;
+                loadFlashcards();
+            });
+        }
+
+        if (prevPageBtn) {
+            prevPageBtn.addEventListener("click", () => {
+                if (currentPage > 1) {
+                    currentPage--;
+                    loadFlashcards();
+                } else {
+                    Swal.fire({
+                        icon: "info",
+                        title: "Already at the beginning",
+                        text: "You are already viewing the first page of questions."
+                    });
+                }
+            });
+        }
+        updatePaginationButtons(); 
+    });
+</script>
+
+<div class="container mt-4">
+    <h2>🔖 Your Quiz</h2>
+    <div class="row mt-3" id="listFlashcardContainer">
+    </div>
+    <div class="row justify-content-center mt-4">
+        <div class="col-auto">
+            <button class="btn btn-outline-secondary btn-sm text-center px-3 py-1 d-flex flex-column align-items-center" id="prevPageBtn">
+                <i class="bi bi-arrow-left-circle"></i>
+                <span>Previous Page</span>
+            </button>
+        </div>
+        <div class="col-auto d-flex align-items-center">
+            <span id="pageInfo" class="fw-bold"></span>
+        </div>
+        <div class="col-auto">
+            <button class="btn btn-outline-primary btn-sm text-center px-3 py-1 d-flex flex-column align-items-center" id="nextPageBtn">
+                <i class="bi bi-plus-circle"></i>
+                <span>Next Page</span>
+            </button>
+        </div>
+    </div>
+</div>

@@ -26,7 +26,7 @@ namespace API.Controllers
         }
 
         [AllowAnonymous]
-        [HttpGet]
+        [HttpGet("quizzes")]
         public async Task<IActionResult> GetQuizzes([FromQuery] QuizQuery query)
         {
             var listQuery = await _quizRepository.GetQuizzes(query);

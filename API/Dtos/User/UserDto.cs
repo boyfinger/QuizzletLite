@@ -1,5 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
-using API.Models.Enums;
+﻿using API.Models.Enums;
+using System.ComponentModel.DataAnnotations;
 
 namespace API.Dtos.User
 {
@@ -19,5 +19,11 @@ namespace API.Dtos.User
         [Required(ErrorMessage = "Email is required.")]
         [EmailAddress(ErrorMessage = "Invalid email format.")]
         public string Email { get; set; } = null!;
+
+        public int? CompletedQuizCount { get; set; } = null!;
+
+        public int? YourQuizCount { get; set; } = null!;
+
+
     }
 }

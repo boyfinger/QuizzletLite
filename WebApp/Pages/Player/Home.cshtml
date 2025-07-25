@@ -19,32 +19,8 @@
         new Quiz { Id = 12, Name = "Chemistry Test", CreatedOn = DateTime.Now.AddDays(-2) }
     };
 }
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-<script>
-    const token = "@Html.Raw(accessToken ?? "")";
-
-    fetch("https://localhost:7245/api/authentication/me", {
-        headers: {
-            "Content-Type": "application/json",
-            Authorization: "Bearer " + token
-        }
-    })
-    .then(async res => {
-        if (!res.ok) {
-            const msg = await res.text();
-            console.error("User info fetch failed:", res.status, msg);
-            return;
-        }
-
-        return res.json();
-    }).then(user => {
-        if (!user) return;
-                document.getElementById("usernameSpanHome").innerText = user.username;
-    })
-    .catch(err => {
-        console.error("User profile fetch error:", err.message);
-    });
-</script>
 
 @if (accessToken == null)
 {
@@ -81,8 +57,12 @@
 }
 else
 {
+
+
+    
     <div class="py-5">
-        <h2 class="text-primary mb-4">🎉 Welcome , <span id="usernameSpanHome"></span>!</h2>
+        <img src="..." id="userImgHome" class="rounded-circle me-3" style="width: 50px; height: 50px;" />
+        <h2 class="text-primary m-0">🎉 Welcome, <span id="usernameSpanHome"></span>!</h2>
 
         <div class="row gy-4">
             <!-- Thống kê học tập -->
@@ -90,8 +70,7 @@ else
                 <div class="card border-success shadow-sm">
                     <div class="card-body">
                         <h5 class="card-title">📊 Your Progress</h5>
-                        <p class="card-text">
-                            You've created <strong>12 sets</strong> and completed <strong>8 quizzes</strong> so far. Keep it up!
+                        <p class="card-text" id="quizStatsText">
                         </p>
                         <a asp-page="/Player/Stats" class="btn btn-outline-success">View Full Stats</a>
                     </div>
@@ -146,4 +125,58 @@ else
             </div>
         </div>
     </div>
+
+    <script>
+        const token = "@Html.Raw(accessToken ?? "")";
+
+        async function loadInfo() {
+            try {
+                const res = await fetch("https://localhost:7245/api/authentication/me", {
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: "Bearer " + token
+                    }
+                });
+
+                if (!res.ok) {
+                    const msg = await res.text();
+                    console.error("User info fetch failed:", res.status, msg);
+                    return;
+                }
+
+                const user = await res.json();
+                if (!user) return;
+
+                // 📌 Hiển thị thông tin lên giao diện
+                document.getElementById("usernameSpanHome").innerText = user.username;
+                document.getElementById("userImgHome").src = user.avatar;
+                            let sets = user.yourQuizCount ?? 0;
+        let completed = user.completedQuizCount ?? 0;
+
+        if (sets === 0 && completed === 0) {
+            document.getElementById("quizStatsText").innerHTML =
+                `You haven't created or completed any quiz yet. Start now to discover new knowledge! 🚀`;
+        } else {
+            document.getElementById("quizStatsText").innerHTML =
+                `You've created <strong>${sets} sets</strong> and completed <strong>${completed} quizzes</strong> so far. Keep it up! 🎯`;
+        }
+
+
+
+            } catch (err) {
+                console.error("User profile fetch error:", err.message);
+            }
+        }
+
+        async function loadNewQuizzes(){
+            try{
+
+            }catch (err) {
+                console.error("New quizzes fetch error:", err.message);
+            }
+        }
+
+        // 👉 Gọi hàm khi trang được tải
+        document.addEventListener("DOMContentLoaded", loadInfo);
+    </script>
 }

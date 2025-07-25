@@ -3,6 +3,7 @@ using API.Dtos.Quiz;
 using API.Dtos.Quiz.QuizDetails;
 using API.Dtos.Quiz.QuizSubmission;
 using API.Helpers;
+using API.Mappers;
 using API.Models;
 using API.Models.Snapshots;
 using API.Repositories;
@@ -87,7 +88,7 @@ namespace API.Services
             };
 
             var createdQuiz = await _quizRepository.CreateQuiz(quiz);
-            return MapToDto(createdQuiz);
+            return QuizMappers.MapToDto(createdQuiz);
         }
 
         public async Task<QuizzesDto> UpdateQuizAsync(int quizId, UpdateQuizDto updateQuizDto)
@@ -99,7 +100,7 @@ namespace API.Services
             quiz.IsActive = updateQuizDto.IsActive;
 
             var updatedQuiz = await _quizRepository.UpdateQuiz(quiz);
-            return MapToDto(updatedQuiz);
+            return QuizMappers.MapToDto(updatedQuiz);
         }
 
         public async Task<bool> DeactivateQuizAsync(int quizId)
@@ -110,24 +111,13 @@ namespace API.Services
         public async Task<List<QuizzesDto>> GetQuizzesByUserAsync(int userId)
         {
             var quizzes = await _quizRepository.GetQuizzesByUser(userId);
-            return quizzes.Select(MapToDto).ToList();
+            return quizzes.Select(QuizMappers.MapToDto).ToList();
         }
         public async Task<QuizzesDto> GetQuizByIdAsync(int quizId)
         {
             var quiz = await _quizRepository.GetQuizByIdWithDetails(quizId);
             if (quiz == null) throw new Exception("Quiz not found");
-            return MapToDto(quiz);
-        }
-        private QuizzesDto MapToDto(Quiz quiz)
-        {
-            return new QuizzesDto
-            {
-                Id = quiz.Id,
-                Name = quiz.Name,
-                CreatedBy = quiz.CreatedBy,
-                CreatedOn = quiz.CreatedOn,
-                IsActive = quiz.IsActive
-            };
+            return QuizMappers.MapToDto(quiz);
         }
 
         public async Task<QuizDetailsDto> GetQuizDetailsAsync(int quizId)
@@ -177,6 +167,12 @@ namespace API.Services
                 .ToList();
 
             return pagedResult;
+        }
+
+        public IQueryable<QuizzesDto> GetAllQuizzes()
+        {
+            return _quizRepository.GetAllQuizzes()
+                .Select(QuizMappers.MapToDto).AsQueryable();
         }
     }
 }

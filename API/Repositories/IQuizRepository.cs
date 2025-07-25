@@ -1,11 +1,11 @@
-﻿using API.Dtos.Quiz.QuizSubmission;
-using API.Helpers;
+﻿using API.Helpers;
 using API.Models;
 
 namespace API.Repositories
 {
     public interface IQuizRepository
     {
+        IQueryable<Quiz> GetAllQuizzes();
         Task<List<Quiz>> GetQuizzes(QuizQuery query);
         Task<Quiz?> GetQuizById(int quizId);
         Task<Quiz?> GetQuizByIdWithDetails(int quizId);
@@ -13,5 +13,6 @@ namespace API.Repositories
         Task<Quiz> CreateQuiz(Quiz quiz);
         Task<Quiz> UpdateQuiz(Quiz quiz);
         Task<bool> DeactivateQuiz(int quizId);
+        Task<int> GetCompletedUniqueQuizCountByUserId(int userId);
     }
 }

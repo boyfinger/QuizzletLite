@@ -9,6 +9,7 @@ namespace API.Services
 {
     public interface IQuizService
     {
+        IQueryable<QuizzesDto> GetAllQuizzes();
         Task<QuizAttempt> ProcessQuizAttempt(QuizSubmissionDto submissionDto, int userId);
         Task<QuizzesDto> CreateQuizAsync(CreateQuizDto createQuizDto);
         Task<QuizzesDto> UpdateQuizAsync(int quizId, UpdateQuizDto updateQuizDto);

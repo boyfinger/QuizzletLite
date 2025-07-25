@@ -1,4 +1,6 @@
 ﻿using API.DAO;
+using API.Dtos;
+using API.Dtos.Question;
 using API.Models;
 using API.Repositories;
 using API.Services;
@@ -146,6 +148,8 @@ builder.Services.AddScoped<Admin_IQuizService, Admin_QuizService>();
 builder.Services.AddScoped<Admin_IQuestionRepository, Admin_QuestionRepository>();
 builder.Services.AddScoped<Admin_IQuestionService, Admin_QuestionService>();
 builder.Services.AddScoped<IOtpService, OtpService>();
+builder.Services.AddScoped<IQuestionRepository, QuestionRepository>();
+builder.Services.AddScoped<IQuestionService, QuestionService>();
 
 
 builder.Services.AddControllers().AddOData(options => options
@@ -164,6 +168,8 @@ IEdmModel getEdmModel()
     builder.EntitySet<Quiz>("Quizzes");
     builder.EntitySet<QuizAttempt>("QuizAttempts");
     builder.EntitySet<User>("Users");
+    builder.EntitySet<QuizzesDto>("QuizzesDto");
+    builder.EntitySet<QuestionDto>("QuestionDtos");
     return builder.GetEdmModel();
 }
 
