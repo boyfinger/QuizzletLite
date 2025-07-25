@@ -62,15 +62,21 @@ namespace API.Repositories
 
         public async Task<List<Quiz>> GetQuizzes(QuizQuery query)
         {
-            var list = _context.Quizzes.Where(q => (bool)q.IsActive).AsQueryable();
+            var list = _context.Quizzes
+                .Where(q => (bool)q.IsActive)
+                .Include(q => q.Questions)
+                .AsQueryable();
 
             if (!string.IsNullOrEmpty(query.Name))
             {
                 list = list.Where(q => q.Name.Contains(query.Name));
             }
 
-            list = list.Skip((query.Page - 1) * query.PageSize)
+            if (query.PageSize > 0)
+            {
+                list = list.Skip((query.Page - 1) * query.PageSize)
                        .Take(query.PageSize);
+            }
 
             return await list.Include(q => q.CreatedByNavigation).ToListAsync();
         }

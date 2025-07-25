@@ -1,99 +1,111 @@
-﻿@page
+﻿@page "{id:int}"
+@using Newtonsoft.Json
+@using API.Models.Enums
 @model WebApp.Pages.Quiz.QuizTakingModel
 @{
-    Layout = null;
+    var quizDetail = Model.QuizDetails;
+    var questions = quizDetail.Questions;
     var accessToken = HttpContext.Session.GetString("accessToken");
+
+    Layout = "_QuizLayout";
 }
 
-<div id="container"></div>
-<button onclick="submitQuiz()">Submit</button>
+<div class="row p-2 d-flex" style="height: 90vh; overflow: hidden;">
+    <div class="col-lg-3 p-2" style="position: sticky; top: 0; height: 90vh; overflow-y: auto;">
+        <div class="card">
+            <div class="card-body">
+                <p><h4 class="mb-5">@quizDetail.Name</h4></p>
+                @for (int i = 0; i < questions.Count; i++)
+                {
+                    var question = questions[i];
+                    <a href="#question@(question.Id)" class="btn btn-outline-secondary mb-1" data-id="@question.Id"
+                       style="width: 80px;">Q@(i + 1)</a>
+                }
+                <br /> <br />
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#submitModal">Submit</button>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-9 p-2" style="height: 90vh; overflow-y: auto;">
+        <div>
+            @for (int i = 0; i < questions.Count; i++)
+            {
+                var question = questions[i];
+                <div class="card mb-4" id="question@(question.Id)" data-id="@question.Id">
+                    <div class="card-title">
+                        <p><strong>Q@(i + 1):</strong> @question.Content</p>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            @if (question.QuestionType == QuestionType.SingleChoice)
+                            {
+                                @for (int j = 0; j < question.Options.Count; j++)
+                                {
+                                    var option = question.Options[j];
+                                    var optionId = $"q{question.Id}_opt{j}";
+
+                                    <div class="col-lg-6">
+                                        <input type="radio" class="btn-check" id="@optionId" autocomplete="off" name="question@(question.Id)" value="@option.Content">
+                                        <label style="width: 95%;" class="btn btn-outline-secondary mr-2 mb-1" for="@optionId">@option.Content</label>
+                                        <br>
+                                    </div>
+
+                                }
+                            }
+                            else if (question.QuestionType == QuestionType.MultipleChoice)
+                            {
+                                @for (int j = 0; j < question.Options.Count; j++)
+                                {
+                                    var option = question.Options[j];
+                                    var optionId = $"q{question.Id}_opt{j}";
+
+                                    <div class="col-lg-6">
+                                        <input type="checkbox" class="btn-check" id="@optionId" autocomplete="off" name="question@(question.Id)" value="@option.Content">
+                                        <label style="width: 95%;" class="btn btn-outline-secondary mr-2 mb-1" for="@optionId">@option.Content</label>
+                                        <br>
+                                    </div>
+                                }
+                            }
+                            else
+                            {
+                                <p>Failed to load questions. Please try again later</p>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+
+
+
+<div class="modal fade" id="submitModal" tabindex="-1" aria-labelledby="submitModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="submitModalLabel">Submit</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                Submit quiz?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" onclick="submitQuiz()">Submit</button>
+            </div>
+        </div>
+    </div>
+</div>
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
 <script>
-    var quizId;
-    let accessToken = "@(accessToken ?? "")";
+    var accessToken, quizId;
 
     window.onload = () => {
-        const params = new URLSearchParams(window.location.search);
-        quizId = params.get("quizId");
-        renderQuestionList(quizId);
-    }
-
-    async function getData(quizId){
-        let url = 'https://localhost:7245/api/Quiz/' + quizId + '/Questions';
-        console.log("Token from Razor:", accessToken);
-
-        try {
-            const response = await fetch(url, {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': 'Bearer ' + accessToken
-                }
-            });
-
-            console.log('Status:', response.status);
-
-            if (response.status === 401) {
-                // Not authenticated — go to login
-                window.location.href = "/Auth/Login";
-                return;
-            }
-
-            if (response.status === 403) {
-                // Authenticated but not authorized — go home
-                window.location.href = "/";
-                return;
-            }
-
-
-            if (!response.ok) {
-                throw new Error('HTTP error! Status: ' + response.status);
-            }
-
-            return await response.json();
-        } catch (error) {
-            console.error('Error:', error.message);
-        }
-    }
-
-    async function renderQuestionList(quizId){
-        let data = await getData(quizId);
-        var inputType;
-        const container = document.getElementById('container');
-
-        data.questions.forEach((question, index) => {
-            const questionWrapper = document.createElement("div");
-            questionWrapper.id = `question${question.id}`;
-            questionWrapper.setAttribute("data-id", question.id);
-
-            questionWrapper.innerHTML = `<p><strong>Q${index + 1}:</strong> ${question.content}</p>`;
-
-            if (question.questionType === 0){
-                inputType = 'radio';
-            } else if (question.questionType === 1) {
-                inputType = 'checkbox';
-            } else {
-                console.error("Unknown question type:", question.questionType);
-                return; // Skip this question if the type is unknown
-            }
-
-            question.options.forEach((option, optIndex) => {
-                const optionId = `q${question.id}_opt${optIndex}`;
-                const optionHTML = `
-                  <div>
-                    <label for="${optionId}">
-                      <input type="${inputType}" id="${optionId}" name="question${question.id}" value="${option.content}">
-                      ${option.content}
-                    </label>
-                  </div>
-                `;
-                questionWrapper.innerHTML += optionHTML;
-            });
-
-            container.appendChild(questionWrapper);
-        });
+        accessToken = "@accessToken";
+        quizId = @quizDetail.Id;
     }
 
     async function submitQuiz() {
@@ -124,7 +136,7 @@
               method: 'POST',
               headers: {
                   'Content-Type': 'application/json',
-                  'Authorization': 'Bearer ' + accessToken
+                  'Authorization': `Bearer ${accessToken}`
               },
               body: JSON.stringify(answerPayload)
             });
@@ -148,7 +160,7 @@
                 allowOutsideClick: false // optional: prevents closing by clicking outside
             }).then((result) => {
                 if (result.isConfirmed) {
-                    window.location.href = '/quizattempt/details?id=' + quizResult.id; // 🔗 Replace with your actual URL
+                    window.location.href = '/quizattempt/details/' + quizResult.id; // 🔗 Replace with your actual URL
                 } else if (result.dismiss === Swal.DismissReason.cancel) {
                     window.location.href = '/quiz/quizlist'; // 🔗 Replace with your actual URL
                 }

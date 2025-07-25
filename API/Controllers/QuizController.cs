@@ -53,6 +53,7 @@ namespace API.Controllers
                 return BadRequest(new { message = ex.Message });
             }
         }
+
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         [HttpGet("{quizId}/Questions")]
         public async Task<IActionResult> GetQuizDetails(int quizId)

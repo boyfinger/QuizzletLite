@@ -15,7 +15,8 @@ namespace API.Mappers
             {
                 Id = quiz.Id,
                 Name = quiz.Name,
-                CreatedByUserName = quiz.CreatedByNavigation?.Username ?? "Unknown"
+                CreatedByUserName = quiz.CreatedByNavigation?.Username ?? "Unknown",
+                NumberOfQuestions = quiz.Questions.Count
             };
         }
 
