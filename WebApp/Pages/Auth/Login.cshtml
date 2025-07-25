@@ -4,17 +4,42 @@
     ViewData["Title"] = "Login Page";
 }
 @section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
     <script>
         @if (TempData["RegisterSuccess"] != null)
         {
             <text>
-                        alert("@TempData["RegisterSuccess"]");
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Registration Successful',
+                        text: '@TempData["RegisterSuccess"]',
+                        confirmButtonColor: '#3085d6'
+                    });
             </text>
         }
+
         @if (TempData["LoginFailed"] != null)
         {
             <text>
-                        alert("@TempData["LoginFailed"]");
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Login Failed',
+                        text: '@TempData["LoginFailed"]',
+                        confirmButtonColor: '#d33'
+                    });
+            </text>
+        }
+
+        @if (TempData["ResetSuccess"] != null)
+        {
+            <text>
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Password Reset',
+                        text: '@TempData["ResetSuccess"]',
+                        confirmButtonColor: '#3085d6'
+                    });
             </text>
         }
     </script>

@@ -1,5 +1,4 @@
 using API.Dtos.User;
-using API.Utils;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Newtonsoft.Json;
@@ -16,11 +15,19 @@ namespace WebApp.Pages.Auth
         }
         public IActionResult OnGet()
         {
-            if (HttpContext.Session.Get<UserDto>("userSession") == null)
+            //if (HttpContext.Session.Get<UserDto>("userSession") == null)
+            //{
+            //    return Page();
+            //}
+            //return RedirectToPage("/Home/Home");
+            var token = HttpContext.Session.GetString("accessToken");
+            if (string.IsNullOrEmpty(token))
             {
                 return Page();
             }
-            return RedirectToPage("/Index");
+            return RedirectToPage("/Player/Home");
+
+
         }
 
         [BindProperty]

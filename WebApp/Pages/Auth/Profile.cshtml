@@ -1,41 +1,161 @@
 ﻿@page
-@using API.Dtos.User
-@using API.Utils
 @model WebApp.Pages.Auth.ProfileModel
-@inject IHttpContextAccessor HttpContextAccessor
 
 @{
     ViewData["Title"] = "Profile";
-    var user = HttpContextAccessor?.HttpContext?.Session.Get<UserDto>("userSession");
+    // var user = HttpContextAccessor?.HttpContext?.Session.Get<UserDto>("userSession");
+    // var token = HttpContextAccessor?.HttpContext?.Session.GetString("accessToken");
+    var accessToken = HttpContext.Session.GetString("accessToken");
 }
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+        const roleLabels = {
+        0: "Admin",
+        1: "User"
+    };
+
+    async function loadAndDisplayUserProfile() {
+        // Ensure '@Html.Raw(accessToken ?? "")' is correctly replaced by your server-side rendering.
+        const token = "@Html.Raw(accessToken ?? "")";
+
+        // --- Token Validation ---
+        if (!token || token.trim() === "" || token === "@accessToken") {
+            console.warn("Token is missing, empty, or not properly rendered. Cannot fetch user profile.");
+
+        }
+
+        try {
+            // --- API Call to Fetch User Data ---
+            const response = await fetch("https://localhost:7245/api/authentication/me", {
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: "Bearer " + token
+                }
+            });
+
+            // --- Error Handling for HTTP Responses ---
+            if (!response.ok) {
+                const errorMsg = await response.text(); 
+                console.error(`User info fetch failed: Status ${response.status}, Error: ${errorMsg}`);
+
+                switch (response.status) {
+                    case 401:
+                        alert("Unauthorized access. Please log in again.");
+                        window.location.href = "/Auth/Login";
+                        break;
+                    case 403:
+                        alert("Access forbidden. You do not have permission.");
+                        window.location.href = "/Player/Home"; 
+                        break;
+                    case 404:
+                        alert("User profile not found.");
+                        break;
+                    case 500:
+                        alert("Server error occurred. Please try again later.");
+                        break;
+                    default:
+                        alert(`An unexpected error occurred: ${response.status}`);
+                        break;
+                }
+                return;
+            }
+
+            const user = await response.json(); 
+            if (!user) {
+                console.warn("No user data returned from the API.");
+                return; 
+            }
+
+            console.log("User data loaded successfully:", user); 
+
+            document.getElementById("avatarImgInfo").src = user.avatar || "/images/default-avatar.png";
+            document.getElementById("usernameSpanInfo").innerText = user.username;
+            document.getElementById("emailSpan").textContent = user.email;
+            document.getElementById("roleBadge").textContent = roleLabels[user.role] || "Unknown Role";
+
+            document.getElementById("usernameSpanInput").value = user.username;
+            document.getElementById("emailSpanInput").value = user.email;
+
+        } catch (err) {
+            console.error("Failed to fetch user profile due to a network or unexpected error:", err.message);
+            alert("Could not load user profile. Please check your internet connection or try again later.");
+        }
+    }
+
+    loadAndDisplayUserProfile();
+</script>
+
 @section Scripts {
+
+
     <script>
         @if (TempData["ChangeAvatarSuccess"] != null)
         {
             <text>
-                alert("@TempData["ChangeAvatarSuccess"]");
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Avatar Updated',
+                        text: "@TempData["ChangeAvatarSuccess"]"
+                    });
             </text>
         }
 
         @if (TempData["ChangePasswordSuccess"] != null)
         {
             <text>
-                alert("@TempData["ChangePasswordSuccess"]");
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Done',
+                        text: "@TempData["ChangePasswordSuccess"]"
+                    });
             </text>
         }
+
+        @if (TempData["ChangeAvatarFailed"] != null)
+        {
+            <text>
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Avatar Error',
+                        text: "@TempData["ChangeAvatarFailed"]"
+                    });
+            </text>
+        }
+
+        @if (TempData["ChangePasswordFailed"] != null)
+        {
+            <text>
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Password Error',
+                        text: "@TempData["ChangePasswordFailed"]"
+                    });
+            </text>
+        }
+
         @if (TempData["UpdateProfileSuccess"] != null)
         {
             <text>
-                    alert("@TempData["UpdateProfileSuccess"]");
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Profile Updated',
+                        text: "@TempData["UpdateProfileSuccess"]"
+                    });
             </text>
         }
+
         @if (TempData["UpdateProfileError"] != null)
         {
             <text>
-                    alert("@TempData["UpdateProfileError"]");
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Update Failed',
+                        text: "@TempData["UpdateProfileError"]"
+                    });
             </text>
         }
     </script>
+        
 }
 
 <div class="container py-5">
@@ -44,7 +164,7 @@
             <div class="card shadow-lg">
                 <div class="card-body text-center">
                     <div class="position-relative d-inline-block">
-                        <img src="@(user?.Avatar)"
+                        <img id="avatarImgInfo" src=""
                              class="rounded-circle"
                              style="width: 120px; height: 120px; object-fit: cover; border: 3px solid #6c757d;" />
 
@@ -56,9 +176,9 @@
                         </button>
                     </div>
 
-                    <h4 class="text-primary">@user?.Username</h4>
-                    <p class="text-muted mb-1">@user?.Email</p>
-                    <span class="badge bg-secondary">@user?.Role</span>
+                    <h4 class="text-primary" id="usernameSpanInfo"></h4>
+                    <p class="text-muted mb-1" id="emailSpan"></p>
+                    <span class="badge bg-secondary" id="roleBadge"></span>
 
                     <hr class="my-4" />
 
@@ -68,10 +188,6 @@
                     </div>
                 </div>
             </div>
-
-            @* <div class="text-center mt-4"> *@
-            @*     <small class="text-muted">Tham gia từ: 2024-12-05 (hoặc ngày bạn lưu từ DB)</small> *@
-            @* </div> *@
         </div>
     </div>
 </div>
@@ -98,7 +214,6 @@
                                onchange="previewAvatar(this)"
                                required />
 
-                        @* <span asp-validation-for="AvatarUploadDTO.Avatar" class="text-danger"></span> *@
                     </div>
                     <div class="text-center">
                         <img id="avatarPreview" src="" style="max-width: 200px; display: none;" class="img-thumbnail" />
@@ -140,10 +255,6 @@
                     <div class="text-end mt-3">
                         <button type="submit" class="btn btn-success">Update Password</button>
                     </div>
-
-                    <div class="text-center mt-3">
-                        <small class="text-muted">Forgot your password? <a asp-page="/Auth/ForgotPassword">Reset it here</a></small>
-                    </div>
                 </form>
 
             </div>
@@ -162,18 +273,18 @@
                 <form method="post" asp-page-handler="UpdateProfile">
 
                     <div class="mb-3">
-                        <label for="Username" class="form-label">Username</label>
-                        <input type="text" id="Username" name="Username" class="form-control" />
+                        <label for="usernameSpanInput" class="form-label">Username</label>
+                        <input type="text" id="usernameSpanInput" name="Username" class="form-control" />
                     </div>
 
                     <div class="mb-3">
-                        <label for="Email" class="form-label">Email</label>
-                        <input type="email" id="Email" name="Email" class="form-control" />
+                        <label for="emailSpanInput" class="form-label">Email</label>
+                        <input type="email" id="emailSpanInput" name="Email" class="form-control" />
                     </div>
 
                     <div class="mb-3">
-                        <label for="CurrentPassword" class="form-label">Confirm with Current Password</label>
-                        <input type="password" id="CurrentPassword" name="CurrentPassword" class="form-control" />
+                        <label for="CurrentPasswordConfirm" class="form-label">Confirm with Current Password</label>
+                        <input type="password" id="CurrentPasswordConfirm" name="CurrentPassword" class="form-control" />
                     </div>
 
                     <div class="text-end mt-3">
@@ -214,14 +325,6 @@
     function openUpdateProfileModal() {
         const modalElement = document.getElementById('updateProfileModal');
         const modal = new bootstrap.Modal(modalElement);
-
-        // Pre-fill current user data into the form fields when the modal opens
-        // This assumes 'user' is accessible in the JavaScript scope, which it is from Razor.
-        // You might need to parse it if it's not directly accessible (e.g., from a hidden field).
-        document.querySelector('#updateProfileModal input[name="Username"]').value = '@(user?.Username)';
-        document.querySelector('#updateProfileModal input[name="Email"]').value = '@(user?.Email)';
-        // Add other fields if you have them in UpdateProfileDTO
-
         modal.show();
     }
 </script>

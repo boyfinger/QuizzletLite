@@ -14,5 +14,11 @@
             var seed = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
             return $"https://api.dicebear.com/7.x/bottts/svg?seed={seed}";
         }
+
+        public static int RandomIntOtp()
+        {
+            var random = new Random();
+            return random.Next(100000, 1000000);
+        }
     }
 }

@@ -1,7 +1,9 @@
-﻿using API.Dtos.Quiz;
+﻿using API.Dtos;
+using API.Dtos.Quiz;
 using API.Dtos.Quiz.QuizDetails;
 using API.Helpers;
 using API.Models;
+using System.Linq.Expressions;
 
 namespace API.Mappers
 {
@@ -40,5 +42,26 @@ namespace API.Mappers
                     }).ToList()
             };
         }
+
+        public static QuizzesDto MapToDto(Quiz quiz)
+        {
+            return new QuizzesDto
+            {
+                Id = quiz.Id,
+                Name = quiz.Name,
+                CreatedBy = quiz.CreatedBy,
+                CreatedOn = quiz.CreatedOn,
+                IsActive = quiz.IsActive
+            };
+        }
+
+        public static Expression<Func<Quiz, QuizzesDto>> MapToDtoExpr => quiz => new QuizzesDto
+        {
+            Id = quiz.Id,
+            Name = quiz.Name,
+            CreatedBy = quiz.CreatedBy,
+            CreatedOn = quiz.CreatedOn,
+            IsActive = quiz.IsActive
+        };
     }
 }

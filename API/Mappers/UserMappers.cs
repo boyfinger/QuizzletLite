@@ -14,7 +14,24 @@ namespace API.Mappers
                 Role = user.Role,
                 Email = user.Email,
                 Username = user.Username,
-                Avatar = user.Avatar
+                Avatar = user.Avatar,
+                CompletedQuizCount = user.QuizAttempts.Count(),
+                YourQuizCount = user.Quizzes.Count(),
+            };
+        }
+
+        public static UserDto ToUserDtoFull(this User user, int completedQuizCount, int yourQuizCount
+)
+        {
+            return new UserDto
+            {
+                Id = user.Id,
+                Role = user.Role,
+                Email = user.Email,
+                Username = user.Username,
+                Avatar = user.Avatar,
+                CompletedQuizCount = completedQuizCount,
+                YourQuizCount = yourQuizCount,
             };
         }
         public static User ToUser(this UserDto dto)

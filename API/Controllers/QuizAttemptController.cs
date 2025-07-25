@@ -59,7 +59,12 @@ namespace API.Controllers
         {
             try
             {
-                var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                Console.WriteLine(userIdClaim);
+                if (!int.TryParse(userIdClaim, out var userId))
+                {
+                    return Unauthorized("Invalid user ID in JWT token.");
+                }
                 var resultsQuery = await _quizAttemptRepository.GetQuizAttemptsOfUser(userId);
                 if (resultsQuery == null || !resultsQuery.Any())
                 {

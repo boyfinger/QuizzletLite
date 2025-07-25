@@ -1,7 +1,7 @@
 ﻿@page
 @model WebApp.Pages.Admin.User.IndexModel
 @{
-    Layout = null;
+    var token = HttpContext.Session.GetString("accessToken");
 }
 <!DOCTYPE html>
 <html lang="en">
@@ -24,9 +24,12 @@
     </script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" rel="stylesheet" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+    <link href="~/css/admin_sidebar.css" rel="stylesheet" />
+
 </head>
 <body>
-    <div class="container-xl">
+    @await Html.PartialAsync("_AdminSidebar")
+    <div class="container-xl" style="margin-left: 100px;">
         <div class="table-responsive">
             <div class="table-wrapper">
                 <div class="table-title">
@@ -47,8 +50,8 @@
                                 <div class="col-3 pl-1">
                                     <select id="role-filter" class="form-control">
                                         <option value="">All</option>
-                                        <option value="0">User</option>
-                                        <option value="1">Admin</option>
+                                        <option value="1">User</option>
+                                        <option value="0">Admin</option>
                                     </select>
                                 </div>
                             </div>
@@ -97,7 +100,7 @@
                         </div>
                         <div class="form-group">
                             <label>Email</label>
-                            <input type="email" class="form-control" id="edit-email">
+                            <input type="email" readonly class="form-control" id="edit-email">
                         </div>
                         <div class="form-group">
                             <label>Role</label>
@@ -160,8 +163,8 @@
                         <div class="form-group">
                             <label>Role</label>
                             <select class="form-control" id="add-role">
-                                <option value="0">User</option>
-                                <option value="1">Admin</option>
+                                <option value="1">User</option>
+                                <option value="0">Admin</option>
                             </select>
                         </div>
                     </form>
@@ -175,6 +178,7 @@
     </div>
 
     <script>
+        const accessToken = '@token';
         const API_URL = 'https://localhost:7245/api/user'; // sửa URL nếu cần
         let currentPage = 1;
         const pageSize = 5;
@@ -200,7 +204,8 @@
 
             try {
                 const response = await fetch(`${API_URL}?${params.toString()}`, {
-                    headers: { 'Accept': 'application/json' }
+                    headers: { 'Accept': 'application/json' ,
+                    'Authorization': `Bearer ${accessToken}`}
                 });
                 if (!response.ok) throw new Error('Failed to fetch users');
                 const data = await response.json();
@@ -229,10 +234,10 @@
             users.forEach((user, index) => {
                 let roleText = '';
                 switch(user.role) {
-                    case 0:
+                    case 1:
                         roleText = 'User';
                         break;
-                    case 1:
+                    case 0:
                         roleText = 'Admin';
                         break;
                     default:
@@ -309,7 +314,8 @@
             try {
                 const response = await fetch(`${API_URL}`, {
                     method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: { 'Content-Type': 'application/json' ,
+                    'Authorization': `Bearer ${accessToken}`},
                     body: JSON.stringify(updatedUser)
                 });
                 const result = await response.json();
@@ -336,7 +342,10 @@
             const userId = document.getElementById('delete-user-id').value;
             try {
                 const response = await fetch(`${API_URL}/${userId}`, {
-                    method: 'DELETE'
+                    method: 'DELETE',
+                    headers: {
+                'Authorization': `Bearer ${accessToken}`
+            }
                 });
                 const result = await response.json();
 
@@ -359,6 +368,7 @@
             $('#addUserModal').modal('show');
         }
 
+       
         async function addUser() {
             const username = document.getElementById('add-username').value.trim();
             const email = document.getElementById('add-email').value.trim();
@@ -378,7 +388,8 @@
             try {
                 const response = await fetch(`${API_URL}`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: { 'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${accessToken}`},
                     body: JSON.stringify(newUser)
                 });
                 const result = await response.json();
@@ -431,6 +442,7 @@
         });
 
     </script>
+
 
 </body>
 </html>

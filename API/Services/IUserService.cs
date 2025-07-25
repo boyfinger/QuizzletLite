@@ -11,5 +11,6 @@ namespace API.Services
         Task UpdateUser(UserDto userDto);
         Task<bool> DeleteUser(int id);
         Task<bool> UserExists(int id);
+        Task<string?> GetAvatarByUserId(int userId);
     }
 }

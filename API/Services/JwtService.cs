@@ -19,14 +19,15 @@ namespace API.Services
             var key = Encoding.UTF8.GetBytes(_configuration["JWT:SigningKey"]);
             var tokenDescriptor = new SecurityTokenDescriptor
             {
-                Subject = new ClaimsIdentity(new[]
-                {
+                Subject = new ClaimsIdentity(
+                [
                 new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
                 new Claim(ClaimTypes.Name, user.Username),
                 new Claim(ClaimTypes.Email, user.Email),
+                //new Claim("avatar", user.Avatar ?? ""),
                 new Claim(ClaimTypes.Role, user.Role.ToString())
-            }),
-                Expires = DateTime.UtcNow.AddHours(1),
+            ]),
+                Expires = DateTime.UtcNow.AddHours(3),
                 Issuer = _configuration["JWT:Issuer"],
                 Audience = _configuration["JWT:Audience"],
                 SigningCredentials = new SigningCredentials(

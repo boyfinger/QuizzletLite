@@ -34,6 +34,9 @@ namespace API.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
                     b.Property<string>("OptionsJson")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -55,6 +58,7 @@ namespace API.Migrations
                         {
                             Id = 1,
                             Content = "What is the capital of France?",
+                            IsActive = true,
                             OptionsJson = "[{\"Content\":\"Paris\",\"IsCorrect\":true},{\"Content\":\"London\",\"IsCorrect\":false},{\"Content\":\"Berlin\",\"IsCorrect\":false},{\"Content\":\"Madrid\",\"IsCorrect\":false}]",
                             QuestionType = 0,
                             QuizId = 1
@@ -62,34 +66,893 @@ namespace API.Migrations
                         new
                         {
                             Id = 2,
-                            Content = "Which planets are part of the solar system?",
-                            OptionsJson = "[{\"Content\":\"Mercury\",\"IsCorrect\":true},{\"Content\":\"Venus\",\"IsCorrect\":true},{\"Content\":\"Earth\",\"IsCorrect\":true},{\"Content\":\"Pluto\",\"IsCorrect\":false}]",
+                            Content = "Which planets are known as gas giants?",
+                            IsActive = true,
+                            OptionsJson = "[{\"Content\":\"Jupiter\",\"IsCorrect\":true},{\"Content\":\"Saturn\",\"IsCorrect\":true},{\"Content\":\"Earth\",\"IsCorrect\":false},{\"Content\":\"Venus\",\"IsCorrect\":false}]",
+                            QuestionType = 1,
+                            QuizId = 1
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Content = "Who wrote 'Romeo and Juliet'?",
+                            IsActive = true,
+                            OptionsJson = "[{\"Content\":\"William Shakespeare\",\"IsCorrect\":true},{\"Content\":\"Charles Dickens\",\"IsCorrect\":false},{\"Content\":\"Jane Austen\",\"IsCorrect\":false},{\"Content\":\"Mark Twain\",\"IsCorrect\":false}]",
+                            QuestionType = 0,
+                            QuizId = 1
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Content = "Which of the following are primary colors?",
+                            IsActive = true,
+                            OptionsJson = "[{\"Content\":\"Red\",\"IsCorrect\":true},{\"Content\":\"Blue\",\"IsCorrect\":true},{\"Content\":\"Green\",\"IsCorrect\":false},{\"Content\":\"Yellow\",\"IsCorrect\":true}]",
+                            QuestionType = 1,
+                            QuizId = 1
+                        },
+                        new
+                        {
+                            Id = 5,
+                            Content = "Which ocean is the largest?",
+                            IsActive = true,
+                            OptionsJson = "[{\"Content\":\"Pacific Ocean\",\"IsCorrect\":true},{\"Content\":\"Atlantic Ocean\",\"IsCorrect\":false},{\"Content\":\"Indian Ocean\",\"IsCorrect\":false},{\"Content\":\"Arctic Ocean\",\"IsCorrect\":false}]",
+                            QuestionType = 0,
+                            QuizId = 1
+                        },
+                        new
+                        {
+                            Id = 6,
+                            Content = "Which of these animals are mammals?",
+                            IsActive = true,
+                            OptionsJson = "[{\"Content\":\"Whale\",\"IsCorrect\":true},{\"Content\":\"Shark\",\"IsCorrect\":false},{\"Content\":\"Bat\",\"IsCorrect\":true},{\"Content\":\"Frog\",\"IsCorrect\":false}]",
+                            QuestionType = 1,
+                            QuizId = 1
+                        },
+                        new
+                        {
+                            Id = 7,
+                            Content = "What is the smallest prime number?",
+                            IsActive = true,
+                            OptionsJson = "[{\"Content\":\"2\",\"IsCorrect\":true},{\"Content\":\"1\",\"IsCorrect\":false},{\"Content\":\"0\",\"IsCorrect\":false},{\"Content\":\"3\",\"IsCorrect\":false}]",
+                            QuestionType = 0,
+                            QuizId = 1
+                        },
+                        new
+                        {
+                            Id = 8,
+                            Content = "Select all countries located in South America.",
+                            IsActive = true,
+                            OptionsJson = "[{\"Content\":\"Brazil\",\"IsCorrect\":true},{\"Content\":\"Argentina\",\"IsCorrect\":true},{\"Content\":\"Mexico\",\"IsCorrect\":false},{\"Content\":\"Peru\",\"IsCorrect\":true}]",
+                            QuestionType = 1,
+                            QuizId = 1
+                        },
+                        new
+                        {
+                            Id = 9,
+                            Content = "What year did the Titanic sink?",
+                            IsActive = true,
+                            OptionsJson = "[{\"Content\":\"1912\",\"IsCorrect\":true},{\"Content\":\"1905\",\"IsCorrect\":false},{\"Content\":\"1920\",\"IsCorrect\":false},{\"Content\":\"1898\",\"IsCorrect\":false}]",
+                            QuestionType = 0,
+                            QuizId = 1
+                        },
+                        new
+                        {
+                            Id = 10,
+                            Content = "Which of the following are programming languages?",
+                            IsActive = true,
+                            OptionsJson = "[{\"Content\":\"Python\",\"IsCorrect\":true},{\"Content\":\"HTML\",\"IsCorrect\":false},{\"Content\":\"Java\",\"IsCorrect\":true},{\"Content\":\"CSS\",\"IsCorrect\":false}]",
+                            QuestionType = 1,
+                            QuizId = 1
+                        },
+                        new
+                        {
+                            Id = 11,
+                            Content = "What is the chemical symbol for gold?",
+                            IsActive = true,
+                            OptionsJson = "[{\"Content\":\"Au\",\"IsCorrect\":true},{\"Content\":\"Ag\",\"IsCorrect\":false},{\"Content\":\"Gd\",\"IsCorrect\":false},{\"Content\":\"Go\",\"IsCorrect\":false}]",
+                            QuestionType = 0,
+                            QuizId = 2
+                        },
+                        new
+                        {
+                            Id = 12,
+                            Content = "Which of the following are states of matter?",
+                            IsActive = true,
+                            OptionsJson = "[{\"Content\":\"Solid\",\"IsCorrect\":true},{\"Content\":\"Liquid\",\"IsCorrect\":true},{\"Content\":\"Plasma\",\"IsCorrect\":true},{\"Content\":\"Granular\",\"IsCorrect\":false}]",
                             QuestionType = 1,
                             QuizId = 2
                         },
                         new
                         {
-                            Id = 3,
+                            Id = 13,
+                            Content = "What planet is known as the Red Planet?",
+                            IsActive = true,
+                            OptionsJson = "[{\"Content\":\"Mars\",\"IsCorrect\":true},{\"Content\":\"Venus\",\"IsCorrect\":false},{\"Content\":\"Jupiter\",\"IsCorrect\":false},{\"Content\":\"Neptune\",\"IsCorrect\":false}]",
+                            QuestionType = 0,
+                            QuizId = 2
+                        },
+                        new
+                        {
+                            Id = 14,
+                            Content = "Which of the following are components of the cell?",
+                            IsActive = true,
+                            OptionsJson = "[{\"Content\":\"Nucleus\",\"IsCorrect\":true},{\"Content\":\"Chloroplast\",\"IsCorrect\":true},{\"Content\":\"Mitochondria\",\"IsCorrect\":true},{\"Content\":\"Glucose\",\"IsCorrect\":false}]",
+                            QuestionType = 1,
+                            QuizId = 2
+                        },
+                        new
+                        {
+                            Id = 15,
+                            Content = "Which gas do plants primarily use for photosynthesis?",
+                            IsActive = true,
+                            OptionsJson = "[{\"Content\":\"Carbon Dioxide\",\"IsCorrect\":true},{\"Content\":\"Oxygen\",\"IsCorrect\":false},{\"Content\":\"Hydrogen\",\"IsCorrect\":false},{\"Content\":\"Nitrogen\",\"IsCorrect\":false}]",
+                            QuestionType = 0,
+                            QuizId = 2
+                        },
+                        new
+                        {
+                            Id = 16,
+                            Content = "Select the examples of renewable energy sources.",
+                            IsActive = true,
+                            OptionsJson = "[{\"Content\":\"Solar\",\"IsCorrect\":true},{\"Content\":\"Wind\",\"IsCorrect\":true},{\"Content\":\"Coal\",\"IsCorrect\":false},{\"Content\":\"Hydropower\",\"IsCorrect\":true}]",
+                            QuestionType = 1,
+                            QuizId = 2
+                        },
+                        new
+                        {
+                            Id = 17,
+                            Content = "What part of the atom has a positive charge?",
+                            IsActive = true,
+                            OptionsJson = "[{\"Content\":\"Proton\",\"IsCorrect\":true},{\"Content\":\"Electron\",\"IsCorrect\":false},{\"Content\":\"Neutron\",\"IsCorrect\":false},{\"Content\":\"Nucleus\",\"IsCorrect\":false}]",
+                            QuestionType = 0,
+                            QuizId = 2
+                        },
+                        new
+                        {
+                            Id = 18,
+                            Content = "Which of these are examples of amphibians?",
+                            IsActive = true,
+                            OptionsJson = "[{\"Content\":\"Frog\",\"IsCorrect\":true},{\"Content\":\"Salamander\",\"IsCorrect\":true},{\"Content\":\"Lizard\",\"IsCorrect\":false},{\"Content\":\"Toad\",\"IsCorrect\":true}]",
+                            QuestionType = 1,
+                            QuizId = 2
+                        },
+                        new
+                        {
+                            Id = 19,
+                            Content = "What is the boiling point of water at sea level?",
+                            IsActive = true,
+                            OptionsJson = "[{\"Content\":\"100°C\",\"IsCorrect\":true},{\"Content\":\"90°C\",\"IsCorrect\":false},{\"Content\":\"80°C\",\"IsCorrect\":false},{\"Content\":\"120°C\",\"IsCorrect\":false}]",
+                            QuestionType = 0,
+                            QuizId = 2
+                        },
+                        new
+                        {
+                            Id = 20,
+                            Content = "Select all planets that have rings.",
+                            IsActive = true,
+                            OptionsJson = "[{\"Content\":\"Saturn\",\"IsCorrect\":true},{\"Content\":\"Jupiter\",\"IsCorrect\":true},{\"Content\":\"Uranus\",\"IsCorrect\":true},{\"Content\":\"Mars\",\"IsCorrect\":false}]",
+                            QuestionType = 1,
+                            QuizId = 2
+                        },
+                        new
+                        {
+                            Id = 21,
                             Content = "Who was the first President of the United States?",
+                            IsActive = true,
                             OptionsJson = "[{\"Content\":\"George Washington\",\"IsCorrect\":true},{\"Content\":\"Thomas Jefferson\",\"IsCorrect\":false},{\"Content\":\"Abraham Lincoln\",\"IsCorrect\":false},{\"Content\":\"John Adams\",\"IsCorrect\":false}]",
                             QuestionType = 0,
                             QuizId = 3
                         },
                         new
                         {
-                            Id = 4,
-                            Content = "What is the capital of Vietnam?",
-                            OptionsJson = "[{\"Content\":\"Hanoi\",\"IsCorrect\":true},{\"Content\":\"Ho Chi Minh City\",\"IsCorrect\":false},{\"Content\":\"Da Nang\",\"IsCorrect\":false},{\"Content\":\"Hue\",\"IsCorrect\":false}]",
-                            QuestionType = 0,
-                            QuizId = 1
+                            Id = 22,
+                            Content = "Which ancient civilizations built pyramids?",
+                            IsActive = true,
+                            OptionsJson = "[{\"Content\":\"Egyptians\",\"IsCorrect\":true},{\"Content\":\"Mayans\",\"IsCorrect\":true},{\"Content\":\"Romans\",\"IsCorrect\":false},{\"Content\":\"Aztecs\",\"IsCorrect\":true}]",
+                            QuestionType = 1,
+                            QuizId = 3
                         },
                         new
                         {
-                            Id = 5,
-                            Content = "What is the largest planet in our solar system?",
-                            OptionsJson = "[{\"Content\":\"Jupiter\",\"IsCorrect\":true},{\"Content\":\"Saturn\",\"IsCorrect\":false},{\"Content\":\"Earth\",\"IsCorrect\":false},{\"Content\":\"Mars\",\"IsCorrect\":false}]",
+                            Id = 23,
+                            Content = "In what year did World War II end?",
+                            IsActive = true,
+                            OptionsJson = "[{\"Content\":\"1945\",\"IsCorrect\":true},{\"Content\":\"1939\",\"IsCorrect\":false},{\"Content\":\"1941\",\"IsCorrect\":false},{\"Content\":\"1950\",\"IsCorrect\":false}]",
                             QuestionType = 0,
-                            QuizId = 2
+                            QuizId = 3
+                        },
+                        new
+                        {
+                            Id = 24,
+                            Content = "Which of these explorers sailed around the world?",
+                            IsActive = true,
+                            OptionsJson = "[{\"Content\":\"Ferdinand Magellan\",\"IsCorrect\":true},{\"Content\":\"Francis Drake\",\"IsCorrect\":true},{\"Content\":\"Marco Polo\",\"IsCorrect\":false},{\"Content\":\"James Cook\",\"IsCorrect\":false}]",
+                            QuestionType = 1,
+                            QuizId = 3
+                        },
+                        new
+                        {
+                            Id = 25,
+                            Content = "The Berlin Wall fell in what year?",
+                            IsActive = true,
+                            OptionsJson = "[{\"Content\":\"1989\",\"IsCorrect\":true},{\"Content\":\"1991\",\"IsCorrect\":false},{\"Content\":\"1985\",\"IsCorrect\":false},{\"Content\":\"1990\",\"IsCorrect\":false}]",
+                            QuestionType = 0,
+                            QuizId = 3
+                        },
+                        new
+                        {
+                            Id = 26,
+                            Content = "Which empires once ruled over large parts of Europe?",
+                            IsActive = true,
+                            OptionsJson = "[{\"Content\":\"Roman Empire\",\"IsCorrect\":true},{\"Content\":\"Ottoman Empire\",\"IsCorrect\":true},{\"Content\":\"Ming Dynasty\",\"IsCorrect\":false},{\"Content\":\"Byzantine Empire\",\"IsCorrect\":true}]",
+                            QuestionType = 1,
+                            QuizId = 3
+                        },
+                        new
+                        {
+                            Id = 27,
+                            Content = "Who was known as the 'Maid of Orléans'?",
+                            IsActive = true,
+                            OptionsJson = "[{\"Content\":\"Joan of Arc\",\"IsCorrect\":true},{\"Content\":\"Marie Antoinette\",\"IsCorrect\":false},{\"Content\":\"Catherine the Great\",\"IsCorrect\":false},{\"Content\":\"Elizabeth I\",\"IsCorrect\":false}]",
+                            QuestionType = 0,
+                            QuizId = 3
+                        },
+                        new
+                        {
+                            Id = 28,
+                            Content = "Which countries were part of the Axis powers in World War II?",
+                            IsActive = true,
+                            OptionsJson = "[{\"Content\":\"Germany\",\"IsCorrect\":true},{\"Content\":\"Italy\",\"IsCorrect\":true},{\"Content\":\"Japan\",\"IsCorrect\":true},{\"Content\":\"France\",\"IsCorrect\":false}]",
+                            QuestionType = 1,
+                            QuizId = 3
+                        },
+                        new
+                        {
+                            Id = 29,
+                            Content = "Who was the British Prime Minister during most of World War II?",
+                            IsActive = true,
+                            OptionsJson = "[{\"Content\":\"Winston Churchill\",\"IsCorrect\":true},{\"Content\":\"Neville Chamberlain\",\"IsCorrect\":false},{\"Content\":\"Clement Attlee\",\"IsCorrect\":false},{\"Content\":\"Tony Blair\",\"IsCorrect\":false}]",
+                            QuestionType = 0,
+                            QuizId = 3
+                        },
+                        new
+                        {
+                            Id = 30,
+                            Content = "Select events that took place during the 20th century.",
+                            IsActive = true,
+                            OptionsJson = "[{\"Content\":\"The Moon Landing\",\"IsCorrect\":true},{\"Content\":\"The Cold War\",\"IsCorrect\":true},{\"Content\":\"French Revolution\",\"IsCorrect\":false},{\"Content\":\"Fall of the Soviet Union\",\"IsCorrect\":true}]",
+                            QuestionType = 1,
+                            QuizId = 3
+                        },
+                        new
+                        {
+                            Id = 31,
+                            Content = "Which is the longest river in the world?",
+                            IsActive = true,
+                            OptionsJson = "[{\"Content\":\"Nile\",\"IsCorrect\":true},{\"Content\":\"Amazon\",\"IsCorrect\":false},{\"Content\":\"Yangtze\",\"IsCorrect\":false},{\"Content\":\"Mississippi\",\"IsCorrect\":false}]",
+                            QuestionType = 0,
+                            QuizId = 4
+                        },
+                        new
+                        {
+                            Id = 32,
+                            Content = "Which countries are landlocked?",
+                            IsActive = true,
+                            OptionsJson = "[{\"Content\":\"Nepal\",\"IsCorrect\":true},{\"Content\":\"Switzerland\",\"IsCorrect\":true},{\"Content\":\"Thailand\",\"IsCorrect\":false},{\"Content\":\"Austria\",\"IsCorrect\":true}]",
+                            QuestionType = 1,
+                            QuizId = 4
+                        },
+                        new
+                        {
+                            Id = 33,
+                            Content = "What is the smallest country in the world by area?",
+                            IsActive = true,
+                            OptionsJson = "[{\"Content\":\"Vatican City\",\"IsCorrect\":true},{\"Content\":\"Monaco\",\"IsCorrect\":false},{\"Content\":\"San Marino\",\"IsCorrect\":false},{\"Content\":\"Liechtenstein\",\"IsCorrect\":false}]",
+                            QuestionType = 0,
+                            QuizId = 4
+                        },
+                        new
+                        {
+                            Id = 34,
+                            Content = "Select the countries that span more than one continent.",
+                            IsActive = true,
+                            OptionsJson = "[{\"Content\":\"Russia\",\"IsCorrect\":true},{\"Content\":\"Turkey\",\"IsCorrect\":true},{\"Content\":\"Egypt\",\"IsCorrect\":true},{\"Content\":\"Canada\",\"IsCorrect\":false}]",
+                            QuestionType = 1,
+                            QuizId = 4
+                        },
+                        new
+                        {
+                            Id = 35,
+                            Content = "What is the capital of Canada?",
+                            IsActive = true,
+                            OptionsJson = "[{\"Content\":\"Ottawa\",\"IsCorrect\":true},{\"Content\":\"Toronto\",\"IsCorrect\":false},{\"Content\":\"Vancouver\",\"IsCorrect\":false},{\"Content\":\"Montreal\",\"IsCorrect\":false}]",
+                            QuestionType = 0,
+                            QuizId = 4
+                        },
+                        new
+                        {
+                            Id = 36,
+                            Content = "Which continents lie entirely in the Southern Hemisphere?",
+                            IsActive = true,
+                            OptionsJson = "[{\"Content\":\"Australia\",\"IsCorrect\":true},{\"Content\":\"Antarctica\",\"IsCorrect\":true},{\"Content\":\"Africa\",\"IsCorrect\":false},{\"Content\":\"South America\",\"IsCorrect\":false}]",
+                            QuestionType = 1,
+                            QuizId = 4
+                        },
+                        new
+                        {
+                            Id = 37,
+                            Content = "Mount Everest lies in which mountain range?",
+                            IsActive = true,
+                            OptionsJson = "[{\"Content\":\"Himalayas\",\"IsCorrect\":true},{\"Content\":\"Andes\",\"IsCorrect\":false},{\"Content\":\"Alps\",\"IsCorrect\":false},{\"Content\":\"Rockies\",\"IsCorrect\":false}]",
+                            QuestionType = 0,
+                            QuizId = 4
+                        },
+                        new
+                        {
+                            Id = 38,
+                            Content = "Select all countries through which the Equator passes.",
+                            IsActive = true,
+                            OptionsJson = "[{\"Content\":\"Ecuador\",\"IsCorrect\":true},{\"Content\":\"Kenya\",\"IsCorrect\":true},{\"Content\":\"Brazil\",\"IsCorrect\":true},{\"Content\":\"Mexico\",\"IsCorrect\":false}]",
+                            QuestionType = 1,
+                            QuizId = 4
+                        },
+                        new
+                        {
+                            Id = 39,
+                            Content = "What desert is the largest in the world by area?",
+                            IsActive = true,
+                            OptionsJson = "[{\"Content\":\"Antarctic Desert\",\"IsCorrect\":true},{\"Content\":\"Sahara\",\"IsCorrect\":false},{\"Content\":\"Gobi\",\"IsCorrect\":false},{\"Content\":\"Arctic\",\"IsCorrect\":false}]",
+                            QuestionType = 0,
+                            QuizId = 4
+                        },
+                        new
+                        {
+                            Id = 40,
+                            Content = "Which of these are island nations?",
+                            IsActive = true,
+                            OptionsJson = "[{\"Content\":\"Japan\",\"IsCorrect\":true},{\"Content\":\"Iceland\",\"IsCorrect\":true},{\"Content\":\"Norway\",\"IsCorrect\":false},{\"Content\":\"New Zealand\",\"IsCorrect\":true}]",
+                            QuestionType = 1,
+                            QuizId = 4
+                        },
+                        new
+                        {
+                            Id = 41,
+                            Content = "What is the value of π (pi) rounded to two decimal places?",
+                            IsActive = true,
+                            OptionsJson = "[{\"Content\":\"3.14\",\"IsCorrect\":true},{\"Content\":\"2.71\",\"IsCorrect\":false},{\"Content\":\"1.61\",\"IsCorrect\":false},{\"Content\":\"3.41\",\"IsCorrect\":false}]",
+                            QuestionType = 0,
+                            QuizId = 5
+                        },
+                        new
+                        {
+                            Id = 42,
+                            Content = "Which of the following numbers are prime?",
+                            IsActive = true,
+                            OptionsJson = "[{\"Content\":\"2\",\"IsCorrect\":true},{\"Content\":\"3\",\"IsCorrect\":true},{\"Content\":\"4\",\"IsCorrect\":false},{\"Content\":\"5\",\"IsCorrect\":true}]",
+                            QuestionType = 1,
+                            QuizId = 5
+                        },
+                        new
+                        {
+                            Id = 43,
+                            Content = "What is the square root of 144?",
+                            IsActive = true,
+                            OptionsJson = "[{\"Content\":\"12\",\"IsCorrect\":true},{\"Content\":\"14\",\"IsCorrect\":false},{\"Content\":\"11\",\"IsCorrect\":false},{\"Content\":\"10\",\"IsCorrect\":false}]",
+                            QuestionType = 0,
+                            QuizId = 5
+                        },
+                        new
+                        {
+                            Id = 44,
+                            Content = "Select all even numbers.",
+                            IsActive = true,
+                            OptionsJson = "[{\"Content\":\"6\",\"IsCorrect\":true},{\"Content\":\"11\",\"IsCorrect\":false},{\"Content\":\"14\",\"IsCorrect\":true},{\"Content\":\"9\",\"IsCorrect\":false}]",
+                            QuestionType = 1,
+                            QuizId = 5
+                        },
+                        new
+                        {
+                            Id = 45,
+                            Content = "What is 7 × 8?",
+                            IsActive = true,
+                            OptionsJson = "[{\"Content\":\"56\",\"IsCorrect\":true},{\"Content\":\"64\",\"IsCorrect\":false},{\"Content\":\"48\",\"IsCorrect\":false},{\"Content\":\"52\",\"IsCorrect\":false}]",
+                            QuestionType = 0,
+                            QuizId = 5
+                        },
+                        new
+                        {
+                            Id = 46,
+                            Content = "Which of these are multiples of 3?",
+                            IsActive = true,
+                            OptionsJson = "[{\"Content\":\"9\",\"IsCorrect\":true},{\"Content\":\"12\",\"IsCorrect\":true},{\"Content\":\"14\",\"IsCorrect\":false},{\"Content\":\"15\",\"IsCorrect\":true}]",
+                            QuestionType = 1,
+                            QuizId = 5
+                        },
+                        new
+                        {
+                            Id = 47,
+                            Content = "What is the value of 3²?",
+                            IsActive = true,
+                            OptionsJson = "[{\"Content\":\"9\",\"IsCorrect\":true},{\"Content\":\"6\",\"IsCorrect\":false},{\"Content\":\"8\",\"IsCorrect\":false},{\"Content\":\"12\",\"IsCorrect\":false}]",
+                            QuestionType = 0,
+                            QuizId = 5
+                        },
+                        new
+                        {
+                            Id = 48,
+                            Content = "Select all factors of 24.",
+                            IsActive = true,
+                            OptionsJson = "[{\"Content\":\"2\",\"IsCorrect\":true},{\"Content\":\"3\",\"IsCorrect\":true},{\"Content\":\"5\",\"IsCorrect\":false},{\"Content\":\"8\",\"IsCorrect\":true}]",
+                            QuestionType = 1,
+                            QuizId = 5
+                        },
+                        new
+                        {
+                            Id = 49,
+                            Content = "Which number is both a square and a cube?",
+                            IsActive = true,
+                            OptionsJson = "[{\"Content\":\"64\",\"IsCorrect\":true},{\"Content\":\"16\",\"IsCorrect\":false},{\"Content\":\"81\",\"IsCorrect\":false},{\"Content\":\"100\",\"IsCorrect\":false}]",
+                            QuestionType = 0,
+                            QuizId = 5
+                        },
+                        new
+                        {
+                            Id = 50,
+                            Content = "Which of the following equations are true?",
+                            IsActive = true,
+                            OptionsJson = "[{\"Content\":\"5 + 3 = 8\",\"IsCorrect\":true},{\"Content\":\"10 ÷ 2 = 4\",\"IsCorrect\":false},{\"Content\":\"6 × 6 = 36\",\"IsCorrect\":true},{\"Content\":\"7 - 2 = 6\",\"IsCorrect\":false}]",
+                            QuestionType = 1,
+                            QuizId = 5
+                        },
+                        new
+                        {
+                            Id = 51,
+                            Content = "Who wrote '1984'?",
+                            IsActive = true,
+                            OptionsJson = "[{\"Content\":\"George Orwell\",\"IsCorrect\":true},{\"Content\":\"Aldous Huxley\",\"IsCorrect\":false},{\"Content\":\"Ray Bradbury\",\"IsCorrect\":false},{\"Content\":\"Ernest Hemingway\",\"IsCorrect\":false}]",
+                            QuestionType = 0,
+                            QuizId = 6
+                        },
+                        new
+                        {
+                            Id = 52,
+                            Content = "Which of the following are works by William Shakespeare?",
+                            IsActive = true,
+                            OptionsJson = "[{\"Content\":\"Hamlet\",\"IsCorrect\":true},{\"Content\":\"Macbeth\",\"IsCorrect\":true},{\"Content\":\"Frankenstein\",\"IsCorrect\":false},{\"Content\":\"Othello\",\"IsCorrect\":true}]",
+                            QuestionType = 1,
+                            QuizId = 6
+                        },
+                        new
+                        {
+                            Id = 53,
+                            Content = "Who is the author of 'Pride and Prejudice'?",
+                            IsActive = true,
+                            OptionsJson = "[{\"Content\":\"Jane Austen\",\"IsCorrect\":true},{\"Content\":\"Charlotte Brontë\",\"IsCorrect\":false},{\"Content\":\"Emily Dickinson\",\"IsCorrect\":false},{\"Content\":\"Mary Shelley\",\"IsCorrect\":false}]",
+                            QuestionType = 0,
+                            QuizId = 6
+                        },
+                        new
+                        {
+                            Id = 54,
+                            Content = "Select all Greek epic poems.",
+                            IsActive = true,
+                            OptionsJson = "[{\"Content\":\"The Iliad\",\"IsCorrect\":true},{\"Content\":\"The Odyssey\",\"IsCorrect\":true},{\"Content\":\"Beowulf\",\"IsCorrect\":false},{\"Content\":\"The Aeneid\",\"IsCorrect\":false}]",
+                            QuestionType = 1,
+                            QuizId = 6
+                        },
+                        new
+                        {
+                            Id = 55,
+                            Content = "What is the real name of Mark Twain?",
+                            IsActive = true,
+                            OptionsJson = "[{\"Content\":\"Samuel Clemens\",\"IsCorrect\":true},{\"Content\":\"Theodore Dreiser\",\"IsCorrect\":false},{\"Content\":\"F. Scott Fitzgerald\",\"IsCorrect\":false},{\"Content\":\"Henry James\",\"IsCorrect\":false}]",
+                            QuestionType = 0,
+                            QuizId = 6
+                        },
+                        new
+                        {
+                            Id = 56,
+                            Content = "Which characters appear in 'The Great Gatsby'?",
+                            IsActive = true,
+                            OptionsJson = "[{\"Content\":\"Jay Gatsby\",\"IsCorrect\":true},{\"Content\":\"Daisy Buchanan\",\"IsCorrect\":true},{\"Content\":\"Tom Buchanan\",\"IsCorrect\":true},{\"Content\":\"Holden Caulfield\",\"IsCorrect\":false}]",
+                            QuestionType = 1,
+                            QuizId = 6
+                        },
+                        new
+                        {
+                            Id = 57,
+                            Content = "Who wrote the poem 'The Raven'?",
+                            IsActive = true,
+                            OptionsJson = "[{\"Content\":\"Edgar Allan Poe\",\"IsCorrect\":true},{\"Content\":\"Robert Frost\",\"IsCorrect\":false},{\"Content\":\"Walt Whitman\",\"IsCorrect\":false},{\"Content\":\"Emily Dickinson\",\"IsCorrect\":false}]",
+                            QuestionType = 0,
+                            QuizId = 6
+                        },
+                        new
+                        {
+                            Id = 58,
+                            Content = "Which of the following are literary genres?",
+                            IsActive = true,
+                            OptionsJson = "[{\"Content\":\"Tragedy\",\"IsCorrect\":true},{\"Content\":\"Satire\",\"IsCorrect\":true},{\"Content\":\"Suspense\",\"IsCorrect\":true},{\"Content\":\"Cartography\",\"IsCorrect\":false}]",
+                            QuestionType = 1,
+                            QuizId = 6
+                        },
+                        new
+                        {
+                            Id = 59,
+                            Content = "Who wrote 'To Kill a Mockingbird'?",
+                            IsActive = true,
+                            OptionsJson = "[{\"Content\":\"Harper Lee\",\"IsCorrect\":true},{\"Content\":\"Toni Morrison\",\"IsCorrect\":false},{\"Content\":\"J.D. Salinger\",\"IsCorrect\":false},{\"Content\":\"John Steinbeck\",\"IsCorrect\":false}]",
+                            QuestionType = 0,
+                            QuizId = 6
+                        },
+                        new
+                        {
+                            Id = 60,
+                            Content = "Select all novels set in dystopian futures.",
+                            IsActive = true,
+                            OptionsJson = "[{\"Content\":\"1984\",\"IsCorrect\":true},{\"Content\":\"Brave New World\",\"IsCorrect\":true},{\"Content\":\"The Handmaid's Tale\",\"IsCorrect\":true},{\"Content\":\"The Catcher in the Rye\",\"IsCorrect\":false}]",
+                            QuestionType = 1,
+                            QuizId = 6
+                        },
+                        new
+                        {
+                            Id = 61,
+                            Content = "Who painted the Mona Lisa?",
+                            IsActive = true,
+                            OptionsJson = "[{\"Content\":\"Leonardo da Vinci\",\"IsCorrect\":true},{\"Content\":\"Michelangelo\",\"IsCorrect\":false},{\"Content\":\"Raphael\",\"IsCorrect\":false},{\"Content\":\"Vincent van Gogh\",\"IsCorrect\":false}]",
+                            QuestionType = 0,
+                            QuizId = 7
+                        },
+                        new
+                        {
+                            Id = 62,
+                            Content = "Which of the following are characteristics of Baroque art?",
+                            IsActive = true,
+                            OptionsJson = "[{\"Content\":\"Dramatic lighting\",\"IsCorrect\":true},{\"Content\":\"Emotional intensity\",\"IsCorrect\":true},{\"Content\":\"Flat perspective\",\"IsCorrect\":false},{\"Content\":\"Rich, deep color\",\"IsCorrect\":true}]",
+                            QuestionType = 1,
+                            QuizId = 7
+                        },
+                        new
+                        {
+                            Id = 63,
+                            Content = "In which country did Impressionism originate?",
+                            IsActive = true,
+                            OptionsJson = "[{\"Content\":\"France\",\"IsCorrect\":true},{\"Content\":\"Italy\",\"IsCorrect\":false},{\"Content\":\"Germany\",\"IsCorrect\":false},{\"Content\":\"Spain\",\"IsCorrect\":false}]",
+                            QuestionType = 0,
+                            QuizId = 7
+                        },
+                        new
+                        {
+                            Id = 64,
+                            Content = "Which artists were part of the Cubist movement?",
+                            IsActive = true,
+                            OptionsJson = "[{\"Content\":\"Pablo Picasso\",\"IsCorrect\":true},{\"Content\":\"Georges Braque\",\"IsCorrect\":true},{\"Content\":\"Claude Monet\",\"IsCorrect\":false},{\"Content\":\"Henri Matisse\",\"IsCorrect\":false}]",
+                            QuestionType = 1,
+                            QuizId = 7
+                        },
+                        new
+                        {
+                            Id = 65,
+                            Content = "What is the name of Michelangelo's famous sculpture housed in the Vatican?",
+                            IsActive = true,
+                            OptionsJson = "[{\"Content\":\"Pietà\",\"IsCorrect\":true},{\"Content\":\"David\",\"IsCorrect\":false},{\"Content\":\"Laocoön and His Sons\",\"IsCorrect\":false},{\"Content\":\"The Thinker\",\"IsCorrect\":false}]",
+                            QuestionType = 0,
+                            QuizId = 7
+                        },
+                        new
+                        {
+                            Id = 66,
+                            Content = "Which of the following are famous works of Surrealism?",
+                            IsActive = true,
+                            OptionsJson = "[{\"Content\":\"The Persistence of Memory\",\"IsCorrect\":true},{\"Content\":\"The Elephants\",\"IsCorrect\":true},{\"Content\":\"Water Lilies\",\"IsCorrect\":false},{\"Content\":\"The Treachery of Images\",\"IsCorrect\":true}]",
+                            QuestionType = 1,
+                            QuizId = 7
+                        },
+                        new
+                        {
+                            Id = 67,
+                            Content = "Who painted 'The Starry Night'?",
+                            IsActive = true,
+                            OptionsJson = "[{\"Content\":\"Vincent van Gogh\",\"IsCorrect\":true},{\"Content\":\"Edvard Munch\",\"IsCorrect\":false},{\"Content\":\"Paul Cézanne\",\"IsCorrect\":false},{\"Content\":\"Henri Rousseau\",\"IsCorrect\":false}]",
+                            QuestionType = 0,
+                            QuizId = 7
+                        },
+                        new
+                        {
+                            Id = 68,
+                            Content = "Select all artworks that are housed in the Louvre Museum.",
+                            IsActive = true,
+                            OptionsJson = "[{\"Content\":\"Mona Lisa\",\"IsCorrect\":true},{\"Content\":\"Liberty Leading the People\",\"IsCorrect\":true},{\"Content\":\"The Birth of Venus\",\"IsCorrect\":false},{\"Content\":\"The Raft of the Medusa\",\"IsCorrect\":true}]",
+                            QuestionType = 1,
+                            QuizId = 7
+                        },
+                        new
+                        {
+                            Id = 69,
+                            Content = "Which artist is known for cutting off his own ear?",
+                            IsActive = true,
+                            OptionsJson = "[{\"Content\":\"Vincent van Gogh\",\"IsCorrect\":true},{\"Content\":\"Paul Gauguin\",\"IsCorrect\":false},{\"Content\":\"Édouard Manet\",\"IsCorrect\":false},{\"Content\":\"Gustav Klimt\",\"IsCorrect\":false}]",
+                            QuestionType = 0,
+                            QuizId = 7
+                        },
+                        new
+                        {
+                            Id = 70,
+                            Content = "Which of the following are considered Renaissance artists?",
+                            IsActive = true,
+                            OptionsJson = "[{\"Content\":\"Leonardo da Vinci\",\"IsCorrect\":true},{\"Content\":\"Michelangelo\",\"IsCorrect\":true},{\"Content\":\"Sandro Botticelli\",\"IsCorrect\":true},{\"Content\":\"Salvador Dalí\",\"IsCorrect\":false}]",
+                            QuestionType = 1,
+                            QuizId = 7
+                        },
+                        new
+                        {
+                            Id = 71,
+                            Content = "Which technology is widely used in virtual assistants like Alexa and Siri?",
+                            IsActive = true,
+                            OptionsJson = "[{\"Content\":\"Natural Language Processing\",\"IsCorrect\":true},{\"Content\":\"Blockchain\",\"IsCorrect\":false},{\"Content\":\"Quantum Computing\",\"IsCorrect\":false},{\"Content\":\"3D Printing\",\"IsCorrect\":false}]",
+                            QuestionType = 0,
+                            QuizId = 8
+                        },
+                        new
+                        {
+                            Id = 72,
+                            Content = "Which of these are considered part of Industry 4.0?",
+                            IsActive = true,
+                            OptionsJson = "[{\"Content\":\"Internet of Things (IoT)\",\"IsCorrect\":true},{\"Content\":\"Artificial Intelligence\",\"IsCorrect\":true},{\"Content\":\"Assembly Lines (Industry 2.0)\",\"IsCorrect\":false},{\"Content\":\"Cloud Computing\",\"IsCorrect\":true}]",
+                            QuestionType = 1,
+                            QuizId = 8
+                        },
+                        new
+                        {
+                            Id = 73,
+                            Content = "What is the primary purpose of blockchain technology?",
+                            IsActive = true,
+                            OptionsJson = "[{\"Content\":\"Decentralized record-keeping\",\"IsCorrect\":true},{\"Content\":\"Faster internet speeds\",\"IsCorrect\":false},{\"Content\":\"Quantum encryption\",\"IsCorrect\":false},{\"Content\":\"Real-time image rendering\",\"IsCorrect\":false}]",
+                            QuestionType = 0,
+                            QuizId = 8
+                        },
+                        new
+                        {
+                            Id = 74,
+                            Content = "Which technologies are used in renewable energy systems?",
+                            IsActive = true,
+                            OptionsJson = "[{\"Content\":\"Solar Panels\",\"IsCorrect\":true},{\"Content\":\"Wind Turbines\",\"IsCorrect\":true},{\"Content\":\"Diesel Generators\",\"IsCorrect\":false},{\"Content\":\"Hydroelectric Dams\",\"IsCorrect\":true}]",
+                            QuestionType = 1,
+                            QuizId = 8
+                        },
+                        new
+                        {
+                            Id = 75,
+                            Content = "What does GPT in ChatGPT stand for?",
+                            IsActive = true,
+                            OptionsJson = "[{\"Content\":\"Generative Pre-trained Transformer\",\"IsCorrect\":true},{\"Content\":\"General Purpose Technology\",\"IsCorrect\":false},{\"Content\":\"Global Processing Tool\",\"IsCorrect\":false},{\"Content\":\"Graphic Performance Tracker\",\"IsCorrect\":false}]",
+                            QuestionType = 0,
+                            QuizId = 8
+                        },
+                        new
+                        {
+                            Id = 76,
+                            Content = "Which of these are applications of generative AI?",
+                            IsActive = true,
+                            OptionsJson = "[{\"Content\":\"Image generation\",\"IsCorrect\":true},{\"Content\":\"Music composition\",\"IsCorrect\":true},{\"Content\":\"Social media moderation\",\"IsCorrect\":false},{\"Content\":\"Text summarization\",\"IsCorrect\":true}]",
+                            QuestionType = 1,
+                            QuizId = 8
+                        },
+                        new
+                        {
+                            Id = 77,
+                            Content = "Which company developed the first iPhone?",
+                            IsActive = true,
+                            OptionsJson = "[{\"Content\":\"Apple\",\"IsCorrect\":true},{\"Content\":\"Google\",\"IsCorrect\":false},{\"Content\":\"Microsoft\",\"IsCorrect\":false},{\"Content\":\"Samsung\",\"IsCorrect\":false}]",
+                            QuestionType = 0,
+                            QuizId = 8
+                        },
+                        new
+                        {
+                            Id = 78,
+                            Content = "Which of the following are wearable technologies?",
+                            IsActive = true,
+                            OptionsJson = "[{\"Content\":\"Smartwatches\",\"IsCorrect\":true},{\"Content\":\"Fitness Trackers\",\"IsCorrect\":true},{\"Content\":\"Laptops\",\"IsCorrect\":false},{\"Content\":\"AR Glasses\",\"IsCorrect\":true}]",
+                            QuestionType = 1,
+                            QuizId = 8
+                        },
+                        new
+                        {
+                            Id = 79,
+                            Content = "What does 5G primarily improve over 4G?",
+                            IsActive = true,
+                            OptionsJson = "[{\"Content\":\"Network speed and latency\",\"IsCorrect\":true},{\"Content\":\"Display resolution\",\"IsCorrect\":false},{\"Content\":\"Battery life\",\"IsCorrect\":false},{\"Content\":\"Color accuracy\",\"IsCorrect\":false}]",
+                            QuestionType = 0,
+                            QuizId = 8
+                        },
+                        new
+                        {
+                            Id = 80,
+                            Content = "Which of these are examples of edge computing devices?",
+                            IsActive = true,
+                            OptionsJson = "[{\"Content\":\"Smart thermostats\",\"IsCorrect\":true},{\"Content\":\"Self-driving cars\",\"IsCorrect\":true},{\"Content\":\"Cloud data centers\",\"IsCorrect\":false},{\"Content\":\"Drones with onboard AI\",\"IsCorrect\":true}]",
+                            QuestionType = 1,
+                            QuizId = 8
+                        },
+                        new
+                        {
+                            Id = 81,
+                            Content = "Which country is famous for the tea ceremony known as Chanoyu?",
+                            IsActive = true,
+                            OptionsJson = "[{\"Content\":\"Japan\",\"IsCorrect\":true},{\"Content\":\"China\",\"IsCorrect\":false},{\"Content\":\"India\",\"IsCorrect\":false},{\"Content\":\"Thailand\",\"IsCorrect\":false}]",
+                            QuestionType = 0,
+                            QuizId = 9
+                        },
+                        new
+                        {
+                            Id = 82,
+                            Content = "Which of the following are traditional forms of dance?",
+                            IsActive = true,
+                            OptionsJson = "[{\"Content\":\"Flamenco\",\"IsCorrect\":true},{\"Content\":\"Ballet\",\"IsCorrect\":true},{\"Content\":\"Samba\",\"IsCorrect\":true},{\"Content\":\"Karate\",\"IsCorrect\":false}]",
+                            QuestionType = 1,
+                            QuizId = 9
+                        },
+                        new
+                        {
+                            Id = 83,
+                            Content = "Diwali is a major festival celebrated in which country?",
+                            IsActive = true,
+                            OptionsJson = "[{\"Content\":\"India\",\"IsCorrect\":true},{\"Content\":\"Pakistan\",\"IsCorrect\":false},{\"Content\":\"Nepal\",\"IsCorrect\":false},{\"Content\":\"Sri Lanka\",\"IsCorrect\":false}]",
+                            QuestionType = 0,
+                            QuizId = 9
+                        },
+                        new
+                        {
+                            Id = 84,
+                            Content = "Which of the following are official languages of the United Nations?",
+                            IsActive = true,
+                            OptionsJson = "[{\"Content\":\"English\",\"IsCorrect\":true},{\"Content\":\"Arabic\",\"IsCorrect\":true},{\"Content\":\"Portuguese\",\"IsCorrect\":false},{\"Content\":\"Russian\",\"IsCorrect\":true}]",
+                            QuestionType = 1,
+                            QuizId = 9
+                        },
+                        new
+                        {
+                            Id = 85,
+                            Content = "Which country is known for the cultural tradition of wearing kilts?",
+                            IsActive = true,
+                            OptionsJson = "[{\"Content\":\"Scotland\",\"IsCorrect\":true},{\"Content\":\"Ireland\",\"IsCorrect\":false},{\"Content\":\"Wales\",\"IsCorrect\":false},{\"Content\":\"Norway\",\"IsCorrect\":false}]",
+                            QuestionType = 0,
+                            QuizId = 9
+                        },
+                        new
+                        {
+                            Id = 86,
+                            Content = "Which of the following are traditional cuisines?",
+                            IsActive = true,
+                            OptionsJson = "[{\"Content\":\"Sushi (Japan)\",\"IsCorrect\":true},{\"Content\":\"Tacos (Mexico)\",\"IsCorrect\":true},{\"Content\":\"Pizza (Italy)\",\"IsCorrect\":true},{\"Content\":\"Poutine (Australia)\",\"IsCorrect\":false}]",
+                            QuestionType = 1,
+                            QuizId = 9
+                        },
+                        new
+                        {
+                            Id = 87,
+                            Content = "Carnival is a major cultural event famously held in which Brazilian city?",
+                            IsActive = true,
+                            OptionsJson = "[{\"Content\":\"Rio de Janeiro\",\"IsCorrect\":true},{\"Content\":\"São Paulo\",\"IsCorrect\":false},{\"Content\":\"Brasília\",\"IsCorrect\":false},{\"Content\":\"Salvador\",\"IsCorrect\":false}]",
+                            QuestionType = 0,
+                            QuizId = 9
+                        },
+                        new
+                        {
+                            Id = 88,
+                            Content = "Which of the following are elements of traditional Chinese culture?",
+                            IsActive = true,
+                            OptionsJson = "[{\"Content\":\"Calligraphy\",\"IsCorrect\":true},{\"Content\":\"Tai Chi\",\"IsCorrect\":true},{\"Content\":\"Manga\",\"IsCorrect\":false},{\"Content\":\"Dragon Dance\",\"IsCorrect\":true}]",
+                            QuestionType = 1,
+                            QuizId = 9
+                        },
+                        new
+                        {
+                            Id = 89,
+                            Content = "What is the primary religion practiced in Thailand?",
+                            IsActive = true,
+                            OptionsJson = "[{\"Content\":\"Buddhism\",\"IsCorrect\":true},{\"Content\":\"Islam\",\"IsCorrect\":false},{\"Content\":\"Christianity\",\"IsCorrect\":false},{\"Content\":\"Hinduism\",\"IsCorrect\":false}]",
+                            QuestionType = 0,
+                            QuizId = 9
+                        },
+                        new
+                        {
+                            Id = 90,
+                            Content = "Select festivals that celebrate the lunar calendar.",
+                            IsActive = true,
+                            OptionsJson = "[{\"Content\":\"Lunar New Year\",\"IsCorrect\":true},{\"Content\":\"Mid-Autumn Festival\",\"IsCorrect\":true},{\"Content\":\"Thanksgiving\",\"IsCorrect\":false},{\"Content\":\"Eid al-Fitr\",\"IsCorrect\":true}]",
+                            QuestionType = 1,
+                            QuizId = 9
+                        },
+                        new
+                        {
+                            Id = 91,
+                            Content = "Which country has won the most FIFA World Cup titles?",
+                            IsActive = true,
+                            OptionsJson = "[{\"Content\":\"Brazil\",\"IsCorrect\":true},{\"Content\":\"Germany\",\"IsCorrect\":false},{\"Content\":\"Argentina\",\"IsCorrect\":false},{\"Content\":\"Italy\",\"IsCorrect\":false}]",
+                            QuestionType = 0,
+                            QuizId = 10
+                        },
+                        new
+                        {
+                            Id = 92,
+                            Content = "Which of the following are Olympic events?",
+                            IsActive = true,
+                            OptionsJson = "[{\"Content\":\"Swimming\",\"IsCorrect\":true},{\"Content\":\"Gymnastics\",\"IsCorrect\":true},{\"Content\":\"Cricket\",\"IsCorrect\":false},{\"Content\":\"Track and Field\",\"IsCorrect\":true}]",
+                            QuestionType = 1,
+                            QuizId = 10
+                        },
+                        new
+                        {
+                            Id = 93,
+                            Content = "In which sport is the term 'love' used to indicate a score of zero?",
+                            IsActive = true,
+                            OptionsJson = "[{\"Content\":\"Tennis\",\"IsCorrect\":true},{\"Content\":\"Badminton\",\"IsCorrect\":false},{\"Content\":\"Squash\",\"IsCorrect\":false},{\"Content\":\"Table Tennis\",\"IsCorrect\":false}]",
+                            QuestionType = 0,
+                            QuizId = 10
+                        },
+                        new
+                        {
+                            Id = 94,
+                            Content = "Which of these are considered major golf championships?",
+                            IsActive = true,
+                            OptionsJson = "[{\"Content\":\"The Masters\",\"IsCorrect\":true},{\"Content\":\"US Open\",\"IsCorrect\":true},{\"Content\":\"Wimbledon\",\"IsCorrect\":false},{\"Content\":\"The Open Championship\",\"IsCorrect\":true}]",
+                            QuestionType = 1,
+                            QuizId = 10
+                        },
+                        new
+                        {
+                            Id = 95,
+                            Content = "Which country hosted the 2020 Summer Olympics (held in 2021)?",
+                            IsActive = true,
+                            OptionsJson = "[{\"Content\":\"Japan\",\"IsCorrect\":true},{\"Content\":\"China\",\"IsCorrect\":false},{\"Content\":\"Brazil\",\"IsCorrect\":false},{\"Content\":\"United Kingdom\",\"IsCorrect\":false}]",
+                            QuestionType = 0,
+                            QuizId = 10
+                        },
+                        new
+                        {
+                            Id = 96,
+                            Content = "Which of these sports involve a ball?",
+                            IsActive = true,
+                            OptionsJson = "[{\"Content\":\"Basketball\",\"IsCorrect\":true},{\"Content\":\"Volleyball\",\"IsCorrect\":true},{\"Content\":\"Judo\",\"IsCorrect\":false},{\"Content\":\"Cricket\",\"IsCorrect\":true}]",
+                            QuestionType = 1,
+                            QuizId = 10
+                        },
+                        new
+                        {
+                            Id = 97,
+                            Content = "Which famous boxer was known as 'The Greatest'?",
+                            IsActive = true,
+                            OptionsJson = "[{\"Content\":\"Muhammad Ali\",\"IsCorrect\":true},{\"Content\":\"Mike Tyson\",\"IsCorrect\":false},{\"Content\":\"Floyd Mayweather\",\"IsCorrect\":false},{\"Content\":\"Joe Frazier\",\"IsCorrect\":false}]",
+                            QuestionType = 0,
+                            QuizId = 10
+                        },
+                        new
+                        {
+                            Id = 98,
+                            Content = "Which of the following are winter sports?",
+                            IsActive = true,
+                            OptionsJson = "[{\"Content\":\"Skiing\",\"IsCorrect\":true},{\"Content\":\"Snowboarding\",\"IsCorrect\":true},{\"Content\":\"Surfing\",\"IsCorrect\":false},{\"Content\":\"Figure Skating\",\"IsCorrect\":true}]",
+                            QuestionType = 1,
+                            QuizId = 10
+                        },
+                        new
+                        {
+                            Id = 99,
+                            Content = "How many players are on a soccer team on the field (per side)?",
+                            IsActive = true,
+                            OptionsJson = "[{\"Content\":\"11\",\"IsCorrect\":true},{\"Content\":\"10\",\"IsCorrect\":false},{\"Content\":\"12\",\"IsCorrect\":false},{\"Content\":\"9\",\"IsCorrect\":false}]",
+                            QuestionType = 0,
+                            QuizId = 10
+                        },
+                        new
+                        {
+                            Id = 100,
+                            Content = "Which of the following sports originated in the USA?",
+                            IsActive = true,
+                            OptionsJson = "[{\"Content\":\"Basketball\",\"IsCorrect\":true},{\"Content\":\"Baseball\",\"IsCorrect\":true},{\"Content\":\"Rugby\",\"IsCorrect\":false},{\"Content\":\"American Football\",\"IsCorrect\":true}]",
+                            QuestionType = 1,
+                            QuizId = 10
                         });
                 });
 
@@ -125,7 +988,7 @@ namespace API.Migrations
                         {
                             Id = 1,
                             CreatedBy = 2,
-                            CreatedOn = new DateTime(2025, 6, 17, 9, 59, 26, 905, DateTimeKind.Local).AddTicks(5506),
+                            CreatedOn = new DateTime(2025, 7, 24, 23, 52, 20, 623, DateTimeKind.Local).AddTicks(8380),
                             IsActive = true,
                             Name = "General Knowledge Quiz"
                         },
@@ -133,7 +996,7 @@ namespace API.Migrations
                         {
                             Id = 2,
                             CreatedBy = 2,
-                            CreatedOn = new DateTime(2025, 6, 17, 9, 59, 26, 905, DateTimeKind.Local).AddTicks(5520),
+                            CreatedOn = new DateTime(2025, 7, 24, 23, 52, 20, 623, DateTimeKind.Local).AddTicks(8392),
                             IsActive = true,
                             Name = "Science Trivia"
                         },
@@ -141,9 +1004,65 @@ namespace API.Migrations
                         {
                             Id = 3,
                             CreatedBy = 3,
-                            CreatedOn = new DateTime(2025, 6, 17, 9, 59, 26, 905, DateTimeKind.Local).AddTicks(5522),
+                            CreatedOn = new DateTime(2025, 7, 24, 23, 52, 20, 623, DateTimeKind.Local).AddTicks(8393),
                             IsActive = true,
                             Name = "History Challenge"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            CreatedBy = 1,
+                            CreatedOn = new DateTime(2025, 7, 24, 23, 52, 20, 623, DateTimeKind.Local).AddTicks(8394),
+                            IsActive = true,
+                            Name = "Geography Quiz"
+                        },
+                        new
+                        {
+                            Id = 5,
+                            CreatedBy = 1,
+                            CreatedOn = new DateTime(2025, 7, 24, 23, 52, 20, 623, DateTimeKind.Local).AddTicks(8396),
+                            IsActive = true,
+                            Name = "Math Challenge"
+                        },
+                        new
+                        {
+                            Id = 6,
+                            CreatedBy = 3,
+                            CreatedOn = new DateTime(2025, 7, 24, 23, 52, 20, 623, DateTimeKind.Local).AddTicks(8398),
+                            IsActive = true,
+                            Name = "Literature Quiz"
+                        },
+                        new
+                        {
+                            Id = 7,
+                            CreatedBy = 2,
+                            CreatedOn = new DateTime(2025, 7, 24, 23, 52, 20, 623, DateTimeKind.Local).AddTicks(8399),
+                            IsActive = true,
+                            Name = "Art History Quiz"
+                        },
+                        new
+                        {
+                            Id = 8,
+                            CreatedBy = 1,
+                            CreatedOn = new DateTime(2025, 7, 24, 23, 52, 20, 623, DateTimeKind.Local).AddTicks(8400),
+                            IsActive = true,
+                            Name = "Technology Trends"
+                        },
+                        new
+                        {
+                            Id = 9,
+                            CreatedBy = 3,
+                            CreatedOn = new DateTime(2025, 7, 24, 23, 52, 20, 623, DateTimeKind.Local).AddTicks(8401),
+                            IsActive = true,
+                            Name = "World Cultures"
+                        },
+                        new
+                        {
+                            Id = 10,
+                            CreatedBy = 2,
+                            CreatedOn = new DateTime(2025, 7, 24, 23, 52, 20, 623, DateTimeKind.Local).AddTicks(8402),
+                            IsActive = true,
+                            Name = "Sports Trivia"
                         });
                 });
 
@@ -218,6 +1137,7 @@ namespace API.Migrations
                         new
                         {
                             Id = 1,
+                            Avatar = "https://api.dicebear.com/7.x/bottts/svg?seed=1750601570652",
                             Email = "admin@email.com",
                             PasswordHash = "$2a$12$6GMyaacdt22VmPBouyUnB.e/4guoGG09ukoXkx/eb02bKcwokoy9C",
                             Role = 0,
@@ -226,6 +1146,7 @@ namespace API.Migrations
                         new
                         {
                             Id = 2,
+                            Avatar = "https://api.dicebear.com/7.x/bottts/svg?seed=1750601570652",
                             Email = "user1@email.com",
                             PasswordHash = "$2a$12$6GMyaacdt22VmPBouyUnB.e/4guoGG09ukoXkx/eb02bKcwokoy9C",
                             Role = 1,
@@ -234,6 +1155,7 @@ namespace API.Migrations
                         new
                         {
                             Id = 3,
+                            Avatar = "https://api.dicebear.com/7.x/bottts/svg?seed=1750601570652",
                             Email = "user2@email.com",
                             PasswordHash = "$2a$12$6GMyaacdt22VmPBouyUnB.e/4guoGG09ukoXkx/eb02bKcwokoy9C",
                             Role = 1,

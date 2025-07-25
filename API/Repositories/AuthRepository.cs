@@ -89,6 +89,20 @@ namespace API.Repositories
             }
         }
 
+        public async Task<User?> GetUserByEmail(string email)
+        {
+            try
+            {
+                return await _context.Users
+                    .FirstOrDefaultAsync(u => u.Email == email);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error getting user by email '{email}'.");
+                return null;
+            }
+        }
+
         public async Task<User?> GetUserById(int userId)
         {
             var user = await _context.Users

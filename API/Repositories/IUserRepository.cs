@@ -13,5 +13,6 @@ namespace API.Repositories
         Task UpdateUser(UserDto dto);
         Task<bool> DeleteUser(int id);
         Task<bool> UserExists(int id);
+        Task<string?> GetAvatarByUserId(int userId);
     }
 }

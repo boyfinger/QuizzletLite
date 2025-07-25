@@ -3,7 +3,6 @@ using API.Dtos.User;
 using API.Helpers;
 using API.Mappers;
 using API.Models;
-using Humanizer;
 using Microsoft.EntityFrameworkCore;
 
 namespace API.Repositories
@@ -46,7 +45,7 @@ namespace API.Repositories
 
         public async Task<User?> GetUserById(int id)
         {
-            return await _context.Users.FirstOrDefaultAsync(u => u.Id == id);
+            return await _context.Users.Include(u => u.Quizzes).Include(u => u.QuizAttempts).FirstOrDefaultAsync(u => u.Id == id);
         }
 
         public async Task AddUser(User user)
@@ -83,5 +82,14 @@ namespace API.Repositories
             return await _context.Users
                 .FirstOrDefaultAsync(u => u.Email == email);
         }
+
+        public async Task<string?> GetAvatarByUserId(int userId)
+        {
+            return await _context.Users
+                .Where(u => u.Id == userId)
+                .Select(u => u.Avatar)
+                .FirstOrDefaultAsync();
+        }
+
     }
 }

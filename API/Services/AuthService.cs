@@ -52,6 +52,11 @@ namespace API.Services
             return await _authRepository.CheckUsernameExists(username);
         }
 
+        public async Task<User?> GetUserByEmail(string email)
+        {
+            return await _authRepository.GetUserByEmail(email);
+        }
+
         public async Task<User?> GetUserById(int userId)
         {
             return await _authRepository.GetUserById(userId);
@@ -91,7 +96,7 @@ namespace API.Services
             return await _authRepository.RegisterUser(newUser);
         }
 
-        public async Task<bool> UpdatePassword(int userId, string currentPassword, string newPassword, string confirmNewPassword)
+        public async Task<bool> UpdatePasswordInProfile(int userId, string currentPassword, string newPassword, string confirmNewPassword)
         {
             if (string.IsNullOrWhiteSpace(newPassword) || string.IsNullOrWhiteSpace(confirmNewPassword) || string.IsNullOrWhiteSpace(currentPassword))
                 return false;
@@ -104,6 +109,22 @@ namespace API.Services
                 return false;
 
             if (!CheckHashed.checkBcrypt(currentPassword, user.PasswordHash))
+                return false;
+
+            var hashedPassword = EncodedString.HashPassword(newPassword);
+            return await _authRepository.UpdatePassword(userId, hashedPassword);
+        }
+
+        public async Task<bool> UpdatePasswordInReset(int userId, string newPassword, string confirmNewPassword)
+        {
+            if (string.IsNullOrWhiteSpace(newPassword) || string.IsNullOrWhiteSpace(confirmNewPassword))
+                return false;
+
+            if (newPassword != confirmNewPassword)
+                return false;
+
+            var user = await GetUserById(userId);
+            if (user == null)
                 return false;
 
             var hashedPassword = EncodedString.HashPassword(newPassword);

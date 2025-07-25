@@ -8,10 +8,12 @@ namespace API.Services
     public class UserService : IUserService
     {
         private readonly IUserRepository _userRepository;
+        private readonly IQuizRepository _quizRepository;
 
-        public UserService(IUserRepository userRepository)
+        public UserService(IUserRepository userRepository, IQuizRepository quizRepository)
         {
             _userRepository = userRepository;
+            _quizRepository = quizRepository;
         }
 
         public async Task<PagedResult<UserDto>> GetUsers(UserQuery query)
@@ -25,11 +27,24 @@ namespace API.Services
         public async Task<UserDto?> GetUserById(int id)
         {
             var user = await _userRepository.GetUserById(id);
-            return user?.ToUserDto();
+            if (user == null) return null;
+
+            var completedCount = await _quizRepository.GetCompletedUniqueQuizCountByUserId(id);
+            var yourCount = user.Quizzes.Count;
+
+            return user?.ToUserDtoFull(completedCount, yourCount);
         }
 
         public async Task AddUser(UserDto userDto)
         {
+            // Ví dụ bạn check tồn tại theo username hoặc email
+            var existingUser = await _userRepository.GetUserByEmail(userDto.Email);
+            if (existingUser != null)
+            {
+                throw new Exception("User with this email already exists.");
+            }
+            // Nếu muốn check username riêng thì cũng thêm tương tự
+
             var user = userDto.ToUser();
             await _userRepository.AddUser(user);
         }
@@ -56,6 +71,11 @@ namespace API.Services
         public async Task<bool> UserExists(int id)
         {
             return await _userRepository.UserExists(id);
+        }
+
+        public async Task<string?> GetAvatarByUserId(int userId)
+        {
+            return await _userRepository.GetAvatarByUserId(userId);
         }
     }
 }

@@ -1,9 +1,10 @@
 ﻿using API.Dtos.User;
-using API.Utils;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Newtonsoft.Json;
+using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http.Headers;
+using System.Security.Claims;
 using System.Text;
 
 namespace WebApp.Pages.Auth
@@ -23,8 +24,14 @@ namespace WebApp.Pages.Auth
 
         public IActionResult OnGet()
         {
-            UserDto = HttpContext.Session.Get<UserDto>("userSession");
-            return UserDto != null ? Page() : RedirectToPage("/Auth/Login");
+            var token = HttpContext.Session.GetString("accessToken");
+            if (string.IsNullOrEmpty(token))
+            {
+                return RedirectToPage("/Player/Home");
+            }
+            return Page();
+            //UserDto = HttpContext.Session.Get<UserDto>("userSession");
+            //return UserDto != null ? Page() : RedirectToPage("/Auth/Login");
         }
 
         public async Task<IActionResult> OnPostChangeAvatarAsync([FromForm] AvatarUploadDTO avatarUploadDTO)
@@ -42,91 +49,107 @@ namespace WebApp.Pages.Auth
                 return Page();
             }
 
-            var user = HttpContext.Session.Get<UserDto>("userSession");
-            if (user == null)
+            var token = HttpContext.Session.GetString("accessToken");
+            if (string.IsNullOrWhiteSpace(token))
             {
-                TempData["ChangeAvatarFailed"] = "Your session has expired. Please log in again.";
+                TempData["ChangeAvatarFailed"] = "Session expired. Please login.";
                 return RedirectToPage("/Auth/Login");
             }
 
+            // 🔐 Decode token để lấy UserId
+            var handler = new JwtSecurityTokenHandler();
+            var jwt = handler.ReadJwtToken(token);
+            var userId = jwt.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier || c.Type == "nameid")?.Value;
 
-            // Gửi ảnh lên server
+            if (string.IsNullOrEmpty(userId))
+            {
+                TempData["ChangeAvatarFailed"] = "Invalid token. Please login.";
+                return RedirectToPage("/Auth/Login");
+            }
+
+            // 🖼 Gửi ảnh lên server
             var form = new MultipartFormDataContent();
-            form.Add(new StringContent(user.Id.ToString()), "UserId");
+            form.Add(new StringContent(userId), "UserId");
 
             if (avatarUploadDTO.Avatar?.Length > 0)
             {
-                Console.WriteLine(avatarUploadDTO.Avatar);
                 using var stream = new MemoryStream();
                 await avatarUploadDTO.Avatar.CopyToAsync(stream);
                 var fileContent = new ByteArrayContent(stream.ToArray());
                 fileContent.Headers.ContentType = new MediaTypeHeaderValue(avatarUploadDTO.Avatar.ContentType);
                 form.Add(fileContent, "Avatar", avatarUploadDTO.Avatar.FileName);
             }
-            var token = HttpContext.Session.GetString("accessToken");
-            if (!string.IsNullOrWhiteSpace(token))
-            {
-                _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-            }
+
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
             var changeRes = await _httpClient.PostAsync("https://localhost:7245/api/Authentication/change-avatar", form);
+
             if (!changeRes.IsSuccessStatusCode)
             {
                 ModelState.AddModelError(string.Empty, "Can't change avatar.");
                 return Page();
             }
 
-            var payload = new StringContent(JsonConvert.SerializeObject(new AvatarRequestDTO { UserId = user.Id }), Encoding.UTF8, "application/json");
-            var res = await _httpClient.PostAsync("https://localhost:7245/api/Authentication/get-user-avatar", payload);
-            if (res.IsSuccessStatusCode)
-            {
-                var dto = JsonConvert.DeserializeObject<AvatarDTO>(await res.Content.ReadAsStringAsync());
-                user.Avatar = dto?.Avatar;
-                HttpContext.Session.Set("userSession", user);
-            }
-
             TempData["ChangeAvatarSuccess"] = "Avatar updated successfully!";
             return RedirectToPage("/Auth/Profile");
         }
 
-        public async Task<IActionResult> OnPostChangePasswordAsync([FromForm] ChangePasswordDTO changePasswordDTO)
+        public async Task<IActionResult> OnPostChangePasswordAsync([FromForm] ChangePasswordDTO dto)
         {
-            if (!TryValidateModel(changePasswordDTO))
+            if (!TryValidateModel(dto))
             {
                 TempData["ChangePasswordFailed"] = "Please correct the errors in the password form.";
-                foreach (var modelStateEntry in ModelState.Values)
+                foreach (var entry in ModelState.Values)
                 {
-                    foreach (var error in modelStateEntry.Errors)
+                    foreach (var error in entry.Errors)
                     {
-                        _logger.LogError($"ChangePassword ModelState Error: {error.ErrorMessage}");
+                        _logger.LogError($"ChangePassword validation error: {error.ErrorMessage}");
                     }
                 }
                 return RedirectToPage("/Auth/Profile");
             }
 
-            var user = HttpContext.Session.Get<UserDto>("userSession");
-            if (user == null)
-                return RedirectToPage("/Auth/Login");
-            changePasswordDTO.UserId = user.Id;
-            var jsonContent = JsonConvert.SerializeObject(changePasswordDTO);
-            var content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
             var token = HttpContext.Session.GetString("accessToken");
-            if (!string.IsNullOrWhiteSpace(token))
+            if (string.IsNullOrWhiteSpace(token))
             {
-                _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+                TempData["ChangePasswordFailed"] = "Session expired. Please log in again.";
+                return RedirectToPage("/Auth/Login");
             }
-            var response = await _httpClient.PostAsync("https://localhost:7245/api/Authentication/change-password", content);
+
+            // 🔍 Decode JWT để lấy userId
+            var handler = new JwtSecurityTokenHandler();
+            var jwt = handler.ReadJwtToken(token);
+            var userId = jwt.Claims.FirstOrDefault(c =>
+                c.Type == ClaimTypes.NameIdentifier || c.Type == "nameid")?.Value;
+
+            if (string.IsNullOrEmpty(userId) || !int.TryParse(userId, out int uid))
+            {
+                TempData["ChangePasswordFailed"] = "User info could not be extracted.";
+                return RedirectToPage("/Auth/Login");
+            }
+
+            dto.UserId = uid;
+
+            var content = new StringContent(
+                JsonConvert.SerializeObject(dto),
+                Encoding.UTF8,
+                "application/json");
+
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            var response = await _httpClient.PostAsync("https://localhost:7245/api/authentication/change-password", content);
+
             if (!response.IsSuccessStatusCode)
             {
-                ModelState.AddModelError(string.Empty, "Can't change password.");
-                return Page();
+                TempData["ChangePasswordFailed"] = "Can't change password.";
+                return RedirectToPage("/Auth/Profile");
             }
+
             var result = await response.Content.ReadAsStringAsync();
-            bool isChanged = JsonConvert.DeserializeObject<bool>(result);
-            if (!isChanged)
+            if (!JsonConvert.DeserializeObject<bool>(result))
             {
-                ModelState.AddModelError(string.Empty, "Change password failed.");
-                return Page();
+                TempData["ChangePasswordFailed"] = "Change password failed.";
+                return RedirectToPage("/Auth/Profile");
             }
+
             TempData["ChangePasswordSuccess"] = "Password changed successfully!";
             return RedirectToPage("/Auth/Profile");
         }
@@ -145,53 +168,48 @@ namespace WebApp.Pages.Auth
                 }
                 return RedirectToPage("/Auth/Profile");
             }
-            var user = HttpContext.Session.Get<UserDto>("userSession");
-            if (user == null)
+
+            var token = HttpContext.Session.GetString("accessToken");
+            if (string.IsNullOrWhiteSpace(token))
             {
                 TempData["UpdateProfileError"] = "Your session has expired. Please log in again.";
                 return RedirectToPage("/Auth/Login");
             }
-            updateProfileDTO.UserId = user.Id;
+
+            // 🔍 Decode JWT để lấy UserId
+            var handler = new System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler();
+            var jwt = handler.ReadJwtToken(token);
+            var userId = jwt.Claims.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.NameIdentifier || c.Type == "nameid")?.Value;
+
+            if (string.IsNullOrEmpty(userId))
+            {
+                TempData["UpdateProfileError"] = "Unable to extract user info from token.";
+                return RedirectToPage("/Auth/Login");
+            }
+
+            // Gán vào DTO mà không cần session
+            updateProfileDTO.UserId = int.Parse(userId);
+
+            // Gửi lên backend
             var jsonContent = JsonConvert.SerializeObject(updateProfileDTO);
             var content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
-            var token = HttpContext.Session.GetString("accessToken");
-            if (!string.IsNullOrWhiteSpace(token))
-            {
-                _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-            }
+
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
             var response = await _httpClient.PostAsync("https://localhost:7245/api/Authentication/update-profile", content);
+
             if (!response.IsSuccessStatusCode)
             {
-                ModelState.AddModelError(string.Empty, "Can't change password.");
+                ModelState.AddModelError(string.Empty, "Can't update profile.");
                 return Page();
             }
+
             var responseData = await response.Content.ReadAsStringAsync();
             var isChanged = JsonConvert.DeserializeObject<bool>(responseData);
-            if (isChanged)
-            {
 
-                var getUserResponse = await _httpClient.GetAsync($"https://localhost:7245/api/User/{user.Id}");
+            TempData[isChanged ? "UpdateProfileSuccess" : "UpdateProfileError"] =
+                isChanged ? "Profile updated successfully!" : "Profile update failed.";
 
-                var userJson = await getUserResponse.Content.ReadAsStringAsync();
-                var updatedUserDto = JsonConvert.DeserializeObject<UserDto>(userJson);
-
-                if (updatedUserDto != null)
-                {
-                    HttpContext?.Session.Set("userSession", updatedUserDto);
-                    TempData["UpdateProfileSuccess"] = "Profile updated successfully!";
-                }
-                else
-                {
-                    TempData["UpdateProfileError"] = "Profile updated, but failed to retrieve updated user data.";
-                }
-                TempData["UpdateProfileSuccess"] = "Profile updated successfully!";
-                return RedirectToPage("/Auth/Profile");
-            }
-            else
-            {
-                TempData["UpdateProfileError"] = "Profile updated, but failed to retrieve updated user data.";
-                return RedirectToPage("/Auth/Profile");
-            }
+            return RedirectToPage("/Auth/Profile");
         }
     }
 }

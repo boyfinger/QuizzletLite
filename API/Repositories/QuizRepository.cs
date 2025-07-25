@@ -1,9 +1,7 @@
 ﻿using API.DAO;
-using API.Dtos.Quiz.QuizSubmission;
 using API.Helpers;
 using API.Models;
 using Microsoft.EntityFrameworkCore;
-using Newtonsoft.Json;
 
 namespace API.Repositories
 {
@@ -31,6 +29,20 @@ namespace API.Repositories
             quiz.IsActive = false;
             await _context.SaveChangesAsync();
             return true;
+        }
+
+        public IQueryable<Quiz> GetAllQuizzes()
+        {
+            return _context.Quizzes.AsNoTracking();
+        }
+
+        public async Task<int> GetCompletedUniqueQuizCountByUserId(int userId)
+        {
+            return await _context.QuizAttempts
+                .Where(q => q.UserId == userId && q.CompletedDate != null)
+                .Select(q => q.QuizId)
+                .Distinct()
+                .CountAsync();
         }
 
         public async Task<Quiz?> GetQuizById(int quizId)
