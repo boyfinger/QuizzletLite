@@ -2,7 +2,7 @@
 
 namespace API.Dtos.Question
 {
-    public class QuestionDto
+    public class QuestionFullDto
     {
         public int Id { get; set; }
         public string Content { get; set; } = string.Empty;

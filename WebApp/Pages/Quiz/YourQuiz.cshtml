@@ -94,7 +94,8 @@
                                             <p class="card-text text-muted">Created on ${new Date(quiz.CreatedOn).toLocaleDateString()}</p>
                                             <div class="mt-auto">
                                                 <a href="/Quiz/ViewYourQuiz?quizId=${quiz.Id}" class="btn btn-outline-primary me-2">🔍 View</a>
-                                                <a href="/Quiz/Edit?quizId=${quiz.Id}" class="btn btn-outline-secondary me-2">✏️ Edit</a>
+                                                <a href="/UserQuiz/Edit/${quiz.Id}" class="btn btn-outline-secondary me-2">✏️ Edit</a>
+                                                <button type="button" class="btn btn-outline-warning me-2" onclick="toggleActiveQuiz(${quiz.Id})">🛑 Deactivate</button>
                                                 <button type="button" class="btn btn-outline-danger" onclick="deleteQuiz(${quiz.Id})">🗑 Delete</button>
                                             </div>
                                             <p class="${quiz.IsActive === true ? 'text-success' : 'text-danger'} mt-2 mb-0">
@@ -231,7 +232,28 @@
         }
     }
 
+            async function toggleActiveQuiz(quizId) {
+        if (confirm("Are you sure you want to deactivate this quiz?")) {
+            try {
+                const res = await fetch(`https://localhost:7245/api/user/quizzes/${quizId}/status`, {
+                    method: "PATCH",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": "Bearer " + token
+                    },
+                    body: JSON.stringify({ isActive: false }) // Set to false for deactivation
+                });
 
+                if (!res.ok) throw new Error("Failed to update status");
+
+                alert("Quiz has been deactivated!");
+                location.reload(); // Or redirect
+            } catch (error) {
+                console.error("Error during deactivation:", error);
+                alert("Something went wrong while deactivating the quiz.");
+            }
+        }
+    }
 </script>
 
 <div class="py-5 text-center">
@@ -244,7 +266,7 @@
             <option value="false">🚫 Inactive</option>
         </select>
     </div>
-    <a href="/Quiz/Create" class="btn btn-outline-primary mb-3">✏️ Create One Now</a>
+    <a href="/UserQuiz/Add" class="btn btn-outline-primary mb-3">✏️ Create One Now</a>
     <div class="row" id="yourQuizListContainer">
     </div>
     <div class="row justify-content-center mt-4">

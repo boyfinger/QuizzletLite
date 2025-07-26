@@ -8,12 +8,10 @@ namespace API.Services
     public class UserService : IUserService
     {
         private readonly IUserRepository _userRepository;
-        private readonly IQuizRepository _quizRepository;
 
-        public UserService(IUserRepository userRepository, IQuizRepository quizRepository)
+        public UserService(IUserRepository userRepository)
         {
             _userRepository = userRepository;
-            _quizRepository = quizRepository;
         }
 
         public async Task<PagedResult<UserDto>> GetUsers(UserQuery query)
@@ -27,12 +25,7 @@ namespace API.Services
         public async Task<UserDto?> GetUserById(int id)
         {
             var user = await _userRepository.GetUserById(id);
-            if (user == null) return null;
-
-            var completedCount = await _quizRepository.GetCompletedUniqueQuizCountByUserId(id);
-            var yourCount = user.Quizzes.Count;
-
-            return user?.ToUserDtoFull(completedCount, yourCount);
+            return user?.ToUserDto();
         }
 
         public async Task AddUser(UserDto userDto)
@@ -45,6 +38,38 @@ namespace API.Services
             }
             // Nếu muốn check username riêng thì cũng thêm tương tự
 
+            var user = userDto.ToUser();
+            await _userRepository.AddUser(user);
+        }
+
+        public async Task UpdateUser(UserDto userDto)
+        {
+            if (!await _userRepository.UserExists(userDto.Id))
+            {
+                throw new Exception($"User with ID {userDto.Id} does not exist.");
+            }
+            await _userRepository.UpdateUser(userDto);
+        }
+
+        public async Task<bool> DeleteUser(int id)
+        {
+            if (!await _userRepository.UserExists(id))
+            {
+                return false;
+            }
+            // Nếu muốn check username riêng thì cũng thêm tương tự
+
+            return await _userRepository.DeleteUser(id);
+        }
+
+        public async Task<bool> UserExists(int id)
+        {
+            return await _userRepository.UserExists(id);
+        }
+
+        public async Task<string?> GetAvatarByUserId(int userId)
+        {
+            return await _userRepository.GetAvatarByUserId(userId);
             var user = userDto.ToUser();
             await _userRepository.AddUser(user);
         }
@@ -77,18 +102,19 @@ namespace API.Services
         {
             return await _userRepository.GetAvatarByUserId(userId);
         }
+
         public IQueryable<UserDto> GetUsersForOData()
-    {
-        return _userRepository.GetUsersQueryable()
-            .Select(u => new UserDto
-            {
-                Id = u.Id,
-                Avatar = u.Avatar,
-                Username = u.Username,
-                Email = u.Email,
-                Role = u.Role
-            });
-    }
+        {
+            return _userRepository.GetUsersQueryable()
+                .Select(u => new UserDto
+                {
+                    Id = u.Id,
+                    Avatar = u.Avatar,
+                    Username = u.Username,
+                    Email = u.Email,
+                    Role = u.Role
+                });
+        }
 
     }
 }
