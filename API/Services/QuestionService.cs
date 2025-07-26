@@ -13,26 +13,26 @@ namespace API.Services
             _questionRepository = questionRepository;
         }
 
-        public IQueryable<QuestionDto> GetAllQuestions()
+        public IQueryable<QuestionFullDto> GetAllQuestions()
         {
             var entities = _questionRepository.GetAllQuestions();
             return entities.Select(q => q.ToQuestionDto()).AsQueryable();
         }
 
-        public async Task<QuestionDto?> GetByIdAsync(int id)
+        public async Task<QuestionFullDto?> GetByIdAsync(int id)
         {
             var entity = await _questionRepository.GetByIdAsync(id);
             return entity?.ToQuestionDto();
         }
 
-        public async Task<QuestionDto> CreateAsync(QuestionDto dto)
+        public async Task<QuestionFullDto> CreateAsync(QuestionFullDto dto)
         {
             var entity = dto.ToQuestion();
             var created = await _questionRepository.CreateAsync(entity);
             return created.ToQuestionDto();
         }
 
-        public async Task<QuestionDto> UpdateAsync(int id, QuestionDto dto)
+        public async Task<QuestionFullDto> UpdateAsync(int id, QuestionFullDto dto)
         {
             var entity = dto.ToQuestion();
             var updated = await _questionRepository.UpdateAsync(id, entity);
@@ -44,7 +44,7 @@ namespace API.Services
             return await _questionRepository.DeleteAsync(id);
         }
 
-        public async Task<List<QuestionDto>> GetListAllQuestions()
+        public async Task<List<QuestionFullDto>> GetListAllQuestions()
         {
             var questions = await _questionRepository.GetListAllQuestion();
             return questions.Select(q => q.ToQuestionDto()).ToList();

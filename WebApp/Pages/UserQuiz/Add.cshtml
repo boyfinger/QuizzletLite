@@ -1,0 +1,123 @@
+﻿@page
+@model WebApp.Pages.UserQuiz.AddModel
+@{
+    ViewData["Title"] = "Create New Quiz";
+    var token = Model.AccessToken;
+}
+
+<h2>Create New Quiz</h2>
+
+<div class="mb-3">
+    <label class="form-label">Quiz Name:</label>
+    <input type="text" class="form-control" id="quizName" />
+</div>
+
+<div id="questionList"></div>
+
+<button class="btn btn-secondary mt-3" onclick="addQuestion()">Add Question</button>
+<button class="btn btn-primary mt-3" onclick="submitQuiz()">Submit Quiz</button>
+
+<script>
+    let questionIndex = 0;
+    const accessToken = "@token";
+
+    function addQuestion() {
+        const questionHtml = `
+            <div class="card mt-4 p-3" data-question-index="${questionIndex}">
+                <div class="mb-2">
+                    <label>Question Content:</label>
+                    <input type="text" class="form-control question-content" />
+                </div>
+                <div class="mb-2">
+                    <label>Question Type:</label>
+                    <select class="form-select question-type">
+                        <option value="0">Single Choice</option>
+                        <option value="1">Multiple Choice</option>
+                    </select>
+                </div>
+                <div class="option-list"></div>
+                <button class="btn btn-sm btn-outline-success mt-2" onclick="addOption(this)">Add Option</button>
+            </div>
+        `;
+        document.getElementById("questionList").insertAdjacentHTML("beforeend", questionHtml);
+        questionIndex++;
+    }
+
+    function addOption(button) {
+        const optionList = button.closest('.card').querySelector('.option-list');
+        const optionHtml = `
+            <div class="input-group mb-1">
+                <span class="input-group-text">
+                    <input type="checkbox" class="form-check-input is-correct-checkbox" />
+                </span>
+                <input type="text" class="form-control option-content" placeholder="Option content" />
+            </div>
+        `;
+        optionList.insertAdjacentHTML("beforeend", optionHtml);
+    }
+
+        async function submitQuiz() {
+        const quizName = document.getElementById("quizName").value.trim();
+        if (!quizName) {
+            alert("Quiz name is required.");
+            return;
+        }
+
+        const questions = [];
+        document.querySelectorAll('[data-question-index]').forEach(card => {
+            const content = card.querySelector('.question-content').value.trim();
+            const type = parseInt(card.querySelector('.question-type').value);
+            const options = [];
+
+            card.querySelectorAll('.option-list .input-group').forEach(optGroup => {
+                const optContent = optGroup.querySelector('.option-content').value.trim();
+                const isCorrect = optGroup.querySelector('.is-correct-checkbox').checked;
+
+                if (optContent) {
+                    // ✅ Sửa tại đây: dùng key viết thường
+                    options.push({ content: optContent, isCorrect: isCorrect });
+                }
+            });
+
+            if (content && options.length > 0) {
+                questions.push({
+                    content: content,
+                    questionType: type,
+                    options: options
+                });
+            }
+        });
+
+        if (questions.length === 0) {
+            alert("At least one valid question is required.");
+            return;
+        }
+
+        const payload = {
+            name: quizName,
+            questions: questions
+        };
+
+        try {
+            const res = await fetch("https://localhost:7245/api/user/quizzes", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": "Bearer " + accessToken
+                },
+                body: JSON.stringify(payload)
+            });
+
+            if (!res.ok) throw new Error("Failed to create quiz");
+
+            const created = await res.json();
+            alert("Quiz created successfully!");
+            window.location.href = "/Quiz/YourQuiz";
+        } catch (err) {
+            console.error(err);
+            alert("Error submitting quiz.");
+        }
+    }
+
+</script>
+ 

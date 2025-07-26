@@ -4,11 +4,11 @@ namespace API.Services
 {
     public interface IQuestionService
     {
-        Task<List<QuestionDto>> GetListAllQuestions();
-        IQueryable<QuestionDto> GetAllQuestions();
-        Task<QuestionDto?> GetByIdAsync(int id);
-        Task<QuestionDto> CreateAsync(QuestionDto dto);
-        Task<QuestionDto> UpdateAsync(int id, QuestionDto dto);
+        Task<List<QuestionFullDto>> GetListAllQuestions();
+        IQueryable<QuestionFullDto> GetAllQuestions();
+        Task<QuestionFullDto?> GetByIdAsync(int id);
+        Task<QuestionFullDto> CreateAsync(QuestionFullDto dto);
+        Task<QuestionFullDto> UpdateAsync(int id, QuestionFullDto dto);
         Task<bool> DeleteAsync(int id);
     }
 }
