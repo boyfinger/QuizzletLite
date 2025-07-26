@@ -5,9 +5,9 @@ namespace API.Mappers
 {
     public static class QuestionMappers
     {
-        public static QuestionFullDto ToQuestionDto(this Question question)
+        public static QuestionDto ToQuestionDto(this Question question)
         {
-            return new QuestionFullDto
+            return new QuestionDto
             {
                 Id = question.Id,
                 Content = question.Content,
@@ -21,7 +21,7 @@ namespace API.Mappers
 
 
 
-        public static Question ToQuestion(this QuestionFullDto questionDto)
+        public static Question ToQuestion(this QuestionDto questionDto)
         {
             return new Question
             {

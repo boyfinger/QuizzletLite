@@ -29,7 +29,7 @@ namespace API.Controllers
         // GET: api/Questions/5
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         [HttpGet("{id}")]
-        public async Task<ActionResult<QuestionFullDto>> GetById(int id)
+        public async Task<ActionResult<QuestionDto>> GetById(int id)
         {
             var question = await _questionService.GetByIdAsync(id);
             if (question == null)
@@ -40,7 +40,7 @@ namespace API.Controllers
         // POST: api/Questions
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         [HttpPost]
-        public async Task<ActionResult<QuestionFullDto>> Create(QuestionFullDto dto)
+        public async Task<ActionResult<QuestionDto>> Create(QuestionDto dto)
         {
             var created = await _questionService.CreateAsync(dto);
             return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
@@ -49,7 +49,7 @@ namespace API.Controllers
         // PUT: api/Questions/5
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         [HttpPut("{id}")]
-        public async Task<ActionResult<QuestionFullDto>> Update(int id, QuestionFullDto dto)
+        public async Task<ActionResult<QuestionDto>> Update(int id, QuestionDto dto)
         {
             var updated = await _questionService.UpdateAsync(id, dto);
             return Ok(updated);

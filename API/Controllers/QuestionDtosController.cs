@@ -25,7 +25,7 @@ namespace API.Controllers
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         [HttpGet]
         [EnableQuery]
-        public IQueryable<QuestionFullDto> Get()
+        public IQueryable<QuestionDto> Get()
         {
             var query = _questionRepository.GetAllQuestions();
             return query.Select(QuestionMappers.ToQuestionDto).AsQueryable();

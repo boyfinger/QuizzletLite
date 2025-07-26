@@ -1,6 +1,5 @@
 ﻿using API.Dtos.UserQuiz;
 using API.Services;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -20,7 +19,6 @@ namespace API.Controllers
         }
 
         // POST: api/user/quizzes
-        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         [HttpPost]
         public async Task<IActionResult> CreateQuiz([FromBody] UserQuizDto dto)
         {
@@ -30,7 +28,6 @@ namespace API.Controllers
         }
 
         // PUT: api/user/quizzes/{id}
-        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateQuiz(int id, [FromBody] UserQuizDto dto)
         {
@@ -46,20 +43,18 @@ namespace API.Controllers
         }
 
         // DELETE: api/user/quizzes/{id}
-        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteQuiz(int id)
-        {
-            int userId = GetCurrentUserId();
+            [HttpDelete("{id}")]
+            public async Task<IActionResult> DeleteQuiz(int id)
+            {
+                int userId = GetCurrentUserId();
 
-            var success = await _quizService.DeleteUserQuiz(id, userId);
-            if (!success) return NotFound("Quiz not found or not owned by user.");
+                var success = await _quizService.DeleteUserQuiz(id, userId);
+                if (!success) return NotFound("Quiz not found or not owned by user.");
 
-            return NoContent();
-        }
+                return NoContent();
+            }
 
         // GET: api/user/quizzes/{id}
-        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         [HttpGet("{id}")]
         public async Task<IActionResult> GetQuizDetail(int id)
         {
@@ -83,7 +78,6 @@ namespace API.Controllers
         }
 
         // GET: api/user/quizzes
-        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         [HttpGet]
         public async Task<IActionResult> GetMyQuizzes()
         {
@@ -93,7 +87,6 @@ namespace API.Controllers
             return Ok(quizzes);
         }
 
-        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         [HttpDelete("{quizId}/questions/{questionId}")]
         public async Task<IActionResult> DeleteQuestion(int quizId, int questionId)
         {
@@ -105,8 +98,6 @@ namespace API.Controllers
 
             return NoContent();
         }
-
-        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         [HttpPatch("{id}/status")]
         public async Task<IActionResult> UpdateActiveStatus(int id, [FromBody] QuizActiveStatusDto dto)
         {
