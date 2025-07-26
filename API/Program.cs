@@ -2,8 +2,8 @@
 using API.Dtos;
 using API.Dtos.Question;
 using API.Dtos.Quiz;
-using API.Dtos.User;
 using API.Dtos.QuizAttempt;
+using API.Dtos.User;
 using API.Models;
 using API.Repositories;
 using API.Services;
