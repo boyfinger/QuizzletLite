@@ -41,5 +41,45 @@ namespace API.Repositories
             await _context.SaveChangesAsync();
             return quizAttempt;
         }
+        public int CountDistinctUsersParticipated()
+        {
+            return _context.QuizAttempts
+                           .Select(a => a.UserId)
+                           .Distinct()
+                           .Count();
+        }
+        public List<(string Username, double TotalScore)> GetTop5UsersByScore()
+        {
+            var result = _context.QuizAttempts
+                .Where(q => q.User != null)
+                .GroupBy(q => new { q.UserId, q.User.Username })
+                .Select(g => new
+                {
+                    Username = g.Key.Username,
+                    TotalScore = g.Sum(x => x.Score)
+                })
+                .OrderByDescending(x => x.TotalScore)
+                .Take(5)
+                .ToList();
+
+            return result.Select(r => (r.Username, r.TotalScore)).ToList();
+        }
+        public async Task<(string Username, int AttemptCount)?> GetMostActiveUserAsync()
+        {
+            var result = await _context.QuizAttempts
+                .GroupBy(a => a.UserId)
+                .Select(g => new {
+                    UserId = g.Key,
+                    AttemptCount = g.Count()
+                })
+                .OrderByDescending(g => g.AttemptCount)
+                .Join(_context.Users,
+                      g => g.UserId,
+                      u => u.Id,
+                      (g, u) => new { u.Username, g.AttemptCount })
+                .FirstOrDefaultAsync();
+
+            return result != null ? (result.Username, result.AttemptCount) : null;
+        }
     }
 }

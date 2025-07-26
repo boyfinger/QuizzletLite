@@ -6,5 +6,8 @@ namespace API.Services
     {
         IQueryable<QuizAttemptDto> GetAllQuizAttempts();
         Task<QuizAttemptDto> GetQuizAttempt(int quizResultId);
+        int CountDistinctUsersParticipated();
+        List<(string Username, double TotalScore)> GetTop5UsersByScore();
+        Task<(string Username, int AttemptCount)?> GetMostActiveUserAsync();
     }
 }

@@ -38,8 +38,11 @@
         // Display on the interface
         document.getElementById("usernameSpan").innerText = user.username;
         document.getElementById("avatarImg").src = user.avatar;
-
-      } catch (error) {
+          if (user.role === 0) {
+              document.getElementById("adminDropdown")?.classList.remove("d-none");
+          }
+      }
+       catch (error) {
         console.error("User fetch error:", error);
         // Optionally, you could display an error message to the user here
         // document.getElementById("errorMessageDiv").innerText = "Error loading user data.";
@@ -111,6 +114,9 @@
                                             <button class="dropdown-item" type="submit">🚪 Logout</button>
                                         </form>
                                     </li>
+                                    <li>
+										<a id="adminDropdown" class="dropdown-item d-none" asp-page="/Admin/Dashboard">📊 Admin Dashboard</a>
+									</li>
                                 </ul>
                             </li>
                         </ul>

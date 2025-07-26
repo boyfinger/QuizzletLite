@@ -3,6 +3,7 @@ using API.Helpers;
 using API.Mappers;
 using API.Models.Snapshots;
 using API.Repositories;
+using Microsoft.EntityFrameworkCore;
 
 namespace API.Services
 {
@@ -58,6 +59,18 @@ namespace API.Services
             bool isCorrect = answers.SelectedAnswers.Count == correctAnswers.Count &&
                             answers.SelectedAnswers.OrderBy(x => x).SequenceEqual(correctAnswers.OrderBy(x => x));
             return isCorrect;
+        }
+        public int CountDistinctUsersParticipated()
+        {
+            return _quizAttemptRepository.CountDistinctUsersParticipated();
+        }
+        public List<(string Username, double TotalScore)> GetTop5UsersByScore()
+        {
+            return _quizAttemptRepository.GetTop5UsersByScore();
+        }
+        public async Task<(string Username, int AttemptCount)?> GetMostActiveUserAsync()
+        {
+            return await _quizAttemptRepository.GetMostActiveUserAsync();
         }
     }
 }

@@ -1,16 +1,28 @@
-﻿
-@{
-}
-<div class="bg-dark border-right" id="sidebar-wrapper">
-    <div class="sidebar-heading text-white font-weight-bold py-4 text-center">
-        Admin Panel
+﻿<div class="sidebar" data-color="white" data-active-color="danger">
+    <div class="logo">
+        <a href="#" class="simple-text logo-mini">
+            <div class="logo-image-small">
+                <img src="https://cdn.jsdelivr.net/gh/creativetimofficial/paper-dashboard@2.0.1/assets/img/logo-small.png">
+            </div>
+        </a>
+        <a href="/Admin/Dashboard" class="simple-text logo-normal">
+            Admin Dashboard
+        </a>
     </div>
-    <div class="list-group list-group-flush">
-        <a href="/Admin/User" class="list-group-item list-group-item-action bg-dark text-white">
-            <i class="material-icons align-middle">person</i> <span class="ml-2">User</span>
-        </a>
-        <a href="/Admin/Quiz" class="list-group-item list-group-item-action bg-dark text-white">
-            <i class="material-icons align-middle">help_outline</i> <span class="ml-2">Quiz</span>
-        </a>
+    <div class="sidebar-wrapper">
+        <ul class="nav">
+            <li class="active">
+                <a href="/Admin/User">
+                    <i class="nc-icon nc-single-02"></i>
+                    <p>User</p>
+                </a>
+            </li>
+            <li>
+                <a href="/Admin/Quiz">
+                    <i class="nc-icon nc-bullet-list-67"></i>
+                    <p>Quiz</p>
+                </a>
+            </li>
+        </ul>
     </div>
 </div>

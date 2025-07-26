@@ -22,7 +22,8 @@ namespace API.Services
                 Content = q.Content,
                 QuizId = q.QuizId,
                 OptionsJson = q.OptionsJson,
-                QuestionType = q.QuestionType.ToString()
+                QuestionType = q.QuestionType.ToString(),
+                IsActive = q.IsActive,
             });
         }
 
@@ -36,7 +37,8 @@ namespace API.Services
                 Content = q.Content,
                 QuizId = q.QuizId,
                 OptionsJson = q.OptionsJson,
-                QuestionType = q.QuestionType.ToString()
+                QuestionType = q.QuestionType.ToString(),
+                IsActive = q.IsActive,
             };
         }
 
@@ -47,7 +49,8 @@ namespace API.Services
                 Content = dto.Content,
                 QuizId = dto.QuizId,
                 OptionsJson = dto.OptionsJson,
-                QuestionType = Enum.Parse<API.Models.Enums.QuestionType>(dto.QuestionType, true)
+                QuestionType = Enum.Parse<API.Models.Enums.QuestionType>(dto.QuestionType, true),
+                IsActive = true
             };
             await _repo.Add(question);
         }
@@ -68,6 +71,15 @@ namespace API.Services
             var question = await _repo.GetById(id);
             if (question == null) throw new Exception("Question not found");
             await _repo.Delete(question);
+        }
+        public async Task<bool> ToggleQuestionStatus(int id)
+        {
+            var quiz = await _repo.GetById(id);
+            if (quiz == null) return false;
+
+            quiz.IsActive = !quiz.IsActive;
+            await _repo.Update(quiz);
+            return true;
         }
     }
 }

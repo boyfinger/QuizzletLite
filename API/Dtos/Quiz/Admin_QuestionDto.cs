@@ -7,5 +7,6 @@
         public int QuizId { get; set; }
         public string OptionsJson { get; set; } = null!;
         public string QuestionType { get; set; } = null!;
+        public bool IsActive { get; set; } = true;
     }
 }

@@ -1,6 +1,7 @@
 ﻿@page
 @model WebApp.Pages.Admin.Question.IndexModel
 @{
+    Layout = "_AdminLayout";
     var token = HttpContext.Session.GetString("accessToken");
 }
 
@@ -24,12 +25,42 @@
         .cursor-pointer {
             cursor: pointer;
         }
+
+        .toggle-btn {
+            min-width: 90px;
+        }
+
+        .form-check {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            margin-bottom: 0;
+        }
+
+            .form-check input[type="checkbox"] {
+                position: static !important;
+                opacity: 1 !important;
+                visibility: visible !important;
+                width: 1.2em;
+                height: 1.2em;
+                margin: 0;
+            }
+
+        .form-check-label {
+            margin: 0;
+        }
     </style>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link href="https://cdn.jsdelivr.net/gh/gitbrent/bootstrap4-toggle@3.6.1/css/bootstrap4-toggle.min.css" rel="stylesheet">
 </head>
 <body class="p-4">
-    @await Html.PartialAsync("_AdminSidebar")
+    <div class="wrapper">
+        @await Html.PartialAsync("_AdminSidebar")
+        <div class="main-panel">
+            @await Html.PartialAsync("AdminNavbar")
+    <div class="content" style="margin-left: 0px;">
 
-    <div class="container" style="margin-left: 100px;">
         <h2 class="mb-4">Questions of Quiz ID: <span id="quiz-id-title"></span></h2>
 
         <div class="mb-3">
@@ -105,10 +136,9 @@
             </div>
         </div>
     </div>
+    </div>
 
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/js/bootstrap.bundle.min.js"></script>
-
+    </div>
     <script>
         // Token được lấy từ server và gán vào JS
         const accessToken = '@token';
@@ -168,7 +198,7 @@
 
             questions.forEach((q, index) => {
                 questionsData[q.id] = q; // lưu câu hỏi theo id
-
+                console.log("Câu hỏi:", q.id, "isActive =", q.isActive);
                 const options = JSON.parse(q.optionsJson || '[]');
 
                 const card = document.createElement('div');
@@ -182,9 +212,13 @@
                             <strong>Question ${index + 1}:</strong> ${escapeHtml(q.content)}
                             <span class="badge badge-info ml-2">${escapeHtml(q.questionType)}</span>
                         </div>
-                        <div>
-                            <button class="btn btn-sm btn-primary mr-1" onclick="showEditForm(${q.id})">Edit</button>
-                            <button class="btn btn-sm btn-danger" onclick="deleteQuestion(${q.id})">Delete</button>
+                        <div class="btn-group">
+                                    <button class="btn btn-sm btn-primary mr-2" onclick="showEditForm(${q.id})">Edit</button>
+        <button class="btn toggle-btn ${q.isActive ? 'btn-primary' : 'btn-secondary'}" data-id="${q.id}" data-status="${q.isActive}">
+            ${q.isActive ? 'Enabled' : 'Disabled'}
+        </button>
+
+
                         </div>
                     </div>`;
 
@@ -208,6 +242,30 @@
                 card.appendChild(header);
                 card.appendChild(body);
                 container.appendChild(card);
+                                card.querySelector('.toggle-btn').addEventListener('click', async function () {
+            const id = this.getAttribute('data-id');
+            const currentStatus = this.getAttribute('data-status') === 'true';
+
+            try {
+                const response = await fetch(`${API_URL}/${id}/toggle-status`, {
+                    method: 'PUT',
+                    headers: getAuthHeaders()
+                });
+                if (!response.ok) throw new Error();
+
+                // Update button text and style
+                this.innerText = currentStatus ? 'Disabled' : 'Enabled';
+                this.classList.toggle('btn-primary', !currentStatus);
+                this.classList.toggle('btn-secondary', currentStatus);
+                this.setAttribute('data-status', (!currentStatus).toString());
+
+                showMessage('Status updated successfully.');
+            } catch (err) {
+                console.error(err);
+                showMessage('Failed to update status.');
+            }
+        });
+
             });
         }
 
@@ -241,10 +299,10 @@
             div.className = 'd-flex align-items-center mb-2';
             div.innerHTML = `
                 <input type="text" class="form-control mr-2 option-content" placeholder="Option content" />
-                <div class="form-check mr-2">
-                    <input type="checkbox" class="form-check-input option-correct" id="new-correct-${index}" />
-                    <label class="form-check-label" for="new-correct-${index}">Correct</label>
-                </div>
+                        <div class="form-check mr-2 d-flex align-items-center">
+            <input type="checkbox" class="form-check-input option-correct" id="new-correct-${index}" />
+            <label class="form-check-label ml-1" for="new-correct-${index}">Correct</label>
+        </div>
                 <button type="button" class="btn btn-sm btn-danger" onclick="removeOption(this)">×</button>
             `;
             container.appendChild(div);
@@ -271,12 +329,14 @@
                 div.className = 'd-flex align-items-center mb-2';
                 div.innerHTML = `
                     <input type="text" class="form-control mr-2 edit-option-content" value="${escapeHtml(opt.Content)}" />
-                    <div class="form-check mr-2">
-                        <input type="checkbox" class="form-check-input edit-option-correct" id="edit-correct-${i}" ${opt.IsCorrect ? 'checked' : ''} />
-                        <label class="form-check-label" for="edit-correct-${i}">Correct</label>
-                    </div>
+                    <div class="form-check mr-2 d-flex align-items-center">
+            <input type="checkbox" class="form-check-input edit-option-correct" id="edit-correct-${i}" />
+            <label class="form-check-label" for="edit-correct-${i}">Correct</label>
+        </div>
                     <button type="button" class="btn btn-sm btn-danger" onclick="removeOption(this)">×</button>
                 `;
+                    const checkbox = div.querySelector(`#edit-correct-${i}`);
+        checkbox.checked = opt.IsCorrect === true;
                 container.appendChild(div);
             });
 
@@ -295,7 +355,7 @@
             div.className = 'd-flex align-items-center mb-2';
             div.innerHTML = `
                 <input type="text" class="form-control mr-2 edit-option-content" placeholder="Option content" />
-                <div class="form-check mr-2">
+                <div class="form-check mr-2 d-flex align-items-center">
                     <input type="checkbox" class="form-check-input edit-option-correct" id="edit-correct-${index}" />
                     <label class="form-check-label" for="edit-correct-${index}">Correct</label>
                 </div>

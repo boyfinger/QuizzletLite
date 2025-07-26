@@ -1,24 +1,24 @@
-﻿#sidebar-wrapper {
-    width: 250px;
+﻿/* Gợi ý thêm vào admin_sidebar.css nếu thiếu */
+/*.wrapper {
+    display: flex;
+    align-items: stretch;
+}
+
+.sidebar {
+    width: 260px;
     position: fixed;
-    height: 100%;
-    z-index: 1000;
     top: 0;
+    bottom: 0;
     left: 0;
-    overflow-y: auto;
-    transition: all 0.3s;
+    z-index: 1030;
+    background-color: #f4f3ef;
 }
 
-#page-content-wrapper {
-    margin-left: 250px;
-    padding: 20px;
-}
-
-.list-group-item {
-    border: none;
-}
-
-    .list-group-item:hover {
-        background-color: #343a40;
-        color: #fff;
-    }
+.main-panel {
+    width: calc(100% - 260px);*/ /* 260px là width của sidebar */
+    /*margin-left: 260px;
+    position: relative;
+    float: right;
+    min-height: 100vh;
+    background-color: #f4f3ef;
+}*/

@@ -1,0 +1,232 @@
+﻿@page
+@model DashboardModel
+@{
+    Layout = "_AdminLayout";
+    var token = HttpContext.Session.GetString("accessToken");
+}
+
+    <div class="wrapper">
+        @await Html.PartialAsync("_AdminSidebar")
+        <div class="main-panel">
+            @await Html.PartialAsync("AdminNavbar")
+            <div class="content">
+                <div class="row">
+                    <div class="col-lg-3 col-md-6 col-sm-6">
+                        <div class="card card-stats">
+                            <div class="card-body ">
+                                <div class="row">
+                                    <div class="col-5 col-md-4">
+                                        <div class="icon-big text-center icon-warning">
+                                        <i class="nc-icon nc-single-02 text-warning"></i>
+                                        </div>
+                                    </div>
+                                    <div class="col-7 col-md-8">
+                                        <div class="numbers">
+                                        <p class="card-category">User Count</p>
+                                        <p class="card-title" id="userCount">Loading...</p>
+                                    </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-footer ">
+                                <hr>
+                                <div class="stats">
+                                    <i class="fa fa-refresh"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-md-6 col-sm-6">
+                        <div class="card card-stats">
+                            <div class="card-body ">
+                                <div class="row">
+                                    <div class="col-5 col-md-4">
+                                        <div class="icon-big text-center icon-warning">
+                                        <i class="nc-icon nc-book-bookmark text-success"></i>
+                                        </div>
+                                    </div>
+                                    <div class="col-7 col-md-8">
+                                        <div class="numbers">
+                                        <p class="card-category">Quiz Count</p>
+                                        <p class="card-title" id="quizCount">Loading...</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-footer ">
+                                <hr>
+                                <div class="stats">
+                                    <i class="fa fa-calendar-o"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-md-6 col-sm-6">
+                        <div class="card card-stats">
+                            <div class="card-body ">
+                                <div class="row">
+                                    <div class="col-5 col-md-4">
+                                        <div class="icon-big text-center icon-warning">
+                                        <i class="nc-icon nc-check-2 text-danger"></i>
+                                        </div>
+                                    </div>
+                                    <div class="col-7 col-md-8">
+                                        <div class="numbers">
+                                        <p class="card-category">Unique Users Attempt</p>
+                                        <p class="card-title" id="uniqueUserCount">Loading...</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-footer ">
+                                <hr>
+                                <div class="stats">
+                                    <i class="fa fa-clock-o"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-md-6 col-sm-6">
+                        <div class="card card-stats">
+                            <div class="card-body ">
+                                <div class="row">
+                                    <div class="col-5 col-md-4">
+                                        <div class="icon-big text-center icon-warning">
+                                        <i class="nc-icon nc-badge text-primary"></i>
+                                        </div>
+                                    </div>
+                                    <div class="col-7 col-md-8">
+                                        <div class="numbers">
+                                            <p class="card-category">Most Active User</p>
+                                        <p class="card-title" id="mostActiveUser">Loading...</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-footer ">
+                                <hr>
+                                <div class="stats">
+                                    <i class="fa fa-refresh"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="card ">
+                            <div class="card-header ">
+                                <h5 class="card-title">Top 5 high score</h5>
+                                <p class="card-category"></p>
+                            </div>
+                            <div class="card-body ">
+                            <canvas id="topUsersChart" width="400" height="100"></canvas>
+                            </div>
+                            <div class="card-footer ">
+                                <hr>
+                                <div class="stats">
+                                    <i class="fa fa-history"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+<script>
+    const token = "@token";
+    if (token) {
+        fetch("https://localhost:7245/odata/Users?$filter=role eq 'User'&$count=true", {
+        headers: {
+            "Authorization": "Bearer " + token
+        }
+    })
+    .then(res => res.ok ? res.json() : Promise.reject("Failed to fetch"))
+    .then(data => {
+        const userCount = data['@@odata.count'];
+        document.getElementById("userCount").innerText = userCount;
+    })
+    .catch(err => {
+        console.error("Error fetching user count:", err);
+        document.getElementById("userCount").innerText = "Error";
+    });
+            fetch("https://localhost:7245/odata/Admin_Quizzes?$count=true", {
+        headers: {
+            "Authorization": "Bearer " + token
+        }
+    })
+    .then(res => res.ok ? res.json() : Promise.reject("Failed to load quiz count"))
+    .then(data => {
+        const quizCount = data['@@odata.count'];
+        document.getElementById("quizCount").innerText = quizCount;
+    })
+    .catch(err => {
+        console.error("Error fetching quiz count:", err);
+        document.getElementById("quizCount").innerText = "Error";
+    });
+        fetch("https://localhost:7245/api/QuizAttempt/api/statistics/unique-quiz-users", {
+        headers: {
+            "Authorization": "Bearer " + token
+        }
+    })
+    .then(res => res.ok ? res.text() : Promise.reject("Failed to load unique user count"))
+    .then(count => {
+        document.getElementById("uniqueUserCount").innerText = count;
+    })
+    .catch(err => {
+        console.error("Error fetching unique user count:", err);
+        document.getElementById("uniqueUserCount").innerText = "Error";
+    });
+        fetch("https://localhost:7245/api/QuizAttempt/most-active-user", {
+        headers: {
+            "Authorization": "Bearer " + token
+        }
+    })
+    .then(res => res.ok ? res.json() : Promise.reject("Failed to load most active user"))
+    .then(data => {
+        const text = `${data.username} (${data.attemptCount} attempts)`;
+        document.getElementById("mostActiveUser").innerText = text;
+    })
+    .catch(err => {
+        console.error("Error fetching most active user:", err);
+        document.getElementById("mostActiveUser").innerText = "Error";
+    });
+        fetch("https://localhost:7245/api/QuizAttempt/top5-users", {
+        headers: {
+            "Authorization": "Bearer " + token
+        }
+    })
+    .then(res => res.ok ? res.json() : Promise.reject("Failed to load top users"))
+    .then(data => {
+        const usernames = data.map(u => u.username || u.Username);
+        const scores = data.map(u => u.totalScore || u.TotalScore);
+
+        const ctx = document.getElementById('topUsersChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: usernames,
+                datasets: [{
+                    label: 'Total Score',
+                    data: scores,
+                    backgroundColor: 'rgba(54, 162, 235, 0.7)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    })
+    .catch(err => {
+        console.error("Error fetching top users:", err);
+    });
+    }
+</script>
+

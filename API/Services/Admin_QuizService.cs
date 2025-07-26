@@ -1,4 +1,5 @@
 ﻿using API.Dtos.Quiz;
+using API.Dtos.User;
 using API.Helpers;
 using API.Mappers;
 using API.Models;
@@ -95,6 +96,22 @@ namespace API.Services
             await _quizRepo.UpdateQuiz(quiz);
             return true;
         }
+        public IQueryable<Admin_QuizDto> GetQuizzesForOData()
+        {
+            return _quizRepo.GetQuizzesQueryable()
+        .Include(q => q.CreatedByNavigation)
+        .ToList() // MATERIALIZE dữ liệu => sử dụng được ?. 
+        .Select(u => new Admin_QuizDto
+        {
+            Id = u.Id,
+            Name = u.Name,
+            CreatedBy = u.CreatedBy,
+            CreatedByName = u.CreatedByNavigation?.Username,
+            CreatedOn = u.CreatedOn,
+            IsActive = u.IsActive
+        })
+        .AsQueryable();
+        }
     }
-    
+
 }

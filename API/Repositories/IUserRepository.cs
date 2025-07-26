@@ -1,6 +1,7 @@
 ﻿using API.Dtos.User;
 using API.Helpers;
 using API.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace API.Repositories
 {
@@ -14,5 +15,7 @@ namespace API.Repositories
         Task<bool> DeleteUser(int id);
         Task<bool> UserExists(int id);
         Task<string?> GetAvatarByUserId(int userId);
+        IQueryable<User> GetUsersQueryable();
+        
     }
 }
