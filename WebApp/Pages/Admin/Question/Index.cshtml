@@ -29,6 +29,26 @@
         .toggle-btn {
             min-width: 90px;
         }
+
+        .form-check {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            margin-bottom: 0;
+        }
+
+            .form-check input[type="checkbox"] {
+                position: static !important;
+                opacity: 1 !important;
+                visibility: visible !important;
+                width: 1.2em;
+                height: 1.2em;
+                margin: 0;
+            }
+
+        .form-check-label {
+            margin: 0;
+        }
     </style>
     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
@@ -192,9 +212,9 @@
                             <strong>Question ${index + 1}:</strong> ${escapeHtml(q.content)}
                             <span class="badge badge-info ml-2">${escapeHtml(q.questionType)}</span>
                         </div>
-                        <div>
-                            <button class="btn btn-sm btn-primary mr-1" onclick="showEditForm(${q.id})">Edit</button>
-                                            <button class="btn toggle-btn ${q.isActive ? 'btn-primary' : 'btn-secondary'}" data-id="${q.id}" data-status="${q.isActive}">
+                        <div class="btn-group">
+                                    <button class="btn btn-sm btn-primary mr-2" onclick="showEditForm(${q.id})">Edit</button>
+        <button class="btn toggle-btn ${q.isActive ? 'btn-primary' : 'btn-secondary'}" data-id="${q.id}" data-status="${q.isActive}">
             ${q.isActive ? 'Enabled' : 'Disabled'}
         </button>
 
@@ -279,10 +299,10 @@
             div.className = 'd-flex align-items-center mb-2';
             div.innerHTML = `
                 <input type="text" class="form-control mr-2 option-content" placeholder="Option content" />
-                <div class="form-check mr-2">
-                    <input type="checkbox" class="form-check-input option-correct" id="new-correct-${index}" />
-                    <label class="form-check-label" for="new-correct-${index}">Correct</label>
-                </div>
+                        <div class="form-check mr-2 d-flex align-items-center">
+            <input type="checkbox" class="form-check-input option-correct" id="new-correct-${index}" />
+            <label class="form-check-label ml-1" for="new-correct-${index}">Correct</label>
+        </div>
                 <button type="button" class="btn btn-sm btn-danger" onclick="removeOption(this)">×</button>
             `;
             container.appendChild(div);
@@ -309,12 +329,14 @@
                 div.className = 'd-flex align-items-center mb-2';
                 div.innerHTML = `
                     <input type="text" class="form-control mr-2 edit-option-content" value="${escapeHtml(opt.Content)}" />
-                    <div class="form-check mr-2">
-                        <input type="checkbox" class="form-check-input edit-option-correct" id="edit-correct-${i}" ${opt.IsCorrect ? 'checked' : ''} />
-                        <label class="form-check-label" for="edit-correct-${i}">Correct</label>
-                    </div>
+                    <div class="form-check mr-2 d-flex align-items-center">
+            <input type="checkbox" class="form-check-input edit-option-correct" id="edit-correct-${i}" />
+            <label class="form-check-label" for="edit-correct-${i}">Correct</label>
+        </div>
                     <button type="button" class="btn btn-sm btn-danger" onclick="removeOption(this)">×</button>
                 `;
+                    const checkbox = div.querySelector(`#edit-correct-${i}`);
+        checkbox.checked = opt.IsCorrect === true;
                 container.appendChild(div);
             });
 
@@ -333,7 +355,7 @@
             div.className = 'd-flex align-items-center mb-2';
             div.innerHTML = `
                 <input type="text" class="form-control mr-2 edit-option-content" placeholder="Option content" />
-                <div class="form-check mr-2">
+                <div class="form-check mr-2 d-flex align-items-center">
                     <input type="checkbox" class="form-check-input edit-option-correct" id="edit-correct-${index}" />
                     <label class="form-check-label" for="edit-correct-${index}">Correct</label>
                 </div>

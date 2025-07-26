@@ -1,5 +1,5 @@
 ﻿/* Gợi ý thêm vào admin_sidebar.css nếu thiếu */
-.wrapper {
+/*.wrapper {
     display: flex;
     align-items: stretch;
 }
@@ -15,10 +15,10 @@
 }
 
 .main-panel {
-    width: calc(100% - 260px); /* 260px là width của sidebar */
-    margin-left: 260px;
+    width: calc(100% - 260px);*/ /* 260px là width của sidebar */
+    /*margin-left: 260px;
     position: relative;
     float: right;
     min-height: 100vh;
     background-color: #f4f3ef;
-}
+}*/

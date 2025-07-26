@@ -170,7 +170,6 @@ IEdmModel getEdmModel()
     builder.EntitySet<Question>("Questions");
     builder.EntitySet<Quiz>("Quizzes");
     builder.EntitySet<QuizAttempt>("QuizAttempts");
-    builder.EntitySet<User>("Users");
     builder.EntitySet<QuizzesDto>("QuizzesDto");
     builder.EntitySet<QuestionDto>("QuestionDtos");
     builder.EntitySet<UserDto>("Users");
