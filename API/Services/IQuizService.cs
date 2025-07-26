@@ -14,6 +14,7 @@ namespace API.Services
         Task<QuizzesDto> CreateQuizAsync(CreateQuizDto createQuizDto);
         Task<QuizzesDto> UpdateQuizAsync(int quizId, UpdateQuizDto updateQuizDto);
         Task<bool> DeactivateQuizAsync(int quizId);
+        Task<bool> DeleteQuizAsync(int quizId);
         Task<QuizzesDto> GetQuizByIdAsync(int quizId);
         Task<List<QuizzesDto>> GetQuizzesByUserAsync(int userId);
         Task<QuizDetailsDto> GetQuizDetailsAsync(int quizId);

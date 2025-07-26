@@ -174,5 +174,10 @@ namespace API.Services
             return _quizRepository.GetAllQuizzes()
                 .Select(QuizMappers.MapToDto).AsQueryable();
         }
+
+        public async Task<bool> DeleteQuizAsync(int quizId)
+        {
+            return await _quizRepository.DeactivateQuiz(quizId);
+        }
     }
 }

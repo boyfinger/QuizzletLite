@@ -203,7 +203,7 @@ else
                                 Added on ${new Date(quiz.CreatedOn).toLocaleDateString()}
                             </p>
                             <div class="mt-auto d-grid gap-2">
-                <a href="/Quiz/QuizTaking?quizId=${quiz.Id}" class="btn btn-outline-primary">
+                <a href="/Quiz/QuizTaking/${quiz.Id}" class="btn btn-outline-primary">
                     <i class="fas fa-play-circle me-1"></i> Try Now
                 </a>
                 <a href="/Quiz/QuizPreview/${quiz.Id}" class="btn btn-outline-secondary">
@@ -265,8 +265,8 @@ else
                     <div class="card-body d-flex flex-column">
                         <h5 class="card-title">${q.QuizName}</h5>
                         <p class="card-text text-muted">Completed on ${new Date(q.CompletedDate).toLocaleDateString()}</p>
-                        <a href="/QuizAttempt/Details?id=${q.Id}" class="btn btn-outline-success mt-auto">Review</a>
-                        <a href="/Player/Quiz?id=${q.QuizId}" class="btn btn-outline-primary mt-auto">Take Quiz Again</a>
+                        <a href="/QuizAttempt/Details/${q.Id}" class="btn btn-outline-success mt-auto">Review</a>
+                        <a href="/Quiz/QuizTaking/${q.QuizId}" class="btn btn-outline-primary mt-auto">Take Quiz Again</a>
                     </div>
                 </div>
             `;

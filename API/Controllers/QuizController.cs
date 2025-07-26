@@ -91,12 +91,58 @@ namespace API.Controllers
                 return NotFound(ex.Message);
             }
         }
+
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         [HttpPatch("{quizId}/deactivate")]
         public async Task<IActionResult> DeactivateQuiz(int quizId)
         {
+            int userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
+
+            var quiz = await _quizService.GetQuizByIdAsync(quizId);
+            if (quiz == null)
+                return NotFound("Quiz not found");
+
+            if (quiz.CreatedBy != userId)
+                return Forbid("You do not have permission to deactivate this quiz");
+
             var success = await _quizService.DeactivateQuizAsync(quizId);
-            if (!success) return NotFound("Quiz not found");
+            if (!success)
+                return StatusCode(500, "Failed to deactivate quiz");
+
             return NoContent();
+        }
+
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        [HttpDelete("{quizId}/delete")]
+        public async Task<IActionResult> DeleteQuiz(int quizId)
+        {
+            int userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
+
+            var quiz = await _quizRepository.GetQuizByIdWithAttempts(quizId);
+            if (quiz == null)
+                return NotFound("Quiz not found");
+
+            if (quiz.CreatedBy != userId)
+                return Forbid("You do not have permission to delete this quiz");
+
+            if (quiz.QuizAttempts != null && quiz.QuizAttempts.Any())
+            {
+                // ❌ Có người đã làm quiz → chỉ deactivate
+                var success = await _quizRepository.DeactivateQuiz(quizId);
+                if (success != true)
+                    return StatusCode(500, "Failed to deactivate quiz");
+
+                return Ok("Quiz has attempts and was deactivated.");
+            }
+            else
+            {
+                // ✅ Chưa ai làm → xóa hẳn
+                var success = await _quizRepository.DeleteQuiz(quizId);
+                if (success != true)
+                    return StatusCode(500, "Failed to delete quiz");
+
+                return Ok("Quiz deleted successfully.");
+            }
         }
 
         [HttpGet("user/{userId}")]

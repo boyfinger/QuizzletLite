@@ -27,6 +27,17 @@ namespace API.Repositories
             if (quiz == null) return false;
 
             quiz.IsActive = false;
+            _context.Update(quiz);
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<bool?> DeleteQuiz(int quizId)
+        {
+            var quiz = await _context.Quizzes.FindAsync(quizId);
+            if (quiz == null) return false;
+
+            _context.Quizzes.Remove(quiz);
             await _context.SaveChangesAsync();
             return true;
         }
@@ -50,6 +61,13 @@ namespace API.Repositories
             return await _context.Quizzes
                 .Include(q => q.Questions)
                 .Include(q => q.CreatedByNavigation)
+                .FirstOrDefaultAsync(q => q.Id == quizId);
+        }
+
+        public async Task<Quiz?> GetQuizByIdWithAttempts(int quizId)
+        {
+            return await _context.Quizzes
+                .Include(q => q.QuizAttempts)
                 .FirstOrDefaultAsync(q => q.Id == quizId);
         }
 
