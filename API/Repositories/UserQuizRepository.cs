@@ -118,7 +118,7 @@ namespace API.Repositories
             var quiz = await _context.Quizzes.FindAsync(quizId);
             if (quiz == null) return false;
 
-            quiz.IsActive = isActive;
+            quiz.IsActive = !quiz.IsActive;
             await _context.SaveChangesAsync();
             return true;
         }
