@@ -1,0 +1,192 @@
+﻿@page "{id:int}"
+@model WebApp.Pages.UserQuiz.DetailModel
+@{
+    ViewData["Title"] = "Quiz Detail";
+}
+
+<h2 class="mb-4">Edit Quiz</h2>
+
+<div id="quizDetail" class="mt-3"></div>
+
+<script>
+    const token = '@Model.AccessToken';
+    const quizId = @Model.QuizId;
+
+    async function loadQuizDetail() {
+        try {
+            const res = await fetch(`https://localhost:7245/api/user/quizzes/${quizId}`, {
+                headers: { Authorization: "Bearer " + token }
+            });
+
+            if (!res.ok) {
+                document.getElementById("quizDetail").innerHTML =
+                    "<p class='text-danger'>Failed to load quiz.</p>";
+                return;
+            }
+
+            const quiz = await res.json();
+            let html = `
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label>Quiz Name:</label>
+                            <input type="text" class="form-control" id="quizName" value="${quiz.name}" />
+                        </div>
+
+                        <h5 class="mt-4">Questions:</h5>
+                        <div id="questionList">
+            `;
+
+            quiz.questions.forEach((question, index) => {
+                html += `
+                    <div class="card mt-3 p-3" data-question-index="${index}">
+                        <div class="mb-2">
+                            <label>Question Content:</label>
+                            <input type="text" class="form-control question-content" value="${question.content}" />
+                        </div>
+                        <div class="mb-2">
+                            <label>Question Type:</label>
+                            <select class="form-select question-type">
+                                <option value="0" ${question.questionType === 0 ? 'selected' : ''}>Single Choice</option>
+                                <option value="1" ${question.questionType === 1 ? 'selected' : ''}>Multiple Choice</option>
+                            </select>
+                        </div>
+                        <div class="option-list">
+                `;
+
+                try {
+                    const options = JSON.parse(question.optionsJson);
+                    options.forEach(opt => {
+                        html += `
+                            <div class="input-group mb-1">
+                                <span class="input-group-text">
+                                    <input type="checkbox" class="form-check-input is-correct-checkbox" ${opt.IsCorrect ? 'checked' : ''} />
+                                </span>
+                                <input type="text" class="form-control option-content" value="${opt.Content}" />
+                            </div>
+                        `;
+                    });
+                } catch (e) {
+                    html += `<div class="text-danger">Invalid options JSON</div>`;
+                }
+
+                html += `
+                        </div>
+                        <button class="btn btn-sm btn-outline-success mt-2" onclick="addOption(this)">Add Option</button>
+                    </div>
+                `;
+            });
+
+            html += `
+                        </div>
+                        <button class="btn btn-sm btn-outline-primary mt-3" onclick="addQuestion()">Add Question</button>
+                        <button class="btn btn-primary mt-4" onclick="updateQuiz()">Update Quiz</button>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById("quizDetail").innerHTML = html;
+
+        } catch (err) {
+            console.error("Error loading quiz:", err);
+            document.getElementById("quizDetail").innerHTML =
+                "<p class='text-danger'>An error occurred while loading the quiz.</p>";
+        }
+    }
+
+    function addOption(button) {
+        const optionHtml = `
+            <div class="input-group mb-1">
+                <span class="input-group-text">
+                    <input type="checkbox" class="form-check-input is-correct-checkbox" />
+                </span>
+                <input type="text" class="form-control option-content" placeholder="Option content" />
+            </div>
+        `;
+        const card = button.closest('.card');
+        card.querySelector('.option-list').insertAdjacentHTML('beforeend', optionHtml);
+    }
+
+    function addQuestion() {
+        const index = document.querySelectorAll('[data-question-index]').length;
+        const questionHtml = `
+            <div class="card mt-3 p-3" data-question-index="${index}">
+                <div class="mb-2">
+                    <label>Question Content:</label>
+                    <input type="text" class="form-control question-content" placeholder="Enter question..." />
+                </div>
+                <div class="mb-2">
+                    <label>Question Type:</label>
+                    <select class="form-select question-type">
+                        <option value="0">Single Choice</option>
+                        <option value="1">Multiple Choice</option>
+                    </select>
+                </div>
+                <div class="option-list">
+                    <div class="input-group mb-1">
+                        <span class="input-group-text">
+                            <input type="checkbox" class="form-check-input is-correct-checkbox" />
+                        </span>
+                        <input type="text" class="form-control option-content" placeholder="Option content" />
+                    </div>
+                </div>
+                <button class="btn btn-sm btn-outline-success mt-2" onclick="addOption(this)">Add Option</button>
+            </div>
+        `;
+        document.getElementById("questionList").insertAdjacentHTML('beforeend', questionHtml);
+    }
+
+    async function updateQuiz() {
+        const name = document.getElementById("quizName").value.trim();
+        if (!name) return alert("Quiz name is required.");
+
+        const questions = [];
+        document.querySelectorAll('[data-question-index]').forEach(card => {
+            const content = card.querySelector('.question-content').value.trim();
+            const questionType = parseInt(card.querySelector('.question-type').value);
+            const options = [];
+
+            card.querySelectorAll('.option-list .input-group').forEach(optGroup => {
+                const optContent = optGroup.querySelector('.option-content').value.trim();
+                const isCorrect = optGroup.querySelector('.is-correct-checkbox').checked;
+                if (optContent) options.push({ content: optContent, isCorrect: isCorrect });
+            });
+
+            if (content && options.length > 0) {
+                questions.push({ content, questionType, options });
+            }
+        });
+
+        if (questions.length === 0) {
+            alert("At least one question is required.");
+            return;
+        }
+
+        const payload = {
+            id: quizId,
+            name,
+            questions
+        };
+
+        try {
+            const res = await fetch(`https://localhost:7245/api/user/quizzes/${quizId}`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": "Bearer " + token
+                },
+                body: JSON.stringify(payload)
+            });
+
+            if (!res.ok) throw new Error("Update failed");
+
+            alert("Quiz updated successfully!");
+            window.location.reload();
+        } catch (err) {
+            console.error(err);
+            alert("Error updating quiz.");
+        }
+    }
+
+    loadQuizDetail();
+</script>
