@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OData.Query;
+using System.Security.Claims;
 
 namespace API.Controllers
 {
@@ -27,7 +28,8 @@ namespace API.Controllers
         [HttpGet]
         public IQueryable<QuizzesDto> Get()
         {
-            var query = _quizRepository.GetAllQuizzes(); // IQueryable<Quiz>
+            int userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
+            var query = _quizRepository.GetAllQuizzes().Where(q => q.CreatedBy == userId); // IQueryable<Quiz>
             return query.Select(QuizMappers.MapToDtoExpr);
         }
     }
