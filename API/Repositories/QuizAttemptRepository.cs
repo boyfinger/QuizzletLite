@@ -55,8 +55,8 @@ namespace API.Repositories
                 .GroupBy(q => new { q.UserId, q.User.Username })
                 .Select(g => new
                 {
-                    Username = g.Key.Username,
-                    TotalScore = g.Sum(x => x.Score)
+                    g.Key.Username,
+                    TotalScore = g.Max(x => x.Score)
                 })
                 .OrderByDescending(x => x.TotalScore)
                 .Take(5)
