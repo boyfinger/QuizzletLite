@@ -102,17 +102,57 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
     var accessToken, quizId;
+    let userId = @Model.UserInfo?.Id;
 
     window.onload = () => {
         accessToken = "@accessToken";
         quizId = @quizDetail.Id;
+
+        const savedAnswers = JSON.parse(localStorage.getItem('quizProgress-' + userId) || '[]');
+        console.log("savedAnswers", savedAnswers);
+
+        savedAnswers.answers.forEach(({ questionId, selectedAnswers }) => {
+            const questionElem = document.querySelector(`[id^="question"][data-id="${questionId}"]`);
+            if (questionElem) {
+                selectedAnswers.forEach(value => {
+                    const inputElem = questionElem.querySelector(`input[value="${value}"]`);
+                    if (inputElem) {
+                        inputElem.checked = true;
+                    }
+                });
+            }
+        });
     }
 
-    async function submitQuiz() {
+    function getAnswerPayload()
+    {
         const answerPayload = {
             quizId: quizId,
             answers: []
         };
+
+        const questions = document.querySelectorAll('[id^="question"]');
+        questions.forEach(question => {
+            const qId = question.getAttribute('data-id');
+            const selectedRadios = question.querySelectorAll('input[type="radio"]:checked');
+            const selectedCheckboxes = question.querySelectorAll('input[type="checkbox"]:checked');
+
+            const selectedValues = [...selectedRadios, ...selectedCheckboxes].map(input => input.value);
+
+            if (selectedValues.length > 0) {
+                answerPayload.answers.push({
+                    questionId: parseInt(qId),
+                    selectedAnswers: selectedValues
+                });
+            }
+        });
+
+        console.log("answerPayload", answerPayload);
+        return answerPayload;
+    }
+
+    async function submitQuiz() {
+        let answerPayload = getAnswerPayload();
 
         const questions = document.querySelectorAll('[id^="question"]');
         questions.forEach(question => {
@@ -145,6 +185,8 @@
                 throw new Error('Failed to submit quiz');
             }
 
+            localStorage.removeItem('quizProgress-' + userId);
+
             const quizResult = await response.json();
             console.log('Quiz result:', quizResult); // Could show score or feedback
             console.log('resultId', quizResult.id);
@@ -169,4 +211,14 @@
             console.error('Error submitting quiz:', err);
         }
     }
+
+    const saveProgress = () => {
+        const answerPayload = getAnswerPayload();
+        localStorage.setItem('quizProgress-' + userId, JSON.stringify(answerPayload));
+    }
+
+    document.querySelectorAll('input[type="radio"], input[type="checkbox"]').forEach(input => {
+        input.addEventListener('change', saveProgress);
+    });
+
 </script>
